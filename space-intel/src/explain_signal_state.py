@@ -28,7 +28,7 @@ from datetime import datetime
 import pandas as pd
 
 PROJECT_ROOT = Path(__file__).parent.parent
-ANALYTICS_DIR = PROJECT_ROOT / "data" / "analytics"
+ANALYTICS_DIR = PROJECT_ROOT / "data" / "price" / "analytics"
 
 
 def load_scored_metrics(date_str: str = None) -> dict:

@@ -3,10 +3,10 @@
 逐日生成 archive/metrics/YYYYMMDD.parquet，完成后重算 rolling_metrics
 
 用法：
-  python backfill.py --days 10
-  python backfill.py --start-date 20260101 --end-date 20260317
-  python backfill.py --days 5 --dry-run
-  python backfill.py --days 30 --force
+  uv run python -m src.backfill --days 10
+  uv run python -m src.backfill --start-date 20260101 --end-date 20260317
+  uv run python -m src.backfill --days 5 --dry-run
+  uv run python -m src.backfill --days 30 --force
 
 参数说明：
   --days N          回填最近 N 个自然日（与 --start-date/--end-date 互斥）
@@ -22,20 +22,12 @@
   - 完成后自动重算 rolling_metrics
 """
 
-import sys
 import argparse
 from datetime import datetime, timedelta
-from pathlib import Path
 
 import pandas as pd
 
-# 确保 src/ 在 path 中（直接运行时）
-SRC_DIR = Path(__file__).parent
-PROJECT_ROOT = SRC_DIR.parent
-if str(SRC_DIR) not in sys.path:
-    sys.path.insert(0, str(SRC_DIR))
-
-ARCHIVE_METRICS_DIR = PROJECT_ROOT / "archive" / "metrics"
+from src.shared.paths import ARCHIVE_METRICS_DIR, PROJECT_ROOT
 
 
 # ─────────────────────────────────────────────
@@ -64,11 +56,11 @@ def _available_trade_dates(as_of: datetime) -> set:
     用于判断某天是否是真实交易日。
     """
     try:
-        from normalizer import load_normalized
+        from src.price.normalizer import load_normalized
         df = load_normalized()
     except Exception:
         try:
-            raw_path = PROJECT_ROOT / "data" / "raw" / "market_data.parquet"
+            raw_path = PROJECT_ROOT / "data" / "price" / "raw" / "market_data.parquet"
             df = pd.read_parquet(raw_path)
         except Exception:
             return set()
@@ -112,7 +104,7 @@ def backfill_one_day(
         return True
 
     try:
-        from analyzer import analyze_anchor_symbol
+        from src.price.analyzer import analyze_anchor_symbol
         result = analyze_anchor_symbol(as_of_date=date)
     except ValueError as e:
         print(f"  [WARN] {date_str} 计算失败（跳过）: {e}")
@@ -186,7 +178,7 @@ def recompute_rolling(dry_run: bool = False):
 
     print("重算 rolling_metrics...")
     try:
-        from rolling_analyzer import compute_rolling_metrics
+        from src.price.rolling_analyzer import compute_rolling_metrics
         result = compute_rolling_metrics()
         if result:
             print(f"[OK] rolling_metrics 重算完成: "

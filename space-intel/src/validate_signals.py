@@ -27,8 +27,8 @@ import numpy as np
 # 项目路径
 PROJECT_ROOT = Path(__file__).parent.parent
 ARCHIVE_METRICS_DIR = PROJECT_ROOT / "archive" / "metrics"
-ANALYTICS_DIR = PROJECT_ROOT / "data" / "analytics"
-NORMALIZED_PATH = PROJECT_ROOT / "data" / "normalized" / "market_data_normalized.parquet"
+ANALYTICS_DIR = PROJECT_ROOT / "data" / "price" / "analytics"
+NORMALIZED_PATH = PROJECT_ROOT / "data" / "price" / "normalized" / "market_data_normalized.parquet"
 
 ANCHOR = "688333.SH"
 
