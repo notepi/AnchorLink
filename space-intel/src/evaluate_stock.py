@@ -22,12 +22,6 @@ import yaml
 import argparse
 import json
 
-# 确保 src/ 在 path 中
-SRC_DIR = Path(__file__).parent
-PROJECT_ROOT = SRC_DIR.parent
-if str(SRC_DIR) not in sys.path:
-    sys.path.insert(0, str(SRC_DIR))
-
 # 常量
 ANCHOR = "688333.SH"
 ANCHOR_NAME = "铂力特"
@@ -95,8 +89,8 @@ KNOWN_STOCKS = {
 def get_project_paths():
     """获取项目路径"""
     return {
-        "raw": PROJECT_ROOT / "data" / "raw" / "market_data.parquet",
-        "normalized": PROJECT_ROOT / "data" / "normalized" / "market_data_normalized.parquet",
+        "raw": PROJECT_ROOT / "data" / "price" / "raw" / "market_data.parquet",
+        "normalized": PROJECT_ROOT / "data" / "price" / "normalized" / "market_data_normalized.parquet",
         "config": PROJECT_ROOT / "config" / "stocks.yaml",
     }
 
