@@ -24,6 +24,7 @@ from typing import Dict, Any, List, Optional
 
 from src.shared.storage import Storage
 from src.shared.config import load_config as shared_load_config
+from src.shared.paths import ARCHIVE_METRICS_DIR
 
 # 存储层
 STORAGE = Storage("price")
@@ -1360,7 +1361,7 @@ def _compute_research_core(
 
 
 def save_metrics(result: Dict[str, Any], output_path: str = None):
-    """保存指标结果到 parquet 文件"""
+    """保存指标结果到 parquet 文件，并归档到 archive/metrics/"""
     if output_path is None:
         output_path = DEFAULT_OUTPUT_PATH
 
@@ -1375,6 +1376,18 @@ def save_metrics(result: Dict[str, Any], output_path: str = None):
         df = pd.DataFrame([result])
         df.to_parquet(output_file, index=False)
         print(f"[INFO] 指标已保存至: {output_file}")
+
+        # 归档到 archive/metrics/YYYYMMDD.parquet
+        trade_date = result.get("trade_date")
+        if trade_date:
+            if isinstance(trade_date, str):
+                date_str = trade_date.replace("-", "")[:8]
+            else:
+                date_str = pd.Timestamp(trade_date).strftime("%Y%m%d")
+            ARCHIVE_METRICS_DIR.mkdir(parents=True, exist_ok=True)
+            archive_file = ARCHIVE_METRICS_DIR / f"{date_str}.parquet"
+            df.to_parquet(archive_file, index=False)
+            print(f"[INFO] 归档至: {archive_file}")
     except Exception as e:
         raise ValueError(f"保存指标失败: {e}")
 

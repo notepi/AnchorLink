@@ -1,11 +1,10 @@
 [project]
-name = "space-intel"
+name = "anchorlink"
 version = "0.1.0"
-description = "商业航天板块每日复盘工具"
+description = "锚定联动分析系统 - 锚定公司与板块联动对比"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "akshare>=1.12.0",
     "dashscope>=1.14.0",
     "pandas>=2.0.0",
     "pyarrow>=14.0.0",
