@@ -64,7 +64,22 @@ from src.config.loader import PoolRegistry, Instrument, Universe, Membership, An
 @pytest.fixture
 def sample_pool_registry():
     """样本 PoolRegistry"""
-    # 简化版 registry，仅包含必要字段
+    instruments = {
+        "688333.SH": Instrument(
+            symbol="688333.SH",
+            name="铂力特",
+            market="科创板",
+            exchange="SH",
+            fact_tags=["3D打印", "商业航天"],
+        ),
+        "688433.SH": Instrument(
+            symbol="688433.SH",
+            name="华曙高科",
+            market="科创板",
+            exchange="SH",
+            fact_tags=["3D打印"],
+        ),
+    }
     return type("MockRegistry", (), {
         "anchor": Anchor(
             symbol="688333.SH",
@@ -72,21 +87,14 @@ def sample_pool_registry():
             reason="核心标的",
             added_date="2025-01-01",
         ),
-        "instruments": {
-            "688333.SH": Instrument(
-                symbol="688333.SH",
-                name="铂力特",
-                market="科创板",
-                exchange="SH",
-                fact_tags=["3D打印", "商业航天"],
-            ),
-        },
+        "instruments": instruments,
         "get_anchor": lambda self: Anchor(
             symbol="688333.SH",
             name="铂力特",
             reason="核心标的",
             added_date="2025-01-01",
         ),
+        "get_instrument": lambda self, symbol: instruments.get(symbol),
         "get_all_universes": lambda self: [
             Universe("direct_peers", "核心同类", "", True, 3),
             Universe("theme_pool", "主题扩散", "", False, 3),

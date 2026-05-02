@@ -66,6 +66,7 @@ def minimal_registry():
             "memberships": memberships,
         })(),
         "get_anchor": lambda self: anchor,
+        "get_instrument": lambda self, symbol: instruments.get(symbol),
         "get_all_universes": lambda self: list(universes.values()),
         "get_universe": lambda self, uid: universes.get(uid),
         "get_members": lambda self, uid, enabled_only=True: [m for m in memberships if m.universe_id == uid and (not enabled_only or m.enabled)],

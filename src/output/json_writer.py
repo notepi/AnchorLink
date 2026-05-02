@@ -45,7 +45,7 @@ def build_anchor_info(registry: PoolRegistry) -> AnchorInfo:
         AnchorInfo 结构
     """
     anchor = registry.get_anchor()
-    instrument = registry.instruments.get(anchor.symbol)
+    instrument = registry.get_instrument(anchor.symbol)
 
     themes = instrument.fact_tags if instrument else []
 

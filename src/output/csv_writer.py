@@ -123,7 +123,7 @@ def write_peer_matrix(
                 continue
 
             # 获取证券主数据
-            instrument = registry.instruments.get(membership.symbol)
+            instrument = registry.get_instrument(membership.symbol)
 
             # 获取当日行情数据
             member_data = market_data.get(membership.symbol)

@@ -74,7 +74,7 @@ def generate_signals(
         5. 返回结果
     """
     trade_date = _extract_trade_date(pool_states, anchor_positions, group_rotation)
-    anchor_symbol = registry.anchor.symbol if registry else "unknown"
+    anchor_symbol = registry.get_anchor().symbol if registry else "unknown"
 
     # 数据质量检查
     data_status, missing_data, partial_reason = _check_signal_data_quality(
