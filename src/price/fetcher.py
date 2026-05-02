@@ -418,6 +418,103 @@ def _fetch_moneyflow(pro, ts_code: str, start_date: str, end_date: str, output_d
         print(f"[WARN] moneyflow 获取失败（不影响主流程）: {e}")
 
 
+def fetch_for_registry(
+    registry,
+    output_path: str = None,
+    days: int = 60
+) -> pd.DataFrame:
+    """
+    根据 PoolRegistry 获取股票池日线数据并保存
+
+    MVP 入口使用，统一配置源为 pools.yaml
+
+    Args:
+        registry: PoolRegistry 实例
+        output_path: 输出 parquet 文件路径
+        days: 回溯天数
+
+    Returns:
+        合并后的 DataFrame
+    """
+    if output_path is None:
+        output_path = DEFAULT_OUTPUT_PATH
+
+    # 1. 初始化 Tushare
+    print("[INFO] 初始化 Tushare API...")
+    pro = init_tushare()
+
+    # 2. 从 PoolRegistry 获取股票列表
+    ts_codes = registry.get_all_symbols()
+    anchor = registry.get_anchor()
+
+    # 构建名称映射
+    name_map = {}
+    for symbol in ts_codes:
+        inst = registry.get_instrument(symbol)
+        if inst:
+            name_map[symbol] = inst.name
+    name_map[anchor.symbol] = anchor.name
+
+    print(f"[INFO] 共需获取 {len(ts_codes)} 只股票数据")
+    print(f"[INFO] 股票池: {ts_codes}")
+
+    # 3. 计算日期范围
+    end_date = datetime.now().strftime("%Y%m%d")
+    start_date = (datetime.now() - timedelta(days=days)).strftime("%Y%m%d")
+    print(f"[INFO] 日期范围: {start_date} ~ {end_date}")
+
+    # 4. 获取日线数据
+    df = fetch_daily_data(pro, ts_codes, start_date, end_date)
+
+    if df is None or df.empty:
+        print("[ERROR] 未获取到任何数据")
+        return pd.DataFrame()
+
+    # 5. 验证每只股票是否都获取到数据
+    fetched_codes = set(df["ts_code"].unique())
+    missing_codes = set(ts_codes) - fetched_codes
+
+    if missing_codes:
+        print(f"[WARN] 以下股票未获取到数据: {missing_codes}")
+    else:
+        print(f"[OK] 所有 {len(ts_codes)} 只股票数据获取成功")
+
+    # 6. 添加股票名称
+    df["name"] = df["ts_code"].map(name_map)
+
+    # 7. 打印每只股票的记录数
+    print("\n[INFO] 各股票记录数:")
+    for ts_code in ts_codes:
+        count = len(df[df["ts_code"] == ts_code])
+        name = name_map.get(ts_code, "")
+        status = "[OK]" if count > 0 else "[MISSING]"
+        print(f"  {status} {ts_code} {name}: {count} 条记录")
+
+    # 8. 确保输出目录存在
+    output_dir = Path(output_path).parent
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    # 9. 保存日线数据
+    df.to_parquet(output_path, index=False)
+    print(f"\n[INFO] 数据已保存至 {output_path}")
+    print(f"[INFO] 总记录数: {len(df)}")
+    print(f"[INFO] 列名: {df.columns.tolist()}")
+
+    # 10. 获取 daily_basic（direct_peers 用于估值对比）
+    direct_peers_members = registry.get_members("direct_peers", enabled_only=True)
+    valuation_codes = [m.symbol for m in direct_peers_members if m.include_in_benchmark]
+    valuation_codes.append(anchor.symbol)
+    valuation_codes = list(set(valuation_codes))
+
+    if valuation_codes:
+        _fetch_daily_basic_all(pro, valuation_codes, start_date, end_date, output_dir)
+
+    # 11. 获取 anchor 的资金流向数据
+    _fetch_moneyflow(pro, anchor.symbol, start_date, end_date, output_dir)
+
+    return df
+
+
 if __name__ == "__main__":
     df = fetch_market_data()
     print("\n数据概览:")
