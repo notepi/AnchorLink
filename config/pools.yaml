@@ -1,0 +1,439 @@
+# ============================================================
+# AnchorLink 股票池配置 v1.0
+# 基于 architecture.md 第 4.4 节三层结构设计
+#
+# 结构说明：
+#   instruments: 证券主数据（全局唯一）
+#   universes: 股票池定义（四类池子）
+#   memberships: 成员关系（多对多，允许重复）
+#
+# 变更追踪：
+#   每次调整必须更新 version 和 changelog
+#   股票池变化会影响 benchmark/ranking/report 计算口径
+# ============================================================
+
+version: "2026-05-02"
+changelog:
+  - date: "2026-05-02"
+    change: "Phase 1 配置重构：从 stocks.yaml 单层结构迁移到 pools.yaml 三层结构；实现 Instrument/Universe/Membership 多对多关系"
+  - date: "2026-03-18"
+    change: "股票池治理规则固化（v2026-03-18）：继承自 stocks.yaml"
+
+# ============================================================
+# 锚定标的（Anchor）
+# 不参与任何池子，单独定义
+# ============================================================
+anchor:
+  symbol: 688333.SH
+  name: 铂力特
+  reason: "主要研究标的，国内金属增材制造（3D打印）龙头，科创板上市"
+  added_date: "2026-03-01"
+
+# ============================================================
+# 第一层：证券主数据
+# symbol 全局唯一
+# ============================================================
+instruments:
+  - symbol: 688333.SH
+    name: 铂力特
+    market: A-share
+    exchange: SH
+    fact_tags: [金属3D打印, 增材制造, 商业航天制造链]
+
+  - symbol: 688433.SH
+    name: 华曙高科
+    market: A-share
+    exchange: SH
+    fact_tags: [增材制造, 3D打印设备, 工业级打印]
+
+  - symbol: 600343.SH
+    name: 航天动力
+    market: A-share
+    exchange: SH
+    fact_tags: [航天发动机, 推进系统, 商业航天, 国企]
+
+  - symbol: 600879.SH
+    name: 航天电子
+    market: A-share
+    exchange: SH
+    fact_tags: [航天电子, 航天供应链, 国企]
+
+  - symbol: 600118.SH
+    name: 中国卫星
+    market: A-share
+    exchange: SH
+    fact_tags: [卫星制造, 商业航天, 国企]
+
+  - symbol: 003009.SZ
+    name: 中天火箭
+    market: A-share
+    exchange: SZ
+    fact_tags: [固体火箭, 商业航天, 火箭发动机]
+
+  - symbol: 688102.SH
+    name: 斯瑞新材
+    market: A-share
+    exchange: SH
+    fact_tags: [高性能铜合金, 难熔金属, 航空航天材料]
+
+  - symbol: 601698.SH
+    name: 中国卫通
+    market: A-share
+    exchange: SH
+    fact_tags: [卫星通信, 卫星互联网, 商业航天, 国企]
+
+  - symbol: 300762.SZ
+    name: 上海瀚讯
+    market: A-share
+    exchange: SZ
+    fact_tags: [卫星通信终端, 宽带卫星通信, 商业航天]
+
+  - symbol: 688062.SH
+    name: 航天宏图
+    market: A-share
+    exchange: SH
+    fact_tags: [遥感卫星, 商业航天, 数据服务]
+
+  - symbol: 688568.SH
+    name: 中科星图
+    market: A-share
+    exchange: SH
+    fact_tags: [GIS应用, 卫星数据, 商业航天]
+
+  - symbol: 002179.SZ
+    name: 中航光电
+    market: A-share
+    exchange: SZ
+    fact_tags: [连接器, 军工, 航空航天]
+
+  - symbol: 603678.SH
+    name: 火炬电子
+    market: A-share
+    exchange: SH
+    fact_tags: [军工电子, MLCC, 被动元器件]
+
+  - symbol: 000733.SZ
+    name: 振华科技
+    market: A-share
+    exchange: SZ
+    fact_tags: [军工电子, MLCC, 钽电容]
+
+  - symbol: 603267.SH
+    name: 鸿远电子
+    market: A-share
+    exchange: SH
+    fact_tags: [MLCC, 被动元器件, 军工]
+
+  - symbol: 600151.SH
+    name: 航天工程
+    market: A-share
+    exchange: SH
+    fact_tags: [煤化工工程, 国企]
+
+# ============================================================
+# 第二层：股票池定义
+# 四类池子：direct_peers, industry_chain, theme_pool, trading_watchlist
+# ============================================================
+universes:
+  - universe_id: direct_peers
+    display_name: 核心同类池
+    purpose: "真正业务可比公司，用于判断 Anchor 相对核心业务强弱"
+    can_be_benchmark: true
+    min_size: 1
+    description: |
+      与铂力特业务直接可比的公司：
+      - 同属增材制造赛道
+      - 业务模式相似（零件制造服务 vs 设备制造）
+      - 技术路线相近（金属3D打印）
+
+  - universe_id: industry_chain
+    display_name: 产业链池
+    purpose: "上下游和需求传导，用于判断产业链联动"
+    can_be_benchmark: true
+    min_size: 3
+    description: |
+      铂力特产业链上下游：
+      - 上游：原材料供应商
+      - 下游：火箭发动机、卫星结构件等需求端
+      - 同产业链的公司走势联动反映需求景气度
+
+  - universe_id: theme_pool
+    display_name: 主题情绪池
+    purpose: "主题热度和扩散，用于判断市场主题情绪"
+    can_be_benchmark: false
+    min_size: 3
+    description: |
+      商业航天、军工、3D打印主题相关标的：
+      - 用于观察主题热度是否升温
+      - 判断情绪是否向核心业务传导
+      - 不适合作为 benchmark（主题炒作不代表业务确认）
+
+  - universe_id: trading_watchlist
+    display_name: 交易观察池
+    purpose: "短期资金切换和异动，用于捕捉交易机会"
+    can_be_benchmark: false
+    min_size: 1
+    description: |
+      短期资金关注标的：
+      - 交易联动性强但业务逻辑不纯
+      - 用于捕捉资金切换信号
+      - 不参与 benchmark 计算
+
+# ============================================================
+# 第三层：成员关系
+# 允许同一 symbol 在多个 universe 出现多次
+# 每个 membership 有独立 role / reason / relevance / 计算口径
+# ============================================================
+memberships:
+  # ==================== direct_peers (核心同类池) ====================
+  - universe_id: direct_peers
+    symbol: 688433.SH
+    role: direct_comparable
+    relevance: 0.90
+    weight: 1.0
+    enabled: true
+    include_in_benchmark: true
+    include_in_ranking: true
+    include_in_report: true
+    reason: "同属增材制造赛道，铂力特做零件制造服务，华曙高科做设备，产业链互补；近20日相关系数 +0.792（最高）"
+    added_at: "2026-03-17"
+    reviewed_at: "2026-05-02"
+
+  # ==================== industry_chain (产业链池) ====================
+  - universe_id: industry_chain
+    symbol: 600343.SH
+    role: downstream_demand
+    relevance: 0.85
+    weight: 1.0
+    enabled: true
+    include_in_benchmark: true
+    include_in_ranking: true
+    include_in_report: true
+    reason: "航天发动机核心标的，火箭发动机是铂力特增材制造的直接下游应用场景；需求端验证标杆"
+    added_at: "2026-03-10"
+    reviewed_at: "2026-05-02"
+
+  - universe_id: industry_chain
+    symbol: 600879.SH
+    role: upstream_supplier
+    relevance: 0.80
+    weight: 1.0
+    enabled: true
+    include_in_benchmark: true
+    include_in_ranking: true
+    include_in_report: true
+    reason: "航天电子核心标的，航天供应链上游，与铂力特同属航天制造体系；近20日相关系数 +0.679"
+    added_at: "2026-03-10"
+    reviewed_at: "2026-05-02"
+
+  - universe_id: industry_chain
+    symbol: 600118.SH
+    role: downstream_demand
+    relevance: 0.75
+    weight: 1.0
+    enabled: true
+    include_in_benchmark: true
+    include_in_ranking: true
+    include_in_report: true
+    reason: "卫星赛道代表，卫星结构件是铂力特增材制造的重要应用场景；近20日相关系数 +0.646"
+    added_at: "2026-03-17"
+    reviewed_at: "2026-05-02"
+
+  - universe_id: industry_chain
+    symbol: 003009.SZ
+    role: downstream_demand
+    relevance: 0.70
+    weight: 0.8
+    enabled: true
+    include_in_benchmark: false
+    include_in_ranking: true
+    include_in_report: true
+    reason: "固体火箭发动机及商业航天整体解决方案；铂力特增材制造零件的直接下游客户类型；发射节奏/订单披露是铂力特需求端的先行指标"
+    added_at: "2026-03-17"
+    reviewed_at: "2026-05-02"
+
+  # ==================== theme_pool (主题情绪池) ====================
+  - universe_id: theme_pool
+    symbol: 688433.SH
+    role: theme_heat_proxy
+    relevance: 0.65
+    weight: 0.5
+    enabled: true
+    include_in_benchmark: false
+    include_in_ranking: true
+    include_in_report: true
+    reason: "同属 3D 打印主题，可观察主题情绪传导；近期走势分化（+6% vs -14%）本身是重要研究信号"
+    added_at: "2026-03-17"
+    reviewed_at: "2026-05-02"
+
+  - universe_id: theme_pool
+    symbol: 601698.SH
+    role: theme_heat_proxy
+    relevance: 0.60
+    weight: 0.5
+    enabled: true
+    include_in_benchmark: false
+    include_in_ranking: true
+    include_in_report: true
+    reason: "卫星通信运营商，商业航天主线标的，与铂力特同受低轨卫星/卫星互联网政策催化"
+    added_at: "2026-03-17"
+    reviewed_at: "2026-05-02"
+
+  - universe_id: theme_pool
+    symbol: 300762.SZ
+    role: theme_heat_proxy
+    relevance: 0.55
+    weight: 0.4
+    enabled: true
+    include_in_benchmark: false
+    include_in_ranking: true
+    include_in_report: true
+    reason: "卫星通信终端及宽带卫星通信系统，商业航天通信应用层；交易联动性强（全量+0.815，近20日+0.864）"
+    added_at: "2026-03-17"
+    reviewed_at: "2026-05-02"
+
+  - universe_id: theme_pool
+    symbol: 688062.SH
+    role: theme_heat_proxy
+    relevance: 0.50
+    weight: 0.3
+    enabled: true
+    include_in_benchmark: false
+    include_in_ranking: true
+    include_in_report: true
+    reason: "商业遥感卫星数据服务，商业航天应用层代表；近20日相关系数 +0.403"
+    added_at: "2026-03-10"
+    reviewed_at: "2026-05-02"
+
+  - universe_id: theme_pool
+    symbol: 688568.SH
+    role: theme_heat_proxy
+    relevance: 0.45
+    weight: 0.3
+    enabled: true
+    include_in_benchmark: false
+    include_in_ranking: true
+    include_in_report: true
+    reason: "卫星数据 GIS 应用，商业航天数据服务层；近20日相关系数 +0.488"
+    added_at: "2026-03-10"
+    reviewed_at: "2026-05-02"
+
+  # ==================== trading_watchlist (交易观察池) ====================
+  - universe_id: trading_watchlist
+    symbol: 688102.SH
+    role: trading_signal
+    relevance: 0.80
+    weight: 0.6
+    enabled: true
+    include_in_benchmark: false
+    include_in_ranking: true
+    include_in_report: true
+    reason: "高性能铜合金/难熔金属材料，航空航天发动机关键材料供应商；交易联动性极强（全量+0.866，近20日+0.821）"
+    added_at: "2026-03-17"
+    reviewed_at: "2026-05-02"
+
+  - universe_id: trading_watchlist
+    symbol: 603678.SH
+    role: trading_signal
+    relevance: 0.85
+    weight: 0.7
+    enabled: true
+    include_in_benchmark: false
+    include_in_ranking: true
+    include_in_report: true
+    reason: "军工电子元器件；近20日相关系数 +0.859，联动强但属军工板块整体情绪共振"
+    added_at: "2026-03-10"
+    reviewed_at: "2026-05-02"
+
+  - universe_id: trading_watchlist
+    symbol: 000733.SZ
+    role: trading_signal
+    relevance: 0.87
+    weight: 0.7
+    enabled: true
+    include_in_benchmark: false
+    include_in_ranking: true
+    include_in_report: true
+    reason: "军工电子元器件（MLCC/钽电容）；近20日相关系数 +0.867，联动最强但逻辑不纯"
+    added_at: "2026-03-10"
+    reviewed_at: "2026-05-02"
+
+  - universe_id: trading_watchlist
+    symbol: 603267.SH
+    role: trading_signal
+    relevance: 0.90
+    weight: 0.8
+    enabled: true
+    include_in_benchmark: false
+    include_in_ranking: true
+    include_in_report: true
+    reason: "MLCC 等被动元器件；近20日相关系数 +0.890，联动最强但属军工元器件板块"
+    added_at: "2026-03-10"
+    reviewed_at: "2026-05-02"
+
+  - universe_id: trading_watchlist
+    symbol: 002179.SZ
+    role: trading_signal
+    relevance: 0.53
+    weight: 0.5
+    enabled: true
+    include_in_benchmark: false
+    include_in_ranking: true
+    include_in_report: true
+    reason: "航空航天连接器龙头，军工属性强；近20日相关系数 +0.534"
+    added_at: "2026-03-10"
+    reviewed_at: "2026-05-02"
+
+  - universe_id: trading_watchlist
+    symbol: 600151.SH
+    role: inactive_watch
+    relevance: 0.20
+    weight: 0.1
+    enabled: false
+    include_in_benchmark: false
+    include_in_ranking: false
+    include_in_report: false
+    reason: "主业为煤化工工程（甲醇/合成氨），与商业航天无实质关联；已从 core 降入 extended 观察"
+    added_at: "2026-03-10"
+    reviewed_at: "2026-05-02"
+
+# ============================================================
+# 参考指数（不参与任何计算，仅供参考）
+# ============================================================
+reference_indices:
+  - symbol: 000001.SH
+    name: 上证指数
+  - symbol: 399006.SZ
+    name: 创业板指
+
+# ============================================================
+# 数据配置
+# ============================================================
+data_source: tushare
+lookback_days: 60
+
+# ============================================================
+# 事件层关键词配置（继承自 stocks.yaml）
+# ============================================================
+event_keywords:
+  company:
+    - 铂力特
+    - "688333"
+  sector:
+    - 商业航天
+    - 增材制造
+    - 3D打印
+    - 金属增材
+    - 航天发动机
+    - 运载火箭
+    - 卫星互联网
+    - 低轨卫星
+    - 航天电子
+    - 航天动力
+    - 中国卫星
+    - 中国卫通
+    - 上海瀚讯
+    - 华曙高科
+    - 中天火箭
+    - 航天强国
+    - 商业发射

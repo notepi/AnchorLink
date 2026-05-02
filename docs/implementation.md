@@ -1,0 +1,517 @@
+# AnchorLink 技术实现文档
+
+> 基于 PRD v0.3 + architecture.md v0.3
+> 产品定义请参考：`docs/prd.md`、`docs/architecture.md`
+> 本文档专注于代码实现层面的技术设计
+
+---
+
+## 1. 技术栈选型
+
+| 层级 | 技术选择 | 理由 |
+|------|---------|------|
+| 语言 | Python 3.11+ | 项目已有实现，团队熟悉 |
+| 包管理 | uv | 快速依赖管理，已有 pyproject.toml |
+| 数据源 | Tushare | 已集成，A股数据完整 |
+| 配置格式 | YAML | 人类可读，已有 stocks.yaml |
+| 数据存储 | 本地文件 (JSON/CSV) | MVP 阶段无需数据库 |
+| 输出格式 | JSON + CSV + Markdown | 符合架构设计 |
+
+---
+
+## 2. 模块目录结构
+
+对应 architecture.md 八层架构的代码组织：
+
+```text
+src/
+├── config/
+│   ├── pools.yaml           # 股票池配置（整合 instruments/universes/memberships）
+│   └── loader.py            # PoolRegistry 加载器
+│
+├── market/                  # Market 层（复用现有）
+│   ├── fetcher.py           # 数据获取
+│   ├── normalizer.py        # 数据标准化
+│   └── storage.py           # 数据存储
+│
+├── pool_state/              # Pool State 层（新）
+│   ├── calculator.py        # 池子状态计算主入口
+│   ├── benchmark.py         # benchmark_scope 计算
+│   ├── ranking.py           # ranking_scope 计算
+│   └── quality.py           # 数据质量检查
+│
+├── anchor_position/         # Anchor Position 层（新）
+│   ├── relative_strength.py # 相对强弱计算
+│   └── ranking_calculator.py # 多池排名计算
+│
+├── group_rotation/          # Group Rotation 层（新）
+│   ├── rotation_analyzer.py # 组间轮动分析
+│   └── spread_calculator.py # 组间差值计算
+│
+├── signals/                 # Signals 层（新）
+│   ├── label_generator.py   # 标签生成（带 evidence）
+│   └── evidence_builder.py  # 证据结构构建
+│
+├── output/                  # Output 层（新）
+│   ├── json_writer.py       # industry_snapshot.json
+│   ├── csv_writer.py        # peer_matrix.csv
+│   └── report_generator.py  # industry_report.md（五章结构）
+│
+├── dailyreport/
+│   └── run.py               # MVP 流程入口（重写）
+│
+└── shared/                  # 共享工具（复用）
+    ├── config.py
+    ├── storage.py
+    └── paths.py
+```
+
+**删除的代码：**
+
+- `src/news/` → 删除
+- `src/price/analyzer.py` → 删除
+- `src/price/rolling_analyzer.py` → 删除
+- `src/price/score_layer.py` → 删除
+- `src/price/diagnosis_layer.py` → 删除
+- `src/price/rebound_watch_layer.py` → 删除
+
+**模块职责对照表：**
+
+| 代码模块 | 对应架构层 | 职责 |
+|---------|-----------|------|
+| `config/loader.py` | Anchor + Universe | 加载 pools.yaml，构建 PoolRegistry |
+| `pool_state/calculator.py` | Pool State | 计算每个池子状态 |
+| `anchor_position/relative_strength.py` | Anchor Position | 计算 Anchor 相对强弱 |
+| `group_rotation/rotation_analyzer.py` | Group Rotation | 比较池子间强弱 |
+| `signals/label_generator.py` | Signals | 生成有证据标签 |
+| `output/json_writer.py` | Output | 输出 JSON |
+
+---
+
+## 3. MVP 边界排除清单
+
+> 以下内容在 PRD 第5.2节明确不做，相关代码删除
+
+| 排除项 | 现有代码 | 处理方式 |
+|--------|---------|---------|
+| 新闻抓取 | `src/news/` | **删除** |
+| 公告解析 | 无 | 不开发 |
+| LLM 调用 | 无 | 不开发 |
+| 完整财报分析 | 无 | 不开发 |
+| 完整技术指标分析 | `src/price/` 高级指标 | **删除** |
+| UI | 无 | 不开发 |
+| 数据库 | 无 | MVP 用本地文件 |
+| 多锚定标的批处理 | 无 | MVP 只支持单 Anchor |
+| 自动推荐同类公司 | 无 | 不开发，股票池手动维护 |
+| 买卖建议 | 无 | 不输出 |
+
+**删除清单：**
+
+- `src/news/` 整个目录 → 删除
+- `src/price/analyzer.py`（高级指标）→ 删除
+- `src/price/rolling_analyzer.py`（连续观察）→ 删除
+- `src/price/score_layer.py`（评分层）→ 删除
+- `src/price/diagnosis_layer.py`（诊断层）→ 删除
+- `src/price/rebound_watch_layer.py`（反弹观察）→ 删除
+- `src/dailyreport/run.py`（旧流程）→ 删除，重写为 MVP 入口
+
+**保留清单：**
+
+- `src/price/fetcher.py`（数据获取）→ 保留，复用
+- `src/price/normalizer.py`（数据标准化）→ 保留，复用
+- `src/shared/`（共享工具）→ 保留，复用
+
+---
+
+## 4. 核心数据结构
+
+### 4.1 PoolRegistry（配置注册）
+
+```python
+@dataclass
+class PoolRegistry:
+    anchor: Instrument
+    instruments: dict[str, Instrument]  # symbol -> Instrument
+    universes: dict[str, Universe]      # universe_id -> Universe
+    memberships: list[Membership]
+
+    def get_members(self, universe_id: str) -> list[Membership]:
+        """获取指定池子的所有成员"""
+
+    def get_benchmark_scope(self, universe_id: str) -> list[Membership]:
+        """获取参与 benchmark 的成员"""
+
+    def get_ranking_scope(self, universe_id: str) -> list[Membership]:
+        """获取参与 ranking 的成员"""
+```
+
+### 4.2 PoolState（池子状态）
+
+```python
+@dataclass
+class PoolState:
+    universe_id: str
+    configured_count: int       # 配置成员数
+    enabled_count: int          # 启用成员数
+    benchmark_count: int        # 可参与 benchmark 数
+    valid_count: int            # 当日有效数据数
+
+    median_return: float        # 中位数涨跌幅
+    mean_return: float          # 平均涨跌幅
+    up_ratio: float             # 上涨比例
+    volume_multiplier: float    # 成交额放大倍数
+    fund_positive_ratio: float  # 资金净流入为正比例
+    strong_count: int           # 强势股数量
+    weak_count: int             # 弱势股数量
+
+    data_status: str            # "ok" | "insufficient_data" | "partial"
+    missing_members: list[str]  # 缺失数据的成员
+```
+
+### 4.3 RelativeStrength（相对强弱）
+
+```python
+@dataclass
+class RelativeStrength:
+    universe_id: str
+    anchor_return: float
+    pool_median: float
+    relative_strength: float    # anchor_return - pool_median
+    position: str               # "outperform" | "underperform" | "neutral"
+
+    rank_return: int            # 涨幅排名
+    rank_volume: int            # 成交额排名
+    rank_turnover: int          # 换手率排名
+    rank_fund: int              # 资金排名
+    valuation_percentile: float # 估值分位
+```
+
+### 4.4 Signal（信号标签）
+
+```python
+@dataclass
+class Signal:
+    label: str                  # "个股Alpha为正"
+    category: str               # "alpha" | "beta" | "volume" | "rotation" | "abnormal"
+    evidence: dict              # {"anchor_return": 2.1, "pool_median": 0.8}
+    confidence: str             # "high" | "medium" | "low"
+```
+
+### 4.5 IndustrySnapshot（最终输出）
+
+```python
+@dataclass
+class IndustrySnapshot:
+    date: str
+    anchor: dict                # 锚定标的信息
+    data_quality: dict          # 数据质量报告
+    pool_states: dict[str, PoolState]  # 各池子状态
+    anchor_position: dict[str, RelativeStrength]  # 各池子相对位置
+    group_rotation: dict        # 组间轮动
+    signals: list[Signal]       # 信号标签列表
+    conclusion: dict            # 结构化结论
+```
+
+---
+
+## 5. 计算流程设计
+
+### 5.1 主流程
+
+```python
+def run_daily_analysis(date: str) -> IndustrySnapshot:
+    # 1. 加载配置
+    registry = load_pool_registry()
+
+    # 2. 获取市场数据
+    market_data = fetch_market_data(registry.all_symbols, date)
+
+    # 3. 计算各池子状态
+    pool_states = calculate_pool_states(registry, market_data)
+
+    # 4. 计算 Anchor 相对位置
+    anchor_position = calculate_anchor_position(registry, pool_states, market_data)
+
+    # 5. 计算组间轮动
+    group_rotation = analyze_group_rotation(pool_states)
+
+    # 6. 生成信号标签
+    signals = generate_signals(pool_states, anchor_position, group_rotation)
+
+    # 7. 构建输出
+    snapshot = build_snapshot(date, registry, pool_states, anchor_position, group_rotation, signals)
+
+    # 8. 写入文件
+    write_json(snapshot, f"data/output/{date}/industry_snapshot.json")
+    write_csv(registry, market_data, f"data/output/{date}/peer_matrix.csv")
+    write_report(snapshot, f"data/output/{date}/industry_report.md")
+
+    return snapshot
+```
+
+### 5.2 Pool State 计算流程
+
+```python
+def calculate_pool_states(registry: PoolRegistry, market_data: dict) -> dict[str, PoolState]:
+    pool_states = {}
+
+    for universe in registry.universes.values():
+        # 获取 benchmark_scope 成员
+        benchmark_members = registry.get_benchmark_scope(universe.universe_id)
+
+        # 过滤当日有效数据
+        valid_members = [m for m in benchmark_members if market_data.get(m.symbol)]
+
+        # 计算池子状态
+        state = PoolState(
+            universe_id=universe.universe_id,
+            configured_count=len(benchmark_members),
+            enabled_count=len([m for m in benchmark_members if m.enabled]),
+            benchmark_count=len(benchmark_members),
+            valid_count=len(valid_members),
+
+            median_return=calculate_median_return(valid_members, market_data),
+            mean_return=calculate_mean_return(valid_members, market_data),
+            up_ratio=calculate_up_ratio(valid_members, market_data),
+            volume_multiplier=calculate_volume_multiplier(valid_members, market_data),
+            fund_positive_ratio=calculate_fund_positive_ratio(valid_members, market_data),
+
+            data_status="ok" if len(valid_members) >= universe.min_size else "insufficient_data"
+        )
+
+        pool_states[universe.universe_id] = state
+
+    return pool_states
+```
+
+---
+
+## 6. 输出格式实现要点
+
+> 输出格式的产品定义请参考 PRD 第13节（industry_snapshot.json）和第14节（industry_report.md）
+
+**技术实现要点：**
+
+### 6.1 industry_snapshot.json
+
+- 结构定义：见 PRD 第13节
+- 实现类：`IndustrySnapshot` dataclass
+- 写入模块：`src/output/json_writer.py`
+- 输出路径：`data/output/{date}/industry_snapshot.json`
+
+### 6.2 peer_matrix.csv
+
+- 关键特性：同一股票在不同池子中占多行，每行代表一个 membership 身份
+- 写入模块：`src/output/csv_writer.py`
+- 输出路径：`data/output/{date}/peer_matrix.csv`
+
+示例：
+```csv
+symbol,name,universe_id,role,include_in_benchmark,include_in_ranking,return,volume,turnover,fund_flow,return_rank,valuation_percentile
+688433.SH,华曙高科,direct_peers,direct_comparable,true,true,1.5,120000000,2.8,15000000,1,45.2
+688433.SH,华曙高科,theme_pool,theme_heat_proxy,false,true,1.5,120000000,2.8,15000000,3,
+```
+
+### 6.3 industry_report.md
+
+- 报告结构：五章固定（见 PRD 第14节）
+- 写入模块：`src/output/report_generator.py`
+- 输出路径：`data/output/{date}/industry_report.md`
+
+---
+
+## 7. 实现步骤与优先级
+
+### Phase 1：配置重构（P0）
+
+| 任务 | 文件 | 状态 |
+|------|------|------|
+| 设计 pools.yaml 结构 | `config/pools.yaml` | 新建 |
+| 实现 PoolRegistry 类 | `src/config/loader.py` | 新建 |
+| 从 stocks.yaml 迁移数据 | 手动迁移 | 一次性 |
+| 单元测试 | `tests/test_pool_registry.py` | 新建 |
+
+### Phase 2：Pool State 计算（P0）
+
+| 任务 | 文件 | 状态 |
+|------|------|------|
+| 实现 benchmark_scope 过滤 | `src/pool_state/calculator.py` | 新建 |
+| 实现池子指标计算 | `src/pool_state/benchmark.py` | 新建 |
+| 实现数据质量检查 | `src/pool_state/quality.py` | 新建 |
+| 单元测试 | `tests/test_pool_state.py` | 新建 |
+
+### Phase 3：Anchor Position（P1）
+
+| 任务 | 文件 | 状态 |
+|------|------|------|
+| 实现相对强弱计算 | `src/anchor_position/relative_strength.py` | 新建 |
+| 实现多池排名计算 | `src/anchor_position/ranking_calculator.py` | 新建 |
+| 单元测试 | `tests/test_anchor_position.py` | 新建 |
+
+### Phase 4：Group Rotation（P1）
+
+| 任务 | 文件 | 状态 |
+|------|------|------|
+| 实现组间强弱对比 | `src/group_rotation/rotation_analyzer.py` | 新建 |
+| 实现组间差值计算 | `src/group_rotation/spread_calculator.py` | 新建 |
+| 单元测试 | `tests/test_group_rotation.py` | 新建 |
+
+### Phase 5：Signals（P1）
+
+| 任务 | 文件 | 状态 |
+|------|------|------|
+| 实现标签生成带 evidence | `src/signal/label_generator.py` | 新建 |
+| 实现证据结构构建 | `src/signal/evidence_builder.py` | 新建 |
+| 单元测试 | `tests/test_signals.py` | 新建 |
+
+### Phase 6：Output（P0）
+
+| 任务 | 文件 | 状态 |
+|------|------|------|
+| 实现 JSON 输出 | `src/output/json_writer.py` | 新建 |
+| 实现 CSV 输出 | `src/output/csv_writer.py` | 新建 |
+| 实现 Markdown 报告 | `src/output/report_generator.py` | 新建 |
+| 单元测试 | `tests/test_output.py` | 新建 |
+
+---
+
+## 8. 代码重构策略
+
+### 8.1 删除旧代码
+
+```text
+删除清单：
+- src/news/                  → 删除整个目录
+- src/price/analyzer.py      → 删除（高级指标）
+- src/price/rolling_analyzer.py → 删除（连续观察）
+- src/price/score_layer.py   → 删除（评分层）
+- src/price/diagnosis_layer.py → 删除（诊断层）
+- src/price/rebound_watch_layer.py → 删除（反弹观察）
+```
+
+### 8.2 复用现有代码
+
+```text
+复用清单：
+- src/price/fetcher.py       → 复用（数据获取）
+- src/price/normalizer.py    → 复用（数据标准化）
+- src/shared/                → 复用（共享工具）
+```
+
+### 8.3 重写流程入口
+
+```text
+src/dailyreport/run.py → 重写为 MVP 流程入口
+```
+
+---
+
+## 9. 测试策略
+
+### 9.1 单元测试覆盖
+
+```text
+tests/
+├── test_pool_registry.py     # 配置加载测试
+├── test_pool_state.py        # 池子状态计算测试
+├── test_anchor_position.py   # 相对强弱测试
+├── test_group_rotation.py    # 组间轮动测试
+├── test_signals.py           # 信号标签测试
+├── test_output.py            # 输出格式测试
+└── fixtures/
+    └── sample_pools.yaml     # 测试配置
+    └── sample_market.json    # 测试数据
+```
+
+### 9.2 集成测试
+
+```text
+tests/integration/
+├── test_full_flow.py         # 全流程测试
+└── test_data_quality.py      # 数据降级场景测试
+```
+
+### 9.3 验收标准
+
+| 检查项 | 标准 |
+|--------|------|
+| 配置加载 | PoolRegistry 正确解析 instruments/universes/memberships |
+| 池子状态 | 各池子 benchmark/ranking/report 口径分离 |
+| 相对强弱 | Anchor 不进入自身 benchmark |
+| 信号标签 | 每个 signal 都有 evidence 结构 |
+| 数据降级 | valid_count < min_size 时标记 insufficient_data |
+| 输出格式 | JSON/CSV/MD 符合架构设计 |
+
+---
+
+## 10. 文件组织
+
+### 10.1 数据文件位置
+
+```text
+data/
+├── output/
+│   └── {date}/
+│       ├── industry_snapshot.json
+│       ├── peer_matrix.csv
+│       └── industry_report.md
+│
+├── price/                    # 已有行情数据
+│   ├── raw/
+│   ├── normalized/
+│   └── processed/
+│
+└── market/                   # 新增：每日市场快照
+    └── {date}.json
+```
+
+### 10.2 配置文件位置
+
+```text
+config/
+├── pools.yaml                # 新：股票池配置
+└── settings.yaml             # 系统设置
+```
+
+---
+
+## 11. 技术债务与风险
+
+| 风险 | 缓解措施 |
+|------|---------|
+| 配置迁移错误 | 新配置结构验证，单元测试覆盖 |
+| 数据质量不稳定 | 数据质量检查前置，降级规则明确 |
+| 标签逻辑复杂 | evidence 结构强制验证 |
+
+---
+
+## 12. 最终检查清单
+
+实现完成后验证：
+
+- [ ] pools.yaml 正确解析为 PoolRegistry
+- [ ] 四类池子分别计算状态
+- [ ] benchmark/ranking/report 口径分离
+- [ ] Anchor 不进入自身 benchmark
+- [ ] 组间轮动正确比较四个池子
+- [ ] 每个 signal 都有 evidence
+- [ ] 数据不足时正确降级
+- [ ] JSON 输出符合 IndustrySnapshot 结构
+- [ ] CSV 每行代表一个 membership
+- [ ] Markdown 报告五章完整
+
+---
+
+## 13. 时间估算
+
+| Phase | 工作量 | 优先级 |
+|-------|--------|--------|
+| Phase 1 配置重构 | 1-2 天 | P0 |
+| Phase 2 Pool State | 2-3 天 | P0 |
+| Phase 3 Anchor Position | 1-2 天 | P1 |
+| Phase 4 Group Rotation | 1-2 天 | P1 |
+| Phase 5 Signals | 1-2 天 | P1 |
+| Phase 6 Output | 2-3 天 | P0 |
+| 测试与验证 | 2-3 天 | P0 |
+
+**总计：10-15 天**
