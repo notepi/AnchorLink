@@ -1,0 +1,87 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-inter: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-geist-mono: 'Geist Mono', 'SF Mono', 'Fira Code', monospace;
+
+  /* 颜色变量 */
+  --background: #0a0a0a;
+  --background-secondary: #111111;
+  --background-tertiary: #1a1a1a;
+  --border: #262626;
+  --border-subtle: #1f1f1f;
+  --text: #e5e5e5;
+  --text-secondary: #a3a3a3;
+  --text-tertiary: #737373;
+  --text-muted: #525252;
+  --accent: #3b82f6;
+  --positive: #22c55e;
+  --negative: #ef4444;
+  --neutral: #71717a;
+}
+
+/* 全局样式 */
+body {
+  font-family: var(--font-inter);
+  background-color: var(--background);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 20px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 数据字体 */
+.font-mono {
+  font-family: var(--font-geist-mono);
+}
+
+/* 紧凑滚动条 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* A股涨跌色（涨红跌绿） */
+.text-positive {
+  color: #ef4444; /* 红 = 涨 */
+}
+
+.text-negative {
+  color: #22c55e; /* 绿 = 跌 */
+}
+
+.text-neutral {
+  color: var(--neutral);
+}
+
+/* 紧凑间距全局调整 */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* 禁用不必要的动画 */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

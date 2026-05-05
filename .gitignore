@@ -42,9 +42,17 @@ env/
 # 日志
 *.log
 
-# 缓存
-.pytest_cache/
-.swift-module-cache/
+# Node 产物
+web/.next/
+web/out/
+web/tsconfig.tsbuildinfo
+node_modules/
+web/node_modules/
+
+# Python 缓存
+*.tsbuildinfo
+__pycache__/
+*.pyc
 
 # 运行产物（保留目录结构，忽略内容）
 data/*/
