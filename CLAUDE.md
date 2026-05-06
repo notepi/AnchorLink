@@ -26,7 +26,6 @@ uv run python scripts/run_all.py
 
 ```bash
 uv run python -m src.price.run       # 行情数据线
-uv run python -m src.news.run        # 新闻数据线
 uv run python -m src.dailyreport.run # 日报生成
 ```
 
@@ -37,9 +36,8 @@ uv run python -m src.dailyreport.run # 日报生成
 | 目录 | 内容 |
 |------|------|
 | data/price/ | 行情数据（raw/normalized/processed/analytics） |
-| data/news/ | 新闻数据 |
+| data/output/ | 前端数据产品 |
 | archive/metrics/ | 指标归档（近5日连续性计算） |
-| archive/events/ | 事件归档 |
 | reports/ | 生成的日报 |
 
 ### 数据接口

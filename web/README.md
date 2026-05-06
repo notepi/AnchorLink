@@ -1,36 +1,53 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AnchorLink Web
 
-## Getting Started
+AnchorLink 的前端可视化界面，基于 Next.js 15 构建。
 
-First, run the development server:
+## 功能
+
+- 仪表盘：展示锚定标的与板块对比数据
+- 分层分析：行业分层、个股分层可视化
+- 报告查看：查看生成的日报
+
+## 数据依赖
+
+前端依赖 `data/output/YYYYMMDD/` 目录的数据文件：
+
+| 文件 | 用途 |
+|------|------|
+| `industry_snapshot.json` | 行业快照数据 |
+| `peer_matrix.csv` | 个股对比矩阵 |
+| `industry_report.md` | 行业日报 |
+
+**数据来源**：运行后端 Python 脚本生成
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# 在项目根目录运行
+uv run python scripts/run_all.py
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 开发
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+# 安装依赖
+npm install
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# 启动开发服务
+npm run dev
+# 访问 http://localhost:3000
 
-## Learn More
+# 构建
+npm run build
 
-To learn more about Next.js, take a look at the following resources:
+# 生产模式
+npm run start
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 技术栈
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Next.js 15 (App Router)
+- React 19
+- TypeScript
+- TailwindCSS
+- Radix UI
+- Recharts
+- Zustand

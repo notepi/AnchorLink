@@ -5,7 +5,7 @@
 
 用法：
     python scripts/run_all.py
-    python scripts/run_all.py --skip-news  # 跳过新闻数据线
+    python scripts/run_all.py --only-report  # 只生成日报
 """
 
 import argparse
@@ -31,7 +31,6 @@ def run_module(module_path: str, description: str) -> bool:
 
 def main():
     parser = argparse.ArgumentParser(description="运行完整的数据处理流程")
-    parser.add_argument("--skip-news", action="store_true", help="跳过新闻数据线")
     parser.add_argument("--only-report", action="store_true", help="只生成日报")
     args = parser.parse_args()
 
@@ -51,12 +50,7 @@ def main():
             print("[ERROR] 行情数据线运行失败")
             success = False
 
-        # 2. 新闻数据线（可选）
-        if not args.skip_news:
-            if not run_module("src.news.run", "新闻数据线"):
-                print("[WARN] 新闻数据线运行失败（不影响日报生成）")
-
-        # 3. 日报生成
+        # 2. 日报生成
         if success:
             if not run_module("src.dailyreport.run", "日报生成"):
                 print("[ERROR] 日报生成失败")
