@@ -473,7 +473,7 @@ class TestRotationSignals:
 
         signals = generate_rotation_signals(rotation, pool_states, "20260502")
 
-        theme_stronger = [s for s in signals if s.label == "主题扩散强于核心同类"]
+        theme_stronger = [s for s in signals if s.label == "主题情绪强于核心同类"]
         assert len(theme_stronger) == 1
 
 

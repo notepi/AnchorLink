@@ -48,17 +48,17 @@ export default async function ConclusionPage() {
 
   // Summary 生成模板
   const SUMMARY_TEMPLATE = [
-    { part: 1, template: '行业环境{Beta}，核心同类池中位数涨跌幅{X.XX}%' },
-    { part: 2, template: '锚定标的{Alpha}，涨跌幅{X.XX}%，相对核心池{X.XX}%' },
+    { part: 1, template: '行业环境{Beta}，增材制造本业确认池中位数涨跌幅{X.XX}%' },
+    { part: 2, template: '锚定标的{Alpha}，涨跌幅{X.XX}%，相对本业池{X.XX}%' },
     { part: 3, template: '{pool}池最强（中位数{X.XX}%），{pool}池最弱（{X.XX}%）' },
     { part: 4, template: '整体风险等级：{Risk}' },
   ];
 
   // next_watch 规则
   const NEXT_WATCH_RULES = [
-    { trigger: '跑赢核心同类 / 个股Alpha为正', watch: '是否连续跑赢核心同类' },
+    { trigger: '跑赢本业池 / 个股Alpha为正', watch: '是否连续跑赢本业池' },
     { trigger: '放量上涨/下跌 / 主力资金领先', watch: '成交额是否维持放大' },
-    { trigger: '主题扩散强于核心同类 / 交易观察池升温', watch: '主题池热度是否传导到核心同类' },
+    { trigger: '主题扩散强于本业池 / 交易联动池升温', watch: '主题池热度是否传导到本业池' },
     { trigger: '行业分化', watch: '分化是否继续扩大' },
     { trigger: '任何 abnormal 信号', watch: '异常联动是否持续' },
   ];

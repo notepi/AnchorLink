@@ -110,6 +110,7 @@ class SpreadCalculator:
 
         return replace(
             rotation,
+            core_pool_id=self.core_pool_id,
             spreads=spreads,
             core_vs_theme_spread=core_vs_theme_spread,
             core_vs_chain_spread=core_vs_chain_spread,

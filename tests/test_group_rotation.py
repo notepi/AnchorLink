@@ -334,22 +334,23 @@ class TestAnalyzeGroupRotation:
     """测试组间轮动分析"""
 
     def test_normal_analysis(self, sample_pool_states, registry):
-        """测试正常分析"""
+        """测试正常分析（新逻辑：strongest/weakest 基于 ALL 池子）"""
         rotation = analyze_group_rotation(
             sample_pool_states, "20260502", registry
         )
 
-        # 只比较 can_be_benchmark=True 的池子
-        # direct_peers (2.5) 和 industry_chain (1.0)
-        assert rotation.strongest_group == "direct_peers"
-        assert rotation.weakest_group == "industry_chain"
-        assert rotation.group_ranking == ["direct_peers", "industry_chain"]
+        # 新逻辑：strongest/weakest 基于 ALL 有效池子（不区分 benchmark）
+        # theme_pool (3.0) 最高 → 最强
+        # trading_watchlist (-1.5)最低 → 最弱
+        assert rotation.strongest_group == "theme_pool"
+        assert rotation.weakest_group == "trading_watchlist"
         assert rotation.data_status == "ok"
 
-        # group_medians 只包含 benchmark 池子
+        # group_medians 包含 ALL 有效池子（用于前端展示）
         assert "direct_peers" in rotation.group_medians
         assert "industry_chain" in rotation.group_medians
-        assert "theme_pool" not in rotation.group_medians
+        assert "theme_pool" in rotation.group_medians  # 新逻辑：所有池子都展示
+        assert "trading_watchlist" in rotation.group_medians
 
     def test_without_registry(self, sample_pool_states):
         """测试无 registry（比较所有池子）"""
@@ -393,23 +394,29 @@ class TestAnalyzeRotationWithSpreads:
     """测试完整轮动分析（包含 spread）"""
 
     def test_full_analysis(self, sample_pool_states, registry):
-        """测试完整流程"""
+        """测试完整流程（新逻辑：spread 基于 group_medians 计算）"""
         rotation = analyze_rotation_with_spreads(
             sample_pool_states, "20260502", registry, core_pool_id="direct_peers"
         )
 
-        # 验证基础字段
-        assert rotation.strongest_group == "direct_peers"
-        assert rotation.weakest_group == "industry_chain"
+        # 验证基础字段（新逻辑）
+        # theme_pool (3.0) 最高 → 最强
+        # trading_watchlist (-1.5) 最低 → 最弱
+        assert rotation.strongest_group == "theme_pool"
+        assert rotation.weakest_group == "trading_watchlist"
 
-        # 验证 spread
-        assert rotation.spreads["industry_chain"] == 1.5  # 2.5 - 1.0
+        # 验证 spread（基于 group_medians 计算，包含所有池子）
+        # direct_peers (2.5) - theme_pool (3.0) = -0.5
+        assert rotation.spreads["theme_pool"] == -0.5
+        assert rotation.core_vs_theme_spread == -0.5
+
+        # direct_peers (2.5) - industry_chain (1.0) = 1.5
+        assert rotation.spreads["industry_chain"] == 1.5
         assert rotation.core_vs_chain_spread == 1.5
 
-        # theme_pool 和 trading_watchlist 不是 benchmark 池子
-        # 所以不在 group_medians 中，spread 也为 None
-        assert rotation.core_vs_theme_spread is None
-        assert rotation.core_vs_trading_spread is None
+        # direct_peers (2.5) - trading_watchlist (-1.5) = 4.0
+        assert rotation.spreads["trading_watchlist"] == 4.0
+        assert rotation.core_vs_trading_spread == 4.0
 
     def test_without_registry(self, sample_pool_states):
         """测试无 registry 的完整分析"""
@@ -581,10 +588,10 @@ class TestEdgeCases:
 # ==================== can_be_benchmark 过滤测试 ====================
 
 class TestBenchmarkFiltering:
-    """测试 can_be_benchmark 过滤"""
+    """测试 can_be_benchmark 过滤（仅影响 spread 计算）"""
 
-    def test_only_benchmark_groups(self, registry):
-        """测试只比较 benchmark 池子"""
+    def test_all_pools_in_display(self, registry):
+        """测试所有池子都出现在 group_medians（用于前端展示）"""
         pool_states = {
             "direct_peers": PoolState(
                 universe_id="direct_peers",
@@ -625,9 +632,9 @@ class TestBenchmarkFiltering:
                 trade_date="20260502",
                 configured_count=8,
                 enabled_count=8,
-                benchmark_count=0,
+                benchmark_count=0,  # can_be_benchmark=False
                 valid_count=6,
-                median_return=5.0,  # 高涨跌幅，但不参与比较
+                median_return=5.0,  # 最高涨跌幅
                 mean_return=4.5,
                 up_ratio=0.8,
                 strong_count=3,
@@ -641,14 +648,17 @@ class TestBenchmarkFiltering:
 
         rotation = analyze_group_rotation(pool_states, "20260502", registry)
 
-        # 只有 direct_peers 和 industry_chain 参与比较（can_be_benchmark=True）
-        assert len(rotation.group_ranking) == 2
-        assert rotation.strongest_group == "direct_peers"
-        assert rotation.weakest_group == "industry_chain"
-        assert "theme_pool" not in rotation.group_medians
+        # 新逻辑：所有有效池子都在 group_medians（用于前端展示）
+        assert "direct_peers" in rotation.group_medians
+        assert "industry_chain" in rotation.group_medians
+        assert "theme_pool" in rotation.group_medians  # 即使 can_be_benchmark=False
 
-    def test_all_non_benchmark(self, registry):
-        """测试所有池子都是非 benchmark"""
+        # strongest/weakest 基于 ALL 池子
+        assert rotation.strongest_group == "theme_pool"  # 5.0 最高
+        assert rotation.weakest_group == "industry_chain"  # 1.0最低
+
+    def test_non_benchmark_pools_valid(self, registry):
+        """测试非 benchmark 池子仍可参与排名"""
         pool_states = {
             "theme_pool": PoolState(
                 universe_id="theme_pool",
@@ -688,5 +698,8 @@ class TestBenchmarkFiltering:
 
         rotation = analyze_group_rotation(pool_states, "20260502", registry)
 
-        # 无 benchmark 池子，数据不足
-        assert rotation.data_status == "insufficient_data"
+        # 新逻辑：非 benchmark 池子也可以形成有效排名（MIN_VALID_GROUPS=2）
+        assert rotation.data_status == "ok"
+        assert rotation.strongest_group == "theme_pool"
+        assert rotation.weakest_group == "trading_watchlist"
+        assert len(rotation.group_ranking) == 2

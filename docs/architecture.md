@@ -381,6 +381,18 @@ Anchor 有没有跟上主题？
 核心同类基准涨跌是多少？
 ```
 
+**特殊说明：非 benchmark 池子的状态计算**
+
+对于 `can_be_benchmark=false` 的池子（如 theme_pool、trading_watchlist）：
+
+```text
+虽然不输出"基准"结论
+但仍计算 median_return 用于组间轮动比较
+计算口径使用 ranking_scope 成员
+```
+
+原因：第八层组间轮动需要比较所有池子的强弱，因此非 benchmark 池子也需要计算中位数涨跌幅。但这不代表它们可以作为"核心基准"使用。
+
 ### 6.2 有效样本口径
 
 即使成员进入了 `benchmark_scope`，也不代表一定参与当天计算。还要看当天数据是否有效。

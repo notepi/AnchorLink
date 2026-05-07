@@ -474,8 +474,8 @@ validation = registry.validate()
 ### 10.4 当前状态
 
 - **pools.yaml**：新版配置，正式使用中
-- **stocks.yaml**：旧版配置，已废弃但保留备份
-- 后续迁移：无需迁移旧数据，只需确认 pools.yaml 覆盖所有需求
+- **stocks.yaml**：已删除（2026-05-06 清理旧配置残留）
+- 迁移已完成：所有代码已更新为使用 pools.yaml
 
 ---
 

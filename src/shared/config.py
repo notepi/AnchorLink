@@ -14,13 +14,13 @@ def load_config(config_path: Optional[str] = None) -> dict:
     加载 YAML 配置文件
 
     Args:
-        config_path: 配置文件路径。如果为 None，默认加载 stocks.yaml
+        config_path: 配置文件路径。如果为 None，默认加载 pools.yaml
 
     Returns:
         配置字典
     """
     if config_path is None:
-        config_path = CONFIG_DIR / "stocks.yaml"
+        config_path = CONFIG_DIR / "pools.yaml"
     else:
         config_path = Path(config_path)
 

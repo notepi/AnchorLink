@@ -56,7 +56,7 @@ uv run python scripts/run_all.py
 ```
 AnchorLink/
 ├── config/                    # 配置文件
-│   ├── stocks.yaml           # 股票池定义
+│   ├── pools.yaml            # 股票池定义（三层结构）
 │   └── catalyst_rules.yaml   # 催化筛选规则
 │
 ├── data/                      # 共享存储层

@@ -5,8 +5,7 @@ import { useAppStore } from '@/lib/store';
 import { SignalPanel } from '@/components/dashboard/signal-panel';
 import { ConclusionPanel } from '@/components/dashboard/conclusion-panel';
 import { RankingTable } from '@/components/dashboard/ranking-table';
-import { PoolComparisonChart } from '@/components/charts/pool-comparison-chart';
-import { GroupRotationChart } from '@/components/charts/group-rotation-chart';
+import { PoolStrengthDashboard } from '@/components/dashboard/pool-strength-dashboard';
 import { LeftSidebar } from '@/components/dashboard/left-sidebar';
 import { DateSelector } from '@/components/common/date-selector';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -43,7 +42,6 @@ export default function DashboardPage() {
       }
 
       if (ignore || !targetDate) return;
-      console.log('[Page] fetching data for date:', targetDate);
 
       try {
         const [snapRes, matRes, cfgRes] = await Promise.all([
@@ -106,10 +104,7 @@ export default function DashboardPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <PoolComparisonChart groupRotation={snapshot.group_rotation} />
-                <GroupRotationChart groupRotation={snapshot.group_rotation} />
-              </div>
+              <PoolStrengthDashboard groupRotation={snapshot.group_rotation} />
 
               <SignalPanel signals={snapshot.signals} />
               <ConclusionPanel conclusion={snapshot.conclusion} />

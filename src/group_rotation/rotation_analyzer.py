@@ -47,28 +47,49 @@ def analyze_group_rotation(
         GroupRotation 完整结构
 
     Note:
-        - 只比较 can_be_benchmark=True 的池子（如果提供 registry）
+        - group_medians 收集所有有效池子（用于前端展示）
+        - strongest/weakest/ranking 基于所有有效池子（不区分 can_be_benchmark）
+        - spread 计算只用 benchmark 池子
         - 过滤 data_status="insufficient_data" 的池子
         - 至少需要 MIN_VALID_GROUPS 个有效池子才能计算
     """
-    # 1. 过滤有效池子
-    valid_groups = _filter_valid_groups(pool_states, registry)
+    # 1. 过滤所有有效池子（用于展示和排名）
+    all_valid_groups = _filter_all_valid_groups(pool_states)
 
-    # 2. 提取中位数涨跌幅
-    group_medians = _extract_medians(valid_groups)
+    # 2. 过滤 benchmark 池子（仅用于 spread 计算）
+    benchmark_valid_groups = _filter_benchmark_groups(pool_states, registry)
 
-    # 3. 数据质量检查
+    # 3. 提取所有池子中位数（用于前端展示）
+    all_group_medians = _extract_medians(all_valid_groups)
+
+    # 4. 提取 benchmark 池子中位数（用于 spread）
+    benchmark_medians = _extract_medians(benchmark_valid_groups)
+
+    # 5. 数据质量检查（基于所有池子）
     data_status, missing_groups, partial_reason = _check_rotation_quality(
-        pool_states, valid_groups, registry
+        pool_states, all_valid_groups, registry
     )
 
-    # 4. 如果数据不足，返回空结果
+    # 6. 如果数据不足，返回空结果（但仍显示所有池子 medians）
     if data_status == "insufficient_data":
-        return _empty_rotation_result(trade_date, missing_groups, partial_reason)
+        return GroupRotation(
+            trade_date=trade_date,
+            strongest_group="",
+            weakest_group="",
+            group_ranking=[],
+            spreads={},
+            core_vs_theme_spread=None,
+            core_vs_chain_spread=None,
+            core_vs_trading_spread=None,
+            group_medians=all_group_medians,
+            data_status=data_status,
+            missing_groups=missing_groups,
+            partial_reason=partial_reason,
+        )
 
-    # 5. 确定最强/最弱池子
+    # 7. 确定最强/最弱池子（基于所有有效池子）
     strongest_group, weakest_group, group_ranking = determine_strongest_weakest(
-        group_medians
+        all_group_medians
     )
 
     return GroupRotation(
@@ -80,7 +101,7 @@ def analyze_group_rotation(
         core_vs_theme_spread=None,
         core_vs_chain_spread=None,
         core_vs_trading_spread=None,
-        group_medians=group_medians,
+        group_medians=all_group_medians,
         data_status=data_status,
         missing_groups=missing_groups,
         partial_reason=partial_reason,
@@ -121,23 +142,56 @@ def determine_strongest_weakest(
     return strongest_group, weakest_group, ranking_list
 
 
-def _filter_valid_groups(
+def _filter_all_valid_groups(
+    pool_states: dict[str, PoolState],
+) -> dict[str, PoolState]:
+    """
+    过滤所有有效池子（用于前端展示）
+
+    Args:
+        pool_states: 所有池子状态
+
+    Returns:
+        有效池子状态 dict
+
+    过滤规则：
+        1. data_status != "insufficient_data"
+        2. median_return 有效
+    """
+    valid = {}
+
+    for universe_id, pool_state in pool_states.items():
+        # 检查数据状态
+        if pool_state.data_status == "insufficient_data":
+            continue
+
+        # 检查 median_return 是否有效
+        if pool_state.median_return is None:
+            continue
+
+        valid[universe_id] = pool_state
+
+    return valid
+
+
+def _filter_benchmark_groups(
     pool_states: dict[str, PoolState],
     registry: Optional[PoolRegistry],
 ) -> dict[str, PoolState]:
     """
-    过滤有效池子
+    过滤 benchmark 池子（用于排名和 spread 计算）
 
     Args:
         pool_states: 所有池子状态
         registry: 配置注册表（可选）
 
     Returns:
-        有效池子状态 dict
+        有效 benchmark 池子状态 dict
 
     过滤规则：
         1. can_be_benchmark=True（如果提供 registry）
         2. data_status != "insufficient_data"
+        3. median_return 有效
     """
     valid = {}
 
@@ -187,7 +241,7 @@ def _check_rotation_quality(
 
     Args:
         pool_states: 所有池子状态
-        valid_groups: 有效池子状态
+        valid_groups: 有效池子状态（已过滤）
         registry: 配置注册表
 
     Returns:
@@ -197,20 +251,10 @@ def _check_rotation_quality(
         - valid_groups >= MIN_VALID_GROUPS → ok
         - valid_groups < MIN_VALID_GROUPS → insufficient_data
     """
-    # 识别缺失池子
-    expected_groups = []
-    if registry:
-        # 只期望 can_be_benchmark=True 的池子
-        for universe in registry.get_all_universes():
-            if universe.can_be_benchmark:
-                expected_groups.append(universe.universe_id)
-    else:
-        # 期望所有输入池子
-        expected_groups = list(pool_states.keys())
-
+    # 识别缺失池子（检查所有池子，不区分 benchmark）
     missing_groups = [
         group_id
-        for group_id in expected_groups
+        for group_id in pool_states.keys()
         if group_id not in valid_groups
     ]
 
@@ -226,25 +270,3 @@ def _check_rotation_quality(
         return "ok", missing_groups, None
 
     return "ok", [], None
-
-
-def _empty_rotation_result(
-    trade_date: str,
-    missing_groups: list[str],
-    partial_reason: Optional[str],
-) -> GroupRotation:
-    """返回空轮动结果"""
-    return GroupRotation(
-        trade_date=trade_date,
-        strongest_group="",
-        weakest_group="",
-        group_ranking=[],
-        spreads={},
-        core_vs_theme_spread=None,
-        core_vs_chain_spread=None,
-        core_vs_trading_spread=None,
-        group_medians={},
-        data_status="insufficient_data",
-        missing_groups=missing_groups,
-        partial_reason=partial_reason,
-    )

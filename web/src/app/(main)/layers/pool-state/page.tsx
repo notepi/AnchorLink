@@ -7,10 +7,10 @@ import { FormulaDisplay, ThresholdBar } from '@/components/common/layers/shared-
 import { PoolType } from '@/types';
 
 const POOL_NAMES: Record<PoolType, string> = {
-  direct_peers: '核心同类池',
-  industry_chain: '产业链池',
-  theme_pool: '主题扩散池',
-  trading_watchlist: '交易观察池',
+  direct_peers: '增材制造本业确认池',
+  industry_chain: '商业航天硬科技主池',
+  theme_pool: '商业航天主题温度计',
+  trading_watchlist: '交易联动与风险映射池',
 };
 
 // 核心公式

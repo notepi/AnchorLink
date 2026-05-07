@@ -45,7 +45,6 @@ export function RankingTable({ data }: RankingTableProps) {
               <button
                 key={filter.value}
                 onClick={() => {
-                  console.log('[RankingTable] Button clicked:', filter.value);
                   setSelectedPool(filter.value);
                 }}
                 className={cn(

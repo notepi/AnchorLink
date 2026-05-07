@@ -150,17 +150,17 @@ export default async function AnchorPositionPage() {
             <div className="text-xs text-anchor-textMuted mb-3">相对强弱（vs 各池中位数）</div>
             <div className="space-y-3">
               <ThresholdBar
-                label="vs 核心同类池"
+                label="vs 增材制造本业确认池"
                 value={relativeStrengths.direct_peers}
                 threshold={0.5}
               />
               <ThresholdBar
-                label="vs 产业链池"
+                label="vs 商业航天硬科技主池"
                 value={relativeStrengths.industry_chain}
                 threshold={0.5}
               />
               <ThresholdBar
-                label="vs 主题扩散池"
+                label="vs 商业航天主题温度计"
                 value={relativeStrengths.theme_pool}
                 threshold={0.5}
               />

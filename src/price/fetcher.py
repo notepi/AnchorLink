@@ -34,7 +34,7 @@ from src.shared.paths import CONFIG_DIR, PROJECT_ROOT
 STORAGE = Storage("price")
 
 # 默认路径
-DEFAULT_CONFIG_PATH = CONFIG_DIR / "stocks.yaml"
+DEFAULT_CONFIG_PATH = CONFIG_DIR / "pools.yaml"
 DEFAULT_OUTPUT_PATH = STORAGE.get_raw_path("market_data.parquet")
 
 # 120 积分账号的请求间隔（秒）

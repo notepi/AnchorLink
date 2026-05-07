@@ -145,18 +145,18 @@ relative_strength = 铂力特涨跌幅 - 板块均值涨跌幅
 
 ### 股票池配置
 
-位置：`config/stocks.yaml`
+位置：`config/pools.yaml`
 
 ```yaml
 anchor:
-  code: 688333.SH
+  symbol: 688333.SH
   name: 铂力特
 
-core_universe:
-  - code: 600343.SH
-    name: 航天动力
-  - code: 000901.SZ
-    name: 航天科技
+universes:
+  - universe_id: direct_peers
+    display_name: 核心同类池
+  - universe_id: industry_chain
+    display_name: 产业链池
 ```
 
 ### 新闻源配置
@@ -187,7 +187,7 @@ core_universe:
 ### Q: 如何修改股票池？
 
 **步骤**：
-1. 编辑 `config/stocks.yaml`
+1. 编辑 `config/pools.yaml`
 2. 运行 `uv run python scripts/run_all.py`
 3. 新股票池立即生效
 

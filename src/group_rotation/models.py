@@ -32,6 +32,7 @@ class GroupRotation:
     group_ranking: list[str] = field(default_factory=list)  # 池子ID按强弱排序（降序）
 
     # 组间差值（spread）
+    core_pool_id: str = "direct_peers"  # 当前 spread 计算使用的核心池
     spreads: dict[str, float] = field(default_factory=dict)  # universe_id -> spread vs core_pool
     core_vs_theme_spread: Optional[float] = None  # direct_peers - theme_pool
     core_vs_chain_spread: Optional[float] = None  # direct_peers - industry_chain

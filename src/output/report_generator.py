@@ -58,11 +58,14 @@ def generate_report(
     # 第三章：锚定标的相对位置
     sections.append(_generate_chapter_3(snapshot.anchor_position))
 
-    # 第四章：行业联动与异常信号
-    sections.append(_generate_chapter_4(signal_result))
+    # 第四章：股价联动解释
+    sections.append(_generate_chapter_4_linkage(snapshot, pool_states))
 
-    # 第五章：行业模块结论
-    sections.append(_generate_chapter_5(snapshot.conclusion))
+    # 第五章：行业联动与异常信号
+    sections.append(_generate_chapter_5_signals(signal_result))
+
+    # 第六章：行业模块结论
+    sections.append(_generate_chapter_6(snapshot.conclusion))
 
     return "\n\n".join(sections)
 
@@ -122,10 +125,10 @@ def _generate_chapter_1(pool_states: dict[str, PoolState]) -> str:
 
     # 各池子数据行
     universe_names = {
-        "direct_peers": "核心同类",
-        "industry_chain": "产业链",
-        "theme_pool": "主题扩散",
-        "trading_watchlist": "交易观察",
+        "direct_peers": "本业确认",
+        "industry_chain": "商业航天硬科技主线",
+        "theme_pool": "主题温度",
+        "trading_watchlist": "交易联动",
     }
 
     for universe_id, pool_state in pool_states.items():
@@ -139,12 +142,12 @@ def _generate_chapter_1(pool_states: dict[str, PoolState]) -> str:
 
     # 成交与资金
     lines.append("\n**成交与资金**：")
-    direct_peers = pool_states.get("direct_peers")
-    if direct_peers:
-        volume_mult = direct_peers.volume_multiplier
-        fund_ratio = direct_peers.fund_positive_ratio
-        strong = direct_peers.strong_count
-        weak = direct_peers.weak_count
+    mainline = pool_states.get("industry_chain") or pool_states.get("direct_peers")
+    if mainline:
+        volume_mult = mainline.volume_multiplier
+        fund_ratio = mainline.fund_positive_ratio
+        strong = mainline.strong_count
+        weak = mainline.weak_count
 
         lines.append(f"- 成交额放大倍数：{volume_mult:.2f}" if volume_mult is not None else "- 成交额放大倍数：-")
         lines.append(f"- 资金净流入为正比例：{fund_ratio:.0%}" if fund_ratio is not None else "- 资金净流入为正比例：-")
@@ -181,19 +184,20 @@ def _generate_chapter_2(group_rotation) -> str:
 
     # 组间差值
     lines.append("\n**组间差值**：")
+    core_name = "商业航天硬科技主线" if group_rotation.core_pool_id == "industry_chain" else "本业确认"
     core_vs_theme = group_rotation.core_vs_theme_spread
     if core_vs_theme is not None:
-        who_stronger = "核心同类更强" if core_vs_theme > 0 else "主题扩散更强"
-        lines.append(f"- 核心同类 vs 主题扩散：{core_vs_theme:.2f}%（{who_stronger}）")
+        who_stronger = f"{core_name}更强" if core_vs_theme > 0 else "主题温度更强"
+        lines.append(f"- {core_name} vs 主题温度：{core_vs_theme:.2f}%（{who_stronger}）")
     else:
-        lines.append("- 核心同类 vs 主题扩散：-")
+        lines.append(f"- {core_name} vs 主题温度：-")
 
     core_vs_trading = group_rotation.core_vs_trading_spread
     if core_vs_trading is not None:
-        who_stronger = "产业链更强" if core_vs_trading > 0 else "情绪池更强"
-        lines.append(f"- 产业链 vs 情绪池：{core_vs_trading:.2f}%（{who_stronger}）")
+        who_stronger = f"{core_name}更强" if core_vs_trading > 0 else "交易联动池更强"
+        lines.append(f"- {core_name} vs 交易联动：{core_vs_trading:.2f}%（{who_stronger}）")
     else:
-        lines.append("- 产业链 vs 情绪池：-")
+        lines.append(f"- {core_name} vs 交易联动：-")
 
     return "\n".join(lines)
 
@@ -216,14 +220,15 @@ def _generate_chapter_3(anchor_position) -> str:
 
     if vs_direct is not None:
         position_str = "跑赢" if vs_direct > 0.5 else "跑输" if vs_direct < -0.5 else "跟随"
-        lines.append(f"- 相对核心同类：{vs_direct:.2f}%（{position_str}）")
+        lines.append(f"- 相对本业确认池：{vs_direct:.2f}%（{position_str}）")
     else:
-        lines.append("- 相对核心同类：-")
+        lines.append("- 相对本业确认池：-")
 
     if vs_chain is not None:
-        lines.append(f"- 相对产业链：{vs_chain:.2f}%")
+        position_str = "跑赢" if vs_chain > 0.5 else "跑输" if vs_chain < -0.5 else "跟随"
+        lines.append(f"- 相对商业航天硬科技主线：{vs_chain:.2f}%（{position_str}）")
     else:
-        lines.append("- 相对产业链：-")
+        lines.append("- 相对商业航天硬科技主线：-")
 
     if vs_theme is not None:
         lines.append(f"- 相对主题池：{vs_theme:.2f}%")
@@ -262,7 +267,74 @@ def _generate_chapter_3(anchor_position) -> str:
     return "\n".join(lines)
 
 
-def _generate_chapter_4(signal_result: SignalResult) -> str:
+def _generate_chapter_4_linkage(snapshot: IndustrySnapshot, pool_states: dict[str, PoolState]) -> str:
+    """第四章：股价联动解释。"""
+    lines = ["## 四、股价联动解释\n"]
+
+    lines.append("**四类判断**：")
+    lines.append(f"- 主线确认：{_describe_pool_state(pool_states.get('industry_chain'), '商业航天硬科技主线')}")
+    lines.append(f"- 本业确认：{_describe_pool_state(pool_states.get('direct_peers'), '增材制造本业')}")
+    lines.append(f"- 主题温度：{_describe_pool_state(pool_states.get('theme_pool'), '主题情绪')}")
+    lines.append(f"- 交易联动：{_describe_pool_state(pool_states.get('trading_watchlist'), '交易联动池')}")
+
+    linkage = snapshot.linkage_analysis
+    if linkage is None:
+        lines.append("\n**解释力排行**：-")
+        return "\n".join(lines)
+
+    lines.append("\n**解释力排行（20日相关性）**：")
+    for universe_id in ["industry_chain", "direct_peers", "theme_pool", "trading_watchlist"]:
+        pool = linkage.pools.get(universe_id)
+        display_name = _pool_display_name(universe_id)
+        if pool is None or not pool.top_members:
+            lines.append(f"- {display_name}：-")
+            continue
+
+        top = pool.top_members[0]
+        corr = _format_optional(top.corr_20d)
+        beta = _format_optional(top.beta_20d)
+        consistency = f"{top.direction_consistency_20d:.0%}" if top.direction_consistency_20d is not None else "-"
+        note = _linkage_note(top)
+        lines.append(
+            f"- {display_name}：{top.name}({top.symbol}) corr20={corr}，beta20={beta}，同向率20={consistency}；{note}"
+        )
+
+    return "\n".join(lines)
+
+
+def _describe_pool_state(pool_state: Optional[PoolState], label: str) -> str:
+    if pool_state is None or pool_state.median_return is None:
+        return f"{label}数据不足"
+    if pool_state.median_return > 0.5:
+        return f"{label}走强，中位数{pool_state.median_return:.2f}%"
+    if pool_state.median_return < -0.5:
+        return f"{label}走弱，中位数{pool_state.median_return:.2f}%"
+    return f"{label}中性，中位数{pool_state.median_return:.2f}%"
+
+
+def _pool_display_name(universe_id: str) -> str:
+    names = {
+        "industry_chain": "主线确认",
+        "direct_peers": "本业确认",
+        "theme_pool": "主题温度",
+        "trading_watchlist": "交易联动",
+    }
+    return names.get(universe_id, universe_id)
+
+
+def _linkage_note(member) -> str:
+    if member.universe_id == "trading_watchlist":
+        return "仅表示交易相关，不等同产业链基本面相关"
+    if member.symbol in {"688270.SH", "301005.SZ"}:
+        return "高 beta/预期弹性标的，需避免写成稳态基本面锚"
+    return "用于校验该池对锚定标的的日线解释力"
+
+
+def _format_optional(value: Optional[float]) -> str:
+    return f"{value:.2f}" if value is not None else "-"
+
+
+def _generate_chapter_5_signals(signal_result: SignalResult) -> str:
     """
     第四章：行业联动与异常信号
 
@@ -273,7 +345,7 @@ def _generate_chapter_4(signal_result: SignalResult) -> str:
       - 组间轮动标签
       - 异常联动标签
     """
-    lines = ["## 四、行业联动与异常信号\n"]
+    lines = ["## 五、行业联动与异常信号\n"]
 
     # 按类别分组
     categories = ["beta", "alpha", "volume", "rotation", "abnormal"]
@@ -315,7 +387,7 @@ def _format_evidence(evidence) -> str:
         return f"{source}={value:.2f}"
 
 
-def _generate_chapter_5(conclusion) -> str:
+def _generate_chapter_6(conclusion) -> str:
     """
     第五章：行业模块结论
 
@@ -324,7 +396,7 @@ def _generate_chapter_5(conclusion) -> str:
       - summary
       - next_watch
     """
-    lines = ["## 五、行业模块结论\n"]
+    lines = ["## 六、行业模块结论\n"]
 
     # 核心判断
     lines.append(f"- **行业Beta**：{conclusion.industry_beta}")

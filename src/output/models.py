@@ -17,6 +17,8 @@ Output 层数据模型
 from dataclasses import dataclass, field
 from typing import Optional, Literal
 
+from src.linkage.models import LinkageAnalysis
+
 
 # 类型定义
 BetaLevel = Literal["positive", "neutral", "negative"]
@@ -70,6 +72,7 @@ class GroupRotationOutput:
     """组间轮动输出"""
     strongest_group: str
     weakest_group: str
+    core_pool_id: str = "direct_peers"
     group_ranking: list[str] = field(default_factory=list)
     core_vs_theme_spread: Optional[float] = None
     core_vs_chain_spread: Optional[float] = None
@@ -119,3 +122,4 @@ class IndustrySnapshot:
     group_rotation: GroupRotationOutput
     conclusion: Conclusion
     signals: list[SignalOutput] = field(default_factory=list)
+    linkage_analysis: Optional[LinkageAnalysis] = None

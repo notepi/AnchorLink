@@ -25,7 +25,7 @@ class TestPoolRegistryLoad:
     def test_load_valid_config(self):
         """测试加载有效配置"""
         registry = PoolRegistry()
-        assert registry.get_version() == "2026-05-02"
+        assert registry.get_version() == "2026-05-06"
         assert len(registry.get_all_universes()) == 4
 
     def test_load_missing_config_raises_error(self):
@@ -60,7 +60,7 @@ class TestPoolRegistryLoad:
         # 验证 universe 属性
         direct_peers = universes["direct_peers"]
         assert direct_peers.can_be_benchmark == True
-        assert direct_peers.min_size == 1  # 目前只有华曙高科一个核心同类
+        assert direct_peers.min_size == 2  # 增材制造本业确认池
 
         theme_pool = universes["theme_pool"]
         assert theme_pool.can_be_benchmark == False
@@ -71,9 +71,9 @@ class TestPoolRegistryLoad:
         memberships = registry._config.memberships
         assert len(memberships) >= 16
 
-        # 验证多对多：688433.SH 应该出现多次
-        huashu_memberships = [m for m in memberships if m.symbol == "688433.SH"]
-        assert len(huashu_memberships) == 2  # direct_peers + theme_pool
+        # 验证多对多：688270.SH ST臻镭 应该出现多次（industry_chain + trading_watchlist）
+        zhenlei_memberships = [m for m in memberships if m.symbol == "688270.SH"]
+        assert len(zhenlei_memberships) == 2  # industry_chain + trading_watchlist
 
 
 # ==================== 查询接口测试 ====================
@@ -114,9 +114,9 @@ class TestPoolRegistryQuery:
             assert m.enabled == True
             assert m.include_in_benchmark == True
 
-        # 003009.SZ 中天火箭应该不参与 benchmark（研究层）
+        # 003009.SZ 中天火箭应该参与 benchmark（火箭需求端）
         zhongtian_members = [m for m in benchmark_members if m.symbol == "003009.SZ"]
-        assert len(zhongtian_members) == 0
+        assert len(zhongtian_members) == 1  # 现在参与 benchmark
 
     def test_get_ranking_scope(self):
         """测试获取 ranking 口径"""
@@ -172,7 +172,7 @@ class TestPoolRegistryQuery:
 
         universe = registry.get_universe("direct_peers")
         assert universe is not None
-        assert universe.display_name == "核心同类池"
+        assert universe.display_name == "增材制造本业确认池"
 
     def test_get_instrument(self):
         """测试获取证券主数据"""
@@ -192,36 +192,36 @@ class TestManyToManyRelation:
         """测试同一 symbol 在多个池子"""
         registry = PoolRegistry()
 
-        # 688433.SH 华曙高科应该出现在 direct_peers 和 theme_pool
+        # 688270.SH ST臻镭应该出现在 industry_chain 和 trading_watchlist
         memberships = registry._config.memberships
-        huashu_memberships = [m for m in memberships if m.symbol == "688433.SH"]
+        zhenlei_memberships = [m for m in memberships if m.symbol == "688270.SH"]
 
-        assert len(huashu_memberships) == 2
+        assert len(zhenlei_memberships) == 2
 
         # 验证不同池子的不同角色
-        universes = [m.universe_id for m in huashu_memberships]
-        assert "direct_peers" in universes
-        assert "theme_pool" in universes
+        universes = [m.universe_id for m in zhenlei_memberships]
+        assert "industry_chain" in universes
+        assert "trading_watchlist" in universes
 
         # 验证不同角色
-        roles = {m.universe_id: m.role for m in huashu_memberships}
-        assert roles["direct_peers"] == "direct_comparable"
-        assert roles["theme_pool"] == "theme_heat_proxy"
+        roles = {m.universe_id: m.role for m in zhenlei_memberships}
+        assert roles["industry_chain"] == "satellite_payload_rf_proxy"
+        assert roles["trading_watchlist"] == "high_beta_space_risk_signal"
 
     def test_different_benchmark_flags_in_different_universes(self):
         """测试不同池子的不同 benchmark 标记"""
         registry = PoolRegistry()
 
         memberships = registry._config.memberships
-        huashu_memberships = [m for m in memberships if m.symbol == "688433.SH"]
+        zhenlei_memberships = [m for m in memberships if m.symbol == "688270.SH"]
 
-        # direct_peers 参与 benchmark
-        direct_member = [m for m in huashu_memberships if m.universe_id == "direct_peers"][0]
-        assert direct_member.include_in_benchmark == True
+        # industry_chain 参与 benchmark
+        industry_member = [m for m in zhenlei_memberships if m.universe_id == "industry_chain"][0]
+        assert industry_member.include_in_benchmark == True
 
-        # theme_pool 不参与 benchmark
-        theme_member = [m for m in huashu_memberships if m.universe_id == "theme_pool"][0]
-        assert theme_member.include_in_benchmark == False
+        # trading_watchlist 不参与 benchmark
+        trading_member = [m for m in zhenlei_memberships if m.universe_id == "trading_watchlist"][0]
+        assert trading_member.include_in_benchmark == False
 
 
 # ==================== 口径分离测试 ====================

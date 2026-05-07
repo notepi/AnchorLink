@@ -26,6 +26,7 @@ from src.group_rotation import analyze_rotation_with_spreads
 from src.signal import generate_signals
 from src.output import write_all
 from src.price import load_price_inputs
+from src.linkage import calculate_daily_linkage
 
 
 def run_daily_analysis(trade_date: Optional[str] = None) -> dict:
@@ -94,7 +95,12 @@ def run_daily_analysis(trade_date: Optional[str] = None) -> dict:
 
     # Phase 6: 计算组间轮动
     print("[INFO] Phase 6: 计算组间轮动...")
-    group_rotation = analyze_rotation_with_spreads(pool_states, trade_date, registry)
+    group_rotation = analyze_rotation_with_spreads(
+        pool_states,
+        trade_date,
+        registry,
+        core_pool_id="industry_chain",
+    )
     print(f"[OK] 组间轮动计算完成: 最强={group_rotation.strongest_group}, 最弱={group_rotation.weakest_group}")
 
     # Phase 7: 生成信号
@@ -102,8 +108,13 @@ def run_daily_analysis(trade_date: Optional[str] = None) -> dict:
     signal_result = generate_signals(pool_states, anchor_positions, group_rotation, registry)
     print(f"[OK] 信号生成完成: {len(signal_result.signals)} 个信号")
 
-    # Phase 8: 输出
-    print("[INFO] Phase 8: 写入输出文件...")
+    # Phase 8: 股价联动分析
+    print("[INFO] Phase 8: 计算日线股价联动...")
+    linkage_analysis = calculate_daily_linkage(registry, market_df, trade_date)
+    print(f"[OK] 日线股价联动完成: 状态={linkage_analysis.status}")
+
+    # Phase 9: 输出
+    print("[INFO] Phase 9: 写入输出文件...")
     output_dir = Path(f"data/output/{trade_date}")
     snapshot = write_all(
         registry,
@@ -113,6 +124,7 @@ def run_daily_analysis(trade_date: Optional[str] = None) -> dict:
         signal_result,
         market_data_dict,
         output_dir,
+        linkage_analysis,
     )
     print(f"[OK] 输出写入完成: {output_dir}")
 

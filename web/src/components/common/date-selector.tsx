@@ -18,11 +18,9 @@ export function DateSelector() {
     if (initialized.current) return;
     initialized.current = true;
 
-    console.log('[DateSelector] fetching dates...');
     fetch('/api/dates')
       .then(res => res.json())
       .then(data => {
-        console.log('[DateSelector] received dates:', data);
         if (data.dates && data.dates.length > 0) {
           setLocalDates(data.dates);
           useAppStore.getState().setAvailableDates(data.dates);
@@ -30,8 +28,7 @@ export function DateSelector() {
             useAppStore.getState().setDate(data.dates[0]);
           }
         }
-      })
-      .catch(err => console.error('[DateSelector] fetch error:', err));
+      });
   }, []);
 
   // 点击外部关闭

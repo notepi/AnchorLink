@@ -64,6 +64,7 @@ from src.pool_state.models import PoolState, MemberData
 from src.anchor_position.relative_strength import RelativeStrength
 from src.group_rotation.models import GroupRotation
 from src.signal.models import SignalResult
+from src.linkage.models import LinkageAnalysis
 
 
 # ============================================================
@@ -78,6 +79,7 @@ def write_all(
     signal_result: SignalResult,
     market_data: dict[str, MemberData],
     output_dir: str | Path,
+    linkage_analysis: LinkageAnalysis | None = None,
 ) -> IndustrySnapshot:
     """
     一次性写入所有输出文件
@@ -106,7 +108,7 @@ def write_all(
 
     # 构建 IndustrySnapshot
     snapshot = build_industry_snapshot(
-        registry, pool_states, anchor_positions, group_rotation, signal_result
+        registry, pool_states, anchor_positions, group_rotation, signal_result, linkage_analysis
     )
 
     # 写入 JSON

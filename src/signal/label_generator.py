@@ -44,6 +44,10 @@ from src.group_rotation.models import GroupRotation
 from src.config.loader import PoolRegistry
 
 
+MAINLINE_POOL_ID = "industry_chain"
+BUSINESS_POOL_ID = "direct_peers"
+
+
 # ============================================================
 # 主入口函数
 # ============================================================
@@ -143,7 +147,7 @@ def generate_beta_signals(
     """
     生成 Beta 类信号标签
 
-    基于 direct_peers 池子状态：
+    优先基于 industry_chain 主线池，缺失时回退 direct_peers：
       - 行业Beta为正/中性/负
       - 行业扩散增强/不足
       - 行业分化
@@ -157,13 +161,12 @@ def generate_beta_signals(
     """
     signals = []
 
-    # 获取核心同类池状态
-    direct_peers = pool_states.get("direct_peers")
-    if direct_peers is None or direct_peers.data_status == "insufficient_data":
+    beta_pool_id, beta_pool = _get_mainline_pool_state(pool_states)
+    if beta_pool is None or beta_pool.data_status == "insufficient_data":
         return signals
 
     # 1. 行业Beta为正/中性/负
-    median_return = direct_peers.median_return
+    median_return = beta_pool.median_return
     if median_return is not None:
         if median_return > BETA_POSITIVE_THRESHOLD:
             signals.append(_create_signal(
@@ -172,7 +175,7 @@ def generate_beta_signals(
                 value=median_return,
                 threshold=BETA_POSITIVE_THRESHOLD,
                 trade_date=trade_date,
-                source_pool="direct_peers",
+                source_pool=beta_pool_id,
                 source_field="median_return",
             ))
         elif median_return < BETA_NEGATIVE_THRESHOLD:
@@ -182,7 +185,7 @@ def generate_beta_signals(
                 value=median_return,
                 threshold=BETA_NEGATIVE_THRESHOLD,
                 trade_date=trade_date,
-                source_pool="direct_peers",
+                source_pool=beta_pool_id,
                 source_field="median_return",
                 is_direction_positive=False,
             ))
@@ -193,13 +196,13 @@ def generate_beta_signals(
                 value=median_return,
                 threshold=0.0,
                 trade_date=trade_date,
-                source_pool="direct_peers",
+                source_pool=beta_pool_id,
                 source_field="median_return",
                 confidence="medium",
             ))
 
     # 2. 行业扩散增强/不足
-    up_ratio = direct_peers.up_ratio
+    up_ratio = beta_pool.up_ratio
     if up_ratio is not None:
         if up_ratio > DIFFUSION_ENHANCE_THRESHOLD:
             signals.append(_create_signal(
@@ -208,7 +211,7 @@ def generate_beta_signals(
                 value=up_ratio,
                 threshold=DIFFUSION_ENHANCE_THRESHOLD,
                 trade_date=trade_date,
-                source_pool="direct_peers",
+                source_pool=beta_pool_id,
                 source_field="up_ratio",
             ))
         elif up_ratio < DIFFUSION_INSUFFICIENT_THRESHOLD:
@@ -218,14 +221,14 @@ def generate_beta_signals(
                 value=up_ratio,
                 threshold=DIFFUSION_INSUFFICIENT_THRESHOLD,
                 trade_date=trade_date,
-                source_pool="direct_peers",
+                source_pool=beta_pool_id,
                 source_field="up_ratio",
                 is_direction_positive=False,
             ))
 
     # 3. 行业分化
-    strong_count = direct_peers.strong_count
-    weak_count = direct_peers.weak_count
+    strong_count = beta_pool.strong_count
+    weak_count = beta_pool.weak_count
     if strong_count >= DIVERGENCE_STRONG_THRESHOLD or weak_count >= DIVERGENCE_WEAK_THRESHOLD:
         signals.append(_create_signal(
             label="行业分化",
@@ -233,7 +236,7 @@ def generate_beta_signals(
             value=max(strong_count, weak_count),
             threshold=DIVERGENCE_STRONG_THRESHOLD,
             trade_date=trade_date,
-            source_pool="direct_peers",
+            source_pool=beta_pool_id,
             source_field="strong_count/weak_count",
             additional_evidence={"strong_count": strong_count, "weak_count": weak_count},
         ))
@@ -253,9 +256,9 @@ def generate_alpha_signals(
     """
     生成 Alpha 类信号标签
 
-    基于 Anchor 相对 direct_peers 的位置：
+    优先基于 Anchor 相对 industry_chain 主线池的位置，缺失时回退 direct_peers：
       - 个股Alpha为正/中性/负
-      - 跑赢/跑输核心同类
+      - 跑赢/跑输主线池
       - 处于行业前排/后排
 
     Args:
@@ -268,13 +271,12 @@ def generate_alpha_signals(
     """
     signals = []
 
-    # 获取相对核心同类池的位置
-    direct_peers_position = anchor_positions.get("direct_peers")
-    if direct_peers_position is None or direct_peers_position.data_status == "insufficient_data":
+    mainline_pool_id, mainline_position = _get_mainline_anchor_position(anchor_positions)
+    if mainline_position is None or mainline_position.data_status == "insufficient_data":
         return signals
 
     # 1. 个股Alpha为正/中性/负
-    relative_strength = direct_peers_position.relative_strength
+    relative_strength = mainline_position.relative_strength
     if relative_strength > ALPHA_POSITIVE_THRESHOLD:
         signals.append(_create_signal(
             label="个股Alpha为正",
@@ -282,7 +284,7 @@ def generate_alpha_signals(
             value=relative_strength,
             threshold=ALPHA_POSITIVE_THRESHOLD,
             trade_date=trade_date,
-            source_pool="direct_peers",
+            source_pool=mainline_pool_id,
             source_field="relative_strength",
         ))
     elif relative_strength < ALPHA_NEGATIVE_THRESHOLD:
@@ -292,7 +294,7 @@ def generate_alpha_signals(
             value=relative_strength,
             threshold=ALPHA_NEGATIVE_THRESHOLD,
             trade_date=trade_date,
-            source_pool="direct_peers",
+            source_pool=mainline_pool_id,
             source_field="relative_strength",
             is_direction_positive=False,
         ))
@@ -303,38 +305,40 @@ def generate_alpha_signals(
             value=relative_strength,
             threshold=0.0,
             trade_date=trade_date,
-            source_pool="direct_peers",
+            source_pool=mainline_pool_id,
             source_field="relative_strength",
             confidence="medium",
         ))
 
-    # 2. 跑赢/跑输核心同类（基于 position 字段）
-    position = direct_peers_position.position
+    # 2. 跑赢/跑输主线池（基于 position 字段；回退场景保留旧标签）
+    position = mainline_position.position
+    outperform_label = "跑赢主线池" if mainline_pool_id == MAINLINE_POOL_ID else "跑赢核心同类"
+    underperform_label = "跑输主线池" if mainline_pool_id == MAINLINE_POOL_ID else "跑输核心同类"
     if position == "outperform" and relative_strength > ALPHA_POSITIVE_THRESHOLD:
         signals.append(_create_signal(
-            label="跑赢核心同类",
+            label=outperform_label,
             category="alpha",
             value=relative_strength,
             threshold=ALPHA_POSITIVE_THRESHOLD,
             trade_date=trade_date,
-            source_pool="direct_peers",
+            source_pool=mainline_pool_id,
             source_field="position",
         ))
     elif position == "underperform" and relative_strength < ALPHA_NEGATIVE_THRESHOLD:
         signals.append(_create_signal(
-            label="跑输核心同类",
+            label=underperform_label,
             category="alpha",
             value=relative_strength,
             threshold=ALPHA_NEGATIVE_THRESHOLD,
             trade_date=trade_date,
-            source_pool="direct_peers",
+            source_pool=mainline_pool_id,
             source_field="position",
             is_direction_positive=False,
         ))
 
     # 3. 处于行业前排/后排（基于排名）
-    rank_return = direct_peers_position.rank_return
-    total_count = direct_peers_position.total_count
+    rank_return = mainline_position.rank_return
+    total_count = mainline_position.total_count
     if total_count > 0 and rank_return > 0:
         rank_percentile = rank_return / total_count
         if rank_percentile <= OUTPERFORM_RANK_THRESHOLD:
@@ -345,7 +349,7 @@ def generate_alpha_signals(
                 value=rank_percentile,
                 threshold=OUTPERFORM_RANK_THRESHOLD,
                 trade_date=trade_date,
-                source_pool="direct_peers",
+                source_pool=mainline_pool_id,
                 source_field="rank_return",
                 percentile=rank_percentile * 100,
                 confidence=confidence,
@@ -358,7 +362,7 @@ def generate_alpha_signals(
                 value=rank_percentile,
                 threshold=UNDERPERFORM_RANK_THRESHOLD,
                 trade_date=trade_date,
-                source_pool="direct_peers",
+                source_pool=mainline_pool_id,
                 source_field="rank_return",
                 percentile=rank_percentile * 100,
                 confidence=confidence,
@@ -550,27 +554,30 @@ def generate_rotation_signals(
     if group_rotation.data_status == "insufficient_data":
         return signals
 
-    # 1. 核心同类 vs 主题扩散
+    core_name = "主线池" if group_rotation.core_pool_id == MAINLINE_POOL_ID else "核心同类"
+    core_pool_id = group_rotation.core_pool_id
+
+    # 1. 核心池 vs 主题情绪
     core_vs_theme = group_rotation.core_vs_theme_spread
     if core_vs_theme is not None:
         if core_vs_theme > ROTATION_SPREAD_THRESHOLD:
             signals.append(_create_signal(
-                label="核心同类强于主题扩散",
+                label=f"{core_name}强于主题情绪",
                 category="rotation",
                 value=core_vs_theme,
                 threshold=ROTATION_SPREAD_THRESHOLD,
                 trade_date=trade_date,
-                source_pool="direct_peers vs theme_pool",
+                source_pool=f"{core_pool_id} vs theme_pool",
                 source_field="core_vs_theme_spread",
             ))
         elif core_vs_theme < -ROTATION_SPREAD_THRESHOLD:
             signals.append(_create_signal(
-                label="主题扩散强于核心同类",
+                label=f"主题情绪强于{core_name}",
                 category="rotation",
                 value=abs(core_vs_theme),
                 threshold=ROTATION_SPREAD_THRESHOLD,
                 trade_date=trade_date,
-                source_pool="theme_pool vs direct_peers",
+                source_pool=f"theme_pool vs {core_pool_id}",
                 source_field="core_vs_theme_spread",
             ))
 
@@ -656,8 +663,8 @@ def generate_abnormal_signals(
     signals = []
 
     # 1. 行业强但个股弱 / 行业弱但个股强
-    direct_peers = pool_states.get("direct_peers")
-    direct_peers_position = anchor_positions.get("direct_peers")
+    pool_id, direct_peers = _get_mainline_pool_state(pool_states)
+    position_pool_id, direct_peers_position = _get_mainline_anchor_position(anchor_positions)
 
     if direct_peers and direct_peers_position:
         median_return = direct_peers.median_return
@@ -673,7 +680,7 @@ def generate_abnormal_signals(
                     value=spread,
                     threshold=ABNORMAL_SPREAD_THRESHOLD,
                     trade_date=trade_date,
-                    source_pool="direct_peers vs anchor",
+                    source_pool=f"{pool_id} vs anchor",
                     source_field="median_return vs relative_strength",
                     additional_evidence={
                         "pool_median": median_return,
@@ -690,7 +697,7 @@ def generate_abnormal_signals(
                     value=spread,
                     threshold=ABNORMAL_SPREAD_THRESHOLD,
                     trade_date=trade_date,
-                    source_pool="direct_peers vs anchor",
+                    source_pool=f"{position_pool_id} vs anchor",
                     source_field="median_return vs relative_strength",
                     additional_evidence={
                         "pool_median": median_return,
@@ -702,24 +709,26 @@ def generate_abnormal_signals(
     core_vs_theme = group_rotation.core_vs_theme_spread
     if core_vs_theme is not None:
         if abs(core_vs_theme) > ABNORMAL_SPREAD_THRESHOLD:
+            core_name = "主线池" if group_rotation.core_pool_id == MAINLINE_POOL_ID else "核心池"
+            core_pool_id = group_rotation.core_pool_id
             if core_vs_theme < 0:  # 主题池更强
                 signals.append(_create_signal(
-                    label="主题池强但核心池弱",
+                    label=f"主题情绪强但{core_name}弱",
                     category="abnormal",
                     value=abs(core_vs_theme),
                     threshold=ABNORMAL_SPREAD_THRESHOLD,
                     trade_date=trade_date,
-                    source_pool="theme_pool vs direct_peers",
+                    source_pool=f"theme_pool vs {core_pool_id}",
                     source_field="core_vs_theme_spread",
                 ))
             else:  # 核心池更强
                 signals.append(_create_signal(
-                    label="核心池强但主题池弱",
+                    label=f"{core_name}强但主题情绪弱",
                     category="abnormal",
                     value=abs(core_vs_theme),
                     threshold=ABNORMAL_SPREAD_THRESHOLD,
                     trade_date=trade_date,
-                    source_pool="direct_peers vs theme_pool",
+                    source_pool=f"{core_pool_id} vs theme_pool",
                     source_field="core_vs_theme_spread",
                 ))
 
@@ -729,6 +738,23 @@ def generate_abnormal_signals(
 # ============================================================
 # 辅助函数
 # ============================================================
+
+def _get_mainline_pool_state(pool_states: dict[str, PoolState]) -> tuple[str, Optional[PoolState]]:
+    """优先返回商业航天硬科技主线池，缺失时回退本业确认池。"""
+    mainline = pool_states.get(MAINLINE_POOL_ID)
+    if mainline is not None and mainline.data_status != "insufficient_data":
+        return MAINLINE_POOL_ID, mainline
+    return BUSINESS_POOL_ID, pool_states.get(BUSINESS_POOL_ID)
+
+
+def _get_mainline_anchor_position(
+    anchor_positions: dict[str, RelativeStrength],
+) -> tuple[str, Optional[RelativeStrength]]:
+    """优先返回 Anchor 相对主线池的位置，缺失时回退本业确认池。"""
+    mainline = anchor_positions.get(MAINLINE_POOL_ID)
+    if mainline is not None and mainline.data_status != "insufficient_data":
+        return MAINLINE_POOL_ID, mainline
+    return BUSINESS_POOL_ID, anchor_positions.get(BUSINESS_POOL_ID)
 
 def _create_signal(
     label: str,
@@ -828,19 +854,19 @@ def _check_signal_data_quality(
     """
     missing_data = []
 
-    # 检查核心池数据
-    direct_peers = pool_states.get("direct_peers")
-    if direct_peers is None:
-        missing_data.append("direct_peers pool_state")
-    elif direct_peers.data_status == "insufficient_data":
-        missing_data.append("direct_peers data insufficient")
+    # 检查主线池数据（回退 direct_peers 以兼容旧测试/旧配置）
+    pool_id, mainline_pool = _get_mainline_pool_state(pool_states)
+    if mainline_pool is None:
+        missing_data.append(f"{pool_id} pool_state")
+    elif mainline_pool.data_status == "insufficient_data":
+        missing_data.append(f"{pool_id} data insufficient")
 
     # 检查 Anchor 位置数据
-    direct_peers_position = anchor_positions.get("direct_peers")
-    if direct_peers_position is None:
-        missing_data.append("direct_peers anchor_position")
-    elif direct_peers_position.data_status == "insufficient_data":
-        missing_data.append("direct_peers position insufficient")
+    position_pool_id, mainline_position = _get_mainline_anchor_position(anchor_positions)
+    if mainline_position is None:
+        missing_data.append(f"{position_pool_id} anchor_position")
+    elif mainline_position.data_status == "insufficient_data":
+        missing_data.append(f"{position_pool_id} position insufficient")
 
     # 检查组间轮动数据
     if group_rotation.data_status == "insufficient_data":

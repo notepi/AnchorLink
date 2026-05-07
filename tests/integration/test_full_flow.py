@@ -632,8 +632,9 @@ class TestOutputLayer:
             assert "## 一、行业状态概览" in content
             assert "## 二、行业结构拆解" in content
             assert "## 三、锚定标的相对位置" in content
-            assert "## 四、行业联动与异常信号" in content
-            assert "## 五、行业模块结论" in content
+            assert "## 四、股价联动解释" in content
+            assert "## 五、行业联动与异常信号" in content
+            assert "## 六、行业模块结论" in content
 
 
 # ============================================================

@@ -101,14 +101,29 @@ class PoolStateCalculator:
     def _calculate_universe_state(self, universe_id: str, trade_date: str) -> PoolState:
         """计算单个池子的状态"""
 
-        # 1. 获取 benchmark_scope 成员
-        benchmark_members = self.registry.get_benchmark_scope(universe_id)
+        # 1. 获取 universe 定义
         universe = self.registry.get_universe(universe_id)
 
         if universe is None:
             raise ValueError(f"Universe not found: {universe_id}")
 
-        # 2. 统计计数
+        # 2. 确定计算口径
+        # 对于 can_be_benchmark=false 的池子（theme_pool, trading_watchlist），
+        # 使用 ranking_scope 成员来展示数据（而非空的 benchmark_scope）
+        if universe.can_be_benchmark:
+            scope_members = self.registry.get_benchmark_scope(universe_id)
+        else:
+            if hasattr(self.registry, "get_ranking_scope_members"):
+                scope_members = self.registry.get_ranking_scope_members(universe_id)
+            else:
+                scope_members = [
+                    m for m in self.registry.get_members(universe_id)
+                    if m.enabled and m.include_in_ranking
+                ]
+
+        benchmark_members = self.registry.get_benchmark_scope(universe_id)
+
+        # 3. 统计计数
         all_members = self.registry.get_members(universe_id, enabled_only=False)
         enabled_members = self.registry.get_members(universe_id, enabled_only=True)
 
@@ -116,8 +131,8 @@ class PoolStateCalculator:
         enabled_count = len(enabled_members)
         benchmark_count = len(benchmark_members)
 
-        # 3. 获取成员当日数据
-        member_data_list = self._get_member_data(benchmark_members, trade_date)
+        # 4. 获取成员当日数据（使用 scope_members 进行计算）
+        member_data_list = self._get_member_data(scope_members, trade_date)
 
         # 4. 分离有效/无效数据
         valid_data = [m for m in member_data_list if m.is_valid]

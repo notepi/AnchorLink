@@ -138,3 +138,11 @@ export function getPoolDisplayName(universeId: string): string {
   };
   return poolNames[universeId] || universeId;
 }
+
+/**
+ * 获取池子简称（用于仪表盘卡片）
+ * 与显示名称保持一致
+ */
+export function getPoolShortName(universeId: string): string {
+  return getPoolDisplayName(universeId);
+}

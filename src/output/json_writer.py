@@ -28,6 +28,7 @@ from src.pool_state.models import PoolState
 from src.anchor_position.relative_strength import RelativeStrength
 from src.group_rotation.models import GroupRotation
 from src.signal.models import SignalResult, Signal, Evidence
+from src.linkage.models import LinkageAnalysis, PoolLinkage, LinkageMember
 
 
 # ============================================================
@@ -151,6 +152,7 @@ def build_group_rotation_output(group_rotation: GroupRotation) -> GroupRotationO
     return GroupRotationOutput(
         strongest_group=group_rotation.strongest_group,
         weakest_group=group_rotation.weakest_group,
+        core_pool_id=group_rotation.core_pool_id,
         group_ranking=group_rotation.group_ranking,
         core_vs_theme_spread=group_rotation.core_vs_theme_spread,
         core_vs_chain_spread=group_rotation.core_vs_chain_spread,
@@ -241,6 +243,7 @@ def build_industry_snapshot(
     anchor_positions: dict[str, RelativeStrength],
     group_rotation: GroupRotation,
     signal_result: SignalResult,
+    linkage_analysis: Optional[LinkageAnalysis] = None,
 ) -> IndustrySnapshot:
     """
     构建完整的 IndustrySnapshot
@@ -264,7 +267,9 @@ def build_industry_snapshot(
     signal_outputs = build_signal_outputs(signal_result)
 
     # 构建 conclusion
-    conclusion = build_conclusion(signal_result, pool_states, anchor_positions, group_rotation)
+    conclusion = build_conclusion(
+        signal_result, pool_states, anchor_positions, group_rotation, linkage_analysis
+    )
 
     # 格式化日期
     as_of_date = _format_date(signal_result.trade_date)
@@ -278,6 +283,7 @@ def build_industry_snapshot(
         group_rotation=group_rotation_output,
         signals=signal_outputs,
         conclusion=conclusion,
+        linkage_analysis=linkage_analysis,
     )
 
 
@@ -329,6 +335,7 @@ def snapshot_to_dict(snapshot: IndustrySnapshot) -> dict:
         "group_rotation": {
             "strongest_group": snapshot.group_rotation.strongest_group,
             "weakest_group": snapshot.group_rotation.weakest_group,
+            "core_pool_id": snapshot.group_rotation.core_pool_id,
             "group_ranking": snapshot.group_rotation.group_ranking,
             "core_vs_theme_spread": snapshot.group_rotation.core_vs_theme_spread,
             "core_vs_chain_spread": snapshot.group_rotation.core_vs_chain_spread,
@@ -351,6 +358,60 @@ def snapshot_to_dict(snapshot: IndustrySnapshot) -> dict:
             "summary": snapshot.conclusion.summary,
             "next_watch": snapshot.conclusion.next_watch,
         },
+        "linkage_analysis": _linkage_analysis_to_dict(snapshot.linkage_analysis),
+    }
+
+
+def _linkage_analysis_to_dict(linkage: Optional[LinkageAnalysis]) -> Optional[dict]:
+    if linkage is None:
+        return None
+
+    return {
+        "trade_date": linkage.trade_date,
+        "anchor_symbol": linkage.anchor_symbol,
+        "status": linkage.status,
+        "windows": linkage.windows,
+        "partial_reason": linkage.partial_reason,
+        "pools": {
+            universe_id: _pool_linkage_to_dict(pool)
+            for universe_id, pool in linkage.pools.items()
+        },
+    }
+
+
+def _pool_linkage_to_dict(pool: PoolLinkage) -> dict:
+    return {
+        "universe_id": pool.universe_id,
+        "status": pool.status,
+        "avg_corr_20d": pool.avg_corr_20d,
+        "avg_beta_20d": pool.avg_beta_20d,
+        "avg_direction_consistency_20d": pool.avg_direction_consistency_20d,
+        "partial_reason": pool.partial_reason,
+        "top_members": [_linkage_member_to_dict(member) for member in pool.top_members],
+        "members": [_linkage_member_to_dict(member) for member in pool.members],
+    }
+
+
+def _linkage_member_to_dict(member: LinkageMember) -> dict:
+    return {
+        "universe_id": member.universe_id,
+        "symbol": member.symbol,
+        "name": member.name,
+        "role": member.role,
+        "relevance": member.relevance,
+        "weight": member.weight,
+        "corr_5d": member.corr_5d,
+        "corr_10d": member.corr_10d,
+        "corr_20d": member.corr_20d,
+        "beta_5d": member.beta_5d,
+        "beta_10d": member.beta_10d,
+        "beta_20d": member.beta_20d,
+        "direction_consistency_5d": member.direction_consistency_5d,
+        "direction_consistency_10d": member.direction_consistency_10d,
+        "direction_consistency_20d": member.direction_consistency_20d,
+        "observations": member.observations,
+        "data_status": member.data_status,
+        "partial_reason": member.partial_reason,
     }
 
 

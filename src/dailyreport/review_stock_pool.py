@@ -21,7 +21,7 @@ from datetime import datetime, timedelta
 import yaml
 
 PROJECT_ROOT = Path(__file__).parent.parent.parent
-CONFIG_PATH = PROJECT_ROOT / "config" / "stocks.yaml"
+CONFIG_PATH = PROJECT_ROOT / "config" / "pools.yaml"
 
 
 def load_stock_config() -> dict:

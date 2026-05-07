@@ -402,7 +402,7 @@ class TestConclusionBuilder:
         """测试次日观察点生成"""
         watch_points = generate_next_watch(sample_signal_result, sample_anchor_positions, sample_pool_states)
         assert len(watch_points) > 0
-        assert "是否连续跑赢核心同类" in watch_points
+        assert "是否连续跑赢主线池" in watch_points
 
     def test_build_conclusion(self, sample_signal_result, sample_pool_states, sample_anchor_positions, sample_group_rotation):
         """测试完整结论构建"""
@@ -554,8 +554,9 @@ class TestReportGenerator:
         assert "## 一、行业状态概览" in report
         assert "## 二、行业结构拆解" in report
         assert "## 三、锚定标的相对位置" in report
-        assert "## 四、行业联动与异常信号" in report
-        assert "## 五、行业模块结论" in report
+        assert "## 四、股价联动解释" in report
+        assert "## 五、行业联动与异常信号" in report
+        assert "## 六、行业模块结论" in report
 
     def test_write_report(self, sample_pool_registry, sample_pool_states, sample_anchor_positions, sample_group_rotation, sample_signal_result):
         """测试报告文件写入"""

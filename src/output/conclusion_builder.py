@@ -23,6 +23,7 @@ from src.signal.models import SignalResult, Signal
 from src.pool_state.models import PoolState
 from src.anchor_position.relative_strength import RelativeStrength
 from src.group_rotation.models import GroupRotation
+from src.linkage.models import LinkageAnalysis
 
 
 # ============================================================
@@ -70,14 +71,14 @@ def determine_anchor_alpha(signal_result: SignalResult) -> AlphaLevel:
         "positive" | "neutral" | "negative"
 
     规则：
-        - 有 "个股Alpha为正" 或 "跑赢核心同类" → positive
-        - 有 "个股Alpha为负" 或 "跑输核心同类" → negative
+        - 有 "个股Alpha为正" 或 "跑赢主线池/核心同类" → positive
+        - 有 "个股Alpha为负" 或 "跑输主线池/核心同类" → negative
         - 其他 → neutral
     """
     alpha_signals = [s for s in signal_result.signals if s.category == "alpha"]
 
-    positive_labels = ["个股Alpha为正", "跑赢核心同类"]
-    negative_labels = ["个股Alpha为负", "跑输核心同类"]
+    positive_labels = ["个股Alpha为正", "跑赢主线池", "跑赢核心同类"]
+    negative_labels = ["个股Alpha为负", "跑输主线池", "跑输核心同类"]
 
     for signal in alpha_signals:
         if signal.label in positive_labels:
@@ -144,6 +145,7 @@ def generate_summary(
     pool_states: dict[str, PoolState],
     anchor_positions: dict[str, RelativeStrength],
     group_rotation: GroupRotation,
+    linkage_analysis: Optional[LinkageAnalysis] = None,
 ) -> str:
     """
     生成综合判断文本（3-5句话）
@@ -155,37 +157,41 @@ def generate_summary(
         pool_states: 各池子状态
         anchor_positions: 相对位置
         group_rotation: 组间轮动
+        linkage_analysis: 联动分析结果（可选）
 
     Returns:
         summary 文本
 
     模板结构：
-        1. 行业环境：{industry_beta}，核心同类池中位数涨跌幅 {direct_peers_median}%
-        2. 锚定标的表现：{anchor_alpha}，涨跌幅 {anchor_return}%，相对核心池 {relative_strength}%
+        1. 主线环境：{industry_beta}，商业航天硬科技主池中位数涨跌幅 {industry_chain_median}%
+        2. 锚定标的表现：{anchor_alpha}，涨跌幅 {anchor_return}%，相对主线池 {relative_strength}%
         3. 组间轮动：{strongest_group}最强，{weakest_group}最弱
-        4. 需关注点：风险等级 {risk_level}
+        4. 联动解释力：主线池/本业池解释力描述
+        5. 需关注点：风险等级 {risk_level}
     """
     sentences = []
 
-    # 1. 行业环境
-    direct_peers = pool_states.get("direct_peers")
-    if direct_peers and direct_peers.median_return is not None:
+    # 1. 主线环境
+    mainline = pool_states.get("industry_chain") or pool_states.get("direct_peers")
+    if mainline and mainline.median_return is not None:
         beta_desc = {"positive": "偏正面", "neutral": "中性", "negative": "偏负面"}
+        mainline_name = "商业航天硬科技主池" if mainline.universe_id == "industry_chain" else "增材制造本业确认池"
         sentences.append(
-            f"行业环境{beta_desc[industry_beta]}，核心同类池中位数涨跌幅{direct_peers.median_return:.2f}%。"
+            f"主线环境{beta_desc[industry_beta]}，{mainline_name}中位数涨跌幅{mainline.median_return:.2f}%。"
         )
     else:
         beta_desc = {"positive": "偏正面", "neutral": "中性", "negative": "偏负面"}
-        sentences.append(f"行业环境{beta_desc[industry_beta]}。")
+        sentences.append(f"主线环境{beta_desc[industry_beta]}。")
 
     # 2. 锚定标的表现
-    direct_peers_position = anchor_positions.get("direct_peers")
-    if direct_peers_position:
+    mainline_position = anchor_positions.get("industry_chain") or anchor_positions.get("direct_peers")
+    if mainline_position:
         alpha_desc = {"positive": "跑赢行业", "neutral": "跟随行业", "negative": "跑输行业"}
-        anchor_return = direct_peers_position.anchor_return
-        relative_strength = direct_peers_position.relative_strength
+        anchor_return = mainline_position.anchor_return
+        relative_strength = mainline_position.relative_strength
+        compare_name = "主线池" if mainline_position.universe_id == "industry_chain" else "本业确认池"
         sentences.append(
-            f"锚定标的{alpha_desc[anchor_alpha]}，涨跌幅{anchor_return:.2f}%，相对核心池{relative_strength:.2f}%。"
+            f"锚定标的{alpha_desc[anchor_alpha]}，涨跌幅{anchor_return:.2f}%，相对{compare_name}{relative_strength:.2f}%。"
         )
     else:
         alpha_desc = {"positive": "跑赢行业", "neutral": "跟随行业", "negative": "跑输行业"}
@@ -205,7 +211,19 @@ def generate_summary(
         else:
             sentences.append(f"{strongest}池最强，{weakest}池最弱。")
 
-    # 4. 需关注点
+    # 4. 联动解释力
+    if linkage_analysis and linkage_analysis.status == "ok":
+        linkage_parts = []
+        for pool_id in ["industry_chain", "direct_peers"]:
+            pool = linkage_analysis.pools.get(pool_id)
+            if pool and pool.avg_corr_20d is not None:
+                pool_name = "主线池" if pool_id == "industry_chain" else "本业池"
+                corr_desc = "较强" if pool.avg_corr_20d > 0.6 else "较弱"
+                linkage_parts.append(f"{pool_name}解释力{corr_desc}（corr20={pool.avg_corr_20d:.2f}）")
+        if linkage_parts:
+            sentences.append(f"联动分析：{', '.join(linkage_parts)}。")
+
+    # 5. 需关注点
     risk_desc = {"low": "风险较低", "medium": "需关注", "high": "需警惕"}
     sentences.append(f"整体风险等级：{risk_desc[risk_level]}。")
 
@@ -233,17 +251,17 @@ def generate_next_watch(
         观察点列表
 
     规则：
-        - 跑赢核心同类 → "是否连续跑赢核心同类"
+        - 跑赢主线池/核心同类 → 连续性观察
         - 放量 → "成交额是否维持放大"
         - 主题池强于核心 → "主题池热度是否传导到核心同类"
         - 行业分化 → "分化是否继续扩大"
     """
     watch_points = []
 
-    # 1. 跑赢核心同类 → 连续性观察
+    # 1. 跑赢主线池/核心同类 → 连续性观察
     alpha_signals = [s for s in signal_result.signals if s.category == "alpha"]
-    if any(s.label in ["跑赢核心同类", "个股Alpha为正"] for s in alpha_signals):
-        watch_points.append("是否连续跑赢核心同类")
+    if any(s.label in ["跑赢主线池", "跑赢核心同类", "个股Alpha为正"] for s in alpha_signals):
+        watch_points.append("是否连续跑赢主线池")
 
     # 2. 放量 → 成交额观察
     volume_signals = [s for s in signal_result.signals if s.category == "volume"]
@@ -252,8 +270,8 @@ def generate_next_watch(
 
     # 3. 主题池相关 → 传导观察
     rotation_signals = [s for s in signal_result.signals if s.category == "rotation"]
-    if any(s.label in ["主题扩散强于核心同类", "交易观察池升温"] for s in rotation_signals):
-        watch_points.append("主题池热度是否传导到核心同类")
+    if any("主题情绪强于" in s.label or s.label == "交易观察池升温" for s in rotation_signals):
+        watch_points.append("主题热度是否传导到商业航天硬科技主线")
 
     # 4. 行业分化 → 分化观察
     beta_signals = [s for s in signal_result.signals if s.category == "beta"]
@@ -267,7 +285,7 @@ def generate_next_watch(
 
     # 默认观察点（如果没有生成任何观察点）
     if len(watch_points) == 0:
-        watch_points.append("核心同类池整体表现")
+        watch_points.append("商业航天硬科技主池整体表现")
         watch_points.append("锚定标的相对位置变化")
 
     return watch_points[:5]  # 最多返回5个观察点
@@ -282,6 +300,7 @@ def build_conclusion(
     pool_states: dict[str, PoolState],
     anchor_positions: dict[str, RelativeStrength],
     group_rotation: GroupRotation,
+    linkage_analysis: Optional[LinkageAnalysis] = None,
 ) -> Conclusion:
     """
     构建综合结论
@@ -291,6 +310,7 @@ def build_conclusion(
         pool_states: 各池子状态
         anchor_positions: 相对位置
         group_rotation: 组间轮动
+        linkage_analysis: 联动分析结果（可选）
 
     Returns:
         Conclusion 完整结构
@@ -301,7 +321,8 @@ def build_conclusion(
     risk_level = determine_risk_level(signal_result, pool_states)
     summary = generate_summary(
         industry_beta, anchor_alpha, risk_level,
-        pool_states, anchor_positions, group_rotation
+        pool_states, anchor_positions, group_rotation,
+        linkage_analysis
     )
     next_watch = generate_next_watch(signal_result, anchor_positions, pool_states)
 
