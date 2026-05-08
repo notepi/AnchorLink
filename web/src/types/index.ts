@@ -16,6 +16,7 @@ export interface IndustrySnapshot {
   group_rotation: GroupRotation;
   signals: Signal[];
   conclusion: Conclusion;
+  linkage_analysis: LinkageAnalysis | null;
 }
 
 export interface AnchorInfo {
@@ -49,6 +50,7 @@ export interface AnchorPosition {
   turnover_rank: number | null;
   moneyflow_rank: number | null;
   total_count: number | null;
+  valuation_percentile: number | null;  // 估值分位（0-100，仅 direct_peers 有意义）
 }
 
 export interface GroupRotation {
@@ -75,6 +77,7 @@ export interface Evidence {
   source_field?: string;
   secondary_value?: number;
   percentile?: number;
+  anchor_return?: number;  // 锚定标的涨跌幅（Volume类信号）
 }
 
 export interface Conclusion {
@@ -176,6 +179,51 @@ export interface ReferenceIndex {
 export interface EventKeywords {
   company: string[];
   sector: string[];
+}
+
+// ============================================================
+// 联动分析类型（linkage_analysis）
+// ============================================================
+
+export interface LinkageAnalysis {
+  trade_date: string;
+  anchor_symbol: string;
+  status: string;
+  windows: number[];
+  partial_reason: string | null;
+  pools: Record<string, PoolLinkage>;
+}
+
+export interface PoolLinkage {
+  universe_id: string;
+  status: string;
+  avg_corr_20d: number | null;
+  avg_beta_20d: number | null;
+  avg_direction_consistency_20d: number | null;
+  partial_reason: string | null;
+  top_members: LinkageMember[];
+  members: LinkageMember[];
+}
+
+export interface LinkageMember {
+  universe_id: string;
+  symbol: string;
+  name: string;
+  role: string;
+  relevance: number;
+  weight: number;
+  corr_5d: number | null;
+  corr_10d: number | null;
+  corr_20d: number | null;
+  beta_5d: number | null;
+  beta_10d: number | null;
+  beta_20d: number | null;
+  direction_consistency_5d: number | null;
+  direction_consistency_10d: number | null;
+  direction_consistency_20d: number | null;
+  observations: number;
+  data_status: string;
+  partial_reason: string | null;
 }
 
 // ============================================================

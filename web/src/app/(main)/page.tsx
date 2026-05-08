@@ -6,6 +6,7 @@ import { SignalPanel } from '@/components/dashboard/signal-panel';
 import { ConclusionPanel } from '@/components/dashboard/conclusion-panel';
 import { RankingTable } from '@/components/dashboard/ranking-table';
 import { PoolStrengthDashboard } from '@/components/dashboard/pool-strength-dashboard';
+import { LinkagePanel } from '@/components/dashboard/linkage-panel';
 import { LeftSidebar } from '@/components/dashboard/left-sidebar';
 import { DateSelector } from '@/components/common/date-selector';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -106,8 +107,15 @@ export default function DashboardPage() {
             <div className="space-y-4">
               <PoolStrengthDashboard groupRotation={snapshot.group_rotation} />
 
-              <SignalPanel signals={snapshot.signals} />
-              <ConclusionPanel conclusion={snapshot.conclusion} />
+              <SignalPanel
+                signals={snapshot.signals}
+                groupRotation={snapshot.group_rotation}
+              />
+              <ConclusionPanel
+                conclusion={snapshot.conclusion}
+                industryState={snapshot.industry_state}
+              />
+              <LinkagePanel data={snapshot.linkage_analysis} />
               <RankingTable data={matrix} />
             </div>
           )}
