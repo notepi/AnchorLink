@@ -203,7 +203,7 @@ def sample_member_data_dict(trade_date):
             amount=105000.0,
             turnover_rate=3.5,
             net_mf_amount=8000000.0,
-            is_valid=True,
+            pe_ttm=None, pb=None, is_valid=True,
         ),
         "688433.SH": MemberData(
             symbol="688433.SH",
@@ -213,7 +213,7 @@ def sample_member_data_dict(trade_date):
             amount=102000.0,
             turnover_rate=4.0,
             net_mf_amount=5000000.0,
-            is_valid=True,
+            pe_ttm=None, pb=None, is_valid=True,
         ),
         "600343.SH": MemberData(
             symbol="600343.SH",
@@ -223,7 +223,7 @@ def sample_member_data_dict(trade_date):
             amount=100000.0,
             turnover_rate=3.0,
             net_mf_amount=None,
-            is_valid=True,
+            pe_ttm=None, pb=None, is_valid=True,
         ),
         "600879.SH": MemberData(
             symbol="600879.SH",
@@ -233,7 +233,7 @@ def sample_member_data_dict(trade_date):
             amount=98000.0,
             turnover_rate=None,
             net_mf_amount=None,
-            is_valid=True,
+            pe_ttm=None, pb=None, is_valid=True,
         ),
         "002049.SZ": MemberData(
             symbol="002049.SZ",
@@ -243,7 +243,7 @@ def sample_member_data_dict(trade_date):
             amount=110000.0,
             turnover_rate=5.0,
             net_mf_amount=None,
-            is_valid=True,
+            pe_ttm=None, pb=None, is_valid=True,
         ),
         "300034.SZ": MemberData(
             symbol="300034.SZ",
@@ -253,7 +253,7 @@ def sample_member_data_dict(trade_date):
             amount=90000.0,
             turnover_rate=2.5,
             net_mf_amount=None,
-            is_valid=True,
+            pe_ttm=None, pb=None, is_valid=True,
         ),
     }
 

@@ -3,28 +3,54 @@
 import { useState } from 'react';
 import { PeerMatrixRow } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { cn, getPctColorClass, formatPct } from '@/lib/utils';
+import { cn, getPctColorClass, formatPct, formatAmount } from '@/lib/utils';
 
 interface RankingTableProps {
   data: PeerMatrixRow[];
 }
 
 const poolNames: Record<string, string> = {
-  direct_peers: '核心同类',
-  industry_chain: '产业链',
-  theme_pool: '主题情绪',
-  trading_watchlist: '交易观察',
+  direct_peers: '核心',
+  industry_chain: '产业',
+  theme_pool: '主题',
+  trading_watchlist: '交易',
 };
+
+// 格式化资金流向（正数绿色，负数红色）
+function formatFundFlow(value: number | null | undefined): string {
+  if (value === null || value === undefined) return '--';
+  const sign = value >= 0 ? '+' : '';
+  return `${sign}${value.toFixed(2)}万`;
+}
+
+function getFundFlowColorClass(value: number | null | undefined): string {
+  if (value === null || value === undefined) return 'text-anchor-textSecondary';
+  if (value > 0) return 'text-anchor-positive';
+  if (value < 0) return 'text-anchor-negative';
+  return 'text-anchor-textSecondary';
+}
+
+// 格式化换手率
+function formatTurnover(value: number | null | undefined): string {
+  if (value === null || value === undefined) return '--';
+  return `${value.toFixed(2)}%`;
+}
+
+// 格式化估值分位
+function formatValuation(value: number | null | undefined): string {
+  if (value === null || value === undefined) return '--';
+  return `${value.toFixed(0)}%`;
+}
 
 export function RankingTable({ data }: RankingTableProps) {
   const [selectedPool, setSelectedPool] = useState<string>('all');
 
   const poolFilters = [
     { value: 'all', label: '全部' },
-    { value: 'direct_peers', label: '核心同类' },
-    { value: 'industry_chain', label: '产业链' },
-    { value: 'theme_pool', label: '主题情绪' },
-    { value: 'trading_watchlist', label: '交易观察' },
+    { value: 'direct_peers', label: '核心' },
+    { value: 'industry_chain', label: '产业' },
+    { value: 'theme_pool', label: '主题' },
+    { value: 'trading_watchlist', label: '交易' },
   ];
 
   const filteredData = selectedPool === 'all'
@@ -60,9 +86,9 @@ export function RankingTable({ data }: RankingTableProps) {
           </div>
         </div>
 
-        {/* 简化表格 */}
+        {/* 完整表格 */}
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[900px]">
+          <table className="w-full min-w-[1200px]">
             <thead className="bg-anchor-bg border-b border-anchor-border">
               <tr>
                 <th className="px-3 py-1.5 text-left text-xs font-medium text-anchor-textSecondary">池子</th>
@@ -70,6 +96,10 @@ export function RankingTable({ data }: RankingTableProps) {
                 <th className="px-3 py-1.5 text-left text-xs font-medium text-anchor-textSecondary">名称</th>
                 <th className="px-3 py-1.5 text-left text-xs font-medium text-anchor-textSecondary">角色</th>
                 <th className="px-3 py-1.5 text-left text-xs font-medium text-anchor-textSecondary">涨跌幅</th>
+                <th className="px-3 py-1.5 text-left text-xs font-medium text-anchor-textSecondary">成交额</th>
+                <th className="px-3 py-1.5 text-left text-xs font-medium text-anchor-textSecondary">换手率</th>
+                <th className="px-3 py-1.5 text-left text-xs font-medium text-anchor-textSecondary">资金流向</th>
+                <th className="px-3 py-1.5 text-left text-xs font-medium text-anchor-textSecondary">估值分位</th>
               </tr>
             </thead>
             <tbody>
@@ -86,6 +116,18 @@ export function RankingTable({ data }: RankingTableProps) {
                   <td className="px-3 py-1 text-xs text-anchor-textSecondary">{row.role || '--'}</td>
                   <td className={cn('px-3 py-1 text-xs font-mono font-medium', getPctColorClass(row.pct_chg))}>
                     {formatPct(row.pct_chg)}
+                  </td>
+                  <td className="px-3 py-1 text-xs font-mono text-anchor-text">
+                    {formatAmount(row.amount)}
+                  </td>
+                  <td className="px-3 py-1 text-xs font-mono text-anchor-text">
+                    {formatTurnover(row.turnover_rate)}
+                  </td>
+                  <td className={cn('px-3 py-1 text-xs font-mono font-medium', getFundFlowColorClass(row.fund_flow))}>
+                    {formatFundFlow(row.fund_flow)}
+                  </td>
+                  <td className="px-3 py-1 text-xs font-mono text-anchor-text">
+                    {formatValuation(row.valuation_percentile)}
                   </td>
                 </tr>
               ))}

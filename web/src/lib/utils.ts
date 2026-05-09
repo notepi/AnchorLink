@@ -218,10 +218,10 @@ export function getConfidenceQuantifiedColorClass(
  */
 export function getPoolDisplayName(universeId: string): string {
   const poolNames: Record<string, string> = {
-    direct_peers: '核心同类',
-    industry_chain: '产业链',
-    theme_pool: '主题情绪',
-    trading_watchlist: '交易观察',
+    direct_peers: '核心',
+    industry_chain: '产业',
+    theme_pool: '主题',
+    trading_watchlist: '交易',
   };
   return poolNames[universeId] || universeId;
 }
@@ -232,4 +232,22 @@ export function getPoolDisplayName(universeId: string): string {
  */
 export function getPoolShortName(universeId: string): string {
   return getPoolDisplayName(universeId);
+}
+
+// 信号标签展示映射（处理旧label到新术语的转换）
+const SIGNAL_LABEL_DISPLAY_MAP: Record<string, string> = {
+  '主线池强于主题情绪': '核心池强于主题',
+  '主题情绪强于主线池': '主题强于核心池',
+  '交易观察池升温': '交易池升温',
+  '交易观察池降温': '交易池降温',
+  '跑赢主线池': '跑赢核心池',
+  '跑输主线池': '跑输核心池',
+};
+
+/**
+ * 格式化信号标签（处理旧label到新术语的展示转换）
+ * 计算和匹配仍使用原始label，UI展示使用此函数
+ */
+export function formatSignalLabel(label: string): string {
+  return SIGNAL_LABEL_DISPLAY_MAP[label] || label;
 }

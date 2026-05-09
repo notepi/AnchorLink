@@ -28,12 +28,12 @@ const FORMULAS = [
   {
     name: 'core_vs_theme_spread',
     formula: 'direct_peers_median - theme_pool_median',
-    description: '核心同类 vs 主题扩散',
+    description: '核心 vs 主题',
   },
   {
     name: 'core_vs_chain_spread',
     formula: 'direct_peers_median - industry_chain_median',
-    description: '核心同类 vs 产业链',
+    description: '核心 vs 产业',
   },
 ];
 
@@ -118,24 +118,24 @@ export default async function GroupRotationPage() {
               </thead>
               <tbody>
                 <tr className="border-b border-anchor-border/50">
-                  <td className="py-1 text-anchor-text">核心同类强于主题扩散</td>
+                  <td className="py-1 text-anchor-text">核心强于主题</td>
                   <td className="py-1 text-right font-mono text-anchor-accent">+1.0%</td>
-                  <td className="py-1 text-anchor-up">核心更强</td>
+                  <td className="py-1 text-anchor-positive">核心更强</td>
                 </tr>
                 <tr className="border-b border-anchor-border/50">
-                  <td className="py-1 text-anchor-text">主题扩散强于核心同类</td>
+                  <td className="py-1 text-anchor-text">主题强于核心</td>
                   <td className="py-1 text-right font-mono text-anchor-accent">-1.0%</td>
-                  <td className="py-1 text-anchor-down">主题更强</td>
+                  <td className="py-1 text-anchor-negative">主题更强</td>
                 </tr>
                 <tr className="border-b border-anchor-border/50">
-                  <td className="py-1 text-anchor-text">产业链强于情绪池</td>
+                  <td className="py-1 text-anchor-text">产业强于主题</td>
                   <td className="py-1 text-right font-mono text-anchor-accent">+1.0%</td>
-                  <td className="py-1 text-anchor-up">产业链更强</td>
+                  <td className="py-1 text-anchor-positive">产业更强</td>
                 </tr>
                 <tr className="border-b border-anchor-border/50">
-                  <td className="py-1 text-anchor-text">情绪池强于产业链</td>
+                  <td className="py-1 text-anchor-text">主题强于产业</td>
                   <td className="py-1 text-right font-mono text-anchor-accent">-1.0%</td>
-                  <td className="py-1 text-anchor-down">情绪更强</td>
+                  <td className="py-1 text-anchor-negative">情绪更强</td>
                 </tr>
               </tbody>
             </table>
@@ -175,14 +175,14 @@ export default async function GroupRotationPage() {
                     </div>
                     <div className="flex items-center gap-2">
                       {isStrongest && (
-                        <span className="text-xs text-anchor-up">最强</span>
+                        <span className="text-xs text-anchor-positive">最强</span>
                       )}
                       {isWeakest && (
-                        <span className="text-xs text-anchor-down">最弱</span>
+                        <span className="text-xs text-anchor-negative">最弱</span>
                       )}
                       <span className={`text-sm font-mono ${
                         isPositive === null ? 'text-anchor-textMuted' :
-                        isPositive ? 'text-anchor-up' : 'text-anchor-down'
+                        isPositive ? 'text-anchor-positive' : 'text-anchor-negative'
                       }`}>
                         {median !== null && median !== undefined
                           ? `${isPositive ? '+' : ''}${median.toFixed(2)}%`
@@ -226,13 +226,13 @@ export default async function GroupRotationPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="text-center">
                 <div className="text-xs text-anchor-textMuted mb-1">最强池</div>
-                <div className="text-lg font-medium text-anchor-up">
+                <div className="text-lg font-medium text-anchor-positive">
                   {strongestGroup ? POOL_NAMES[strongestGroup as PoolType] || strongestGroup : '--'}
                 </div>
               </div>
               <div className="text-center">
                 <div className="text-xs text-anchor-textMuted mb-1">最弱池</div>
-                <div className="text-lg font-medium text-anchor-down">
+                <div className="text-lg font-medium text-anchor-negative">
                   {weakestGroup ? POOL_NAMES[weakestGroup as PoolType] || weakestGroup : '--'}
                 </div>
               </div>

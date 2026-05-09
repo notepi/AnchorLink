@@ -43,7 +43,7 @@ uv sync
 ### 2. 每日运行
 
 ```bash
-# 一键运行全部流程
+# 一键运行全部流程（默认回溯60天）
 uv run python scripts/run_all.py
 ```
 
@@ -51,14 +51,26 @@ uv run python scripts/run_all.py
 - `reports/YYYYMMDD_blt_review.md` - 当日复盘报告
 - `archive/metrics/YYYYMMDD.parquet` - 指标归档
 
-### 3. 独立模块运行
+### 3. 扩展历史天数
 
 ```bash
-# 仅运行行情数据线
-uv run python -m src.price.run
+# 扩展到365天
+uv run python scripts/run_all.py --days 365
+```
+
+数据采用合并去重保存，扩展历史后每日更新不会丢失已有数据。
+
+### 4. 独立模块运行
+
+```bash
+# 仅运行行情数据线（指定回溯天数）
+uv run python -m src.price.run --days 120
 
 # 仅运行日报生成
 uv run python -m src.dailyreport.run
+
+# 仅运行历史分析
+uv run python scripts/build_history_analysis.py
 ```
 
 ---
@@ -183,6 +195,17 @@ universes:
 **原因**：archive/metrics/ 目录下数据不足5日
 
 **解决**：连续运行5天，积累足够数据后自动显示完整近5日结构
+
+### Q: 如何获取更多历史数据？
+
+**方法**：使用 `--days` 参数指定回溯天数
+
+```bash
+# 扩展到365天
+uv run python scripts/run_all.py --days 365
+```
+
+数据采用合并去重保存，扩展历史后每日更新（默认60天）不会丢失已有数据。
 
 ### Q: 如何修改股票池？
 

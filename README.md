@@ -43,7 +43,12 @@ npm run dev
 
 ```bash
 uv sync
+
+# 每日更新（默认回溯60天）
 uv run python scripts/run_all.py
+
+# 扩展历史天数
+uv run python scripts/run_all.py --days 365
 ```
 
 ## 模块说明

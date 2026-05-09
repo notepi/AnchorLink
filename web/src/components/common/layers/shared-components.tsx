@@ -72,10 +72,10 @@ export function ThresholdBar({ label, value, threshold, unit = '%', invertColors
       <div className="flex items-center justify-between mb-1">
         <span className="text-xs text-anchor-textSecondary">{label}</span>
         <div className="flex items-center gap-2">
-          <span className={`text-xs font-mono ${isPositive ? 'text-anchor-up' : 'text-anchor-down'}`}>
+          <span className={`text-xs font-mono ${isPositive ? 'text-anchor-positive' : 'text-anchor-negative'}`}>
             {isPositive ? '+' : ''}{value.toFixed(2)}{unit}
           </span>
-          <span className={`text-xs ${hitThreshold ? 'text-anchor-up' : 'text-anchor-textMuted'}`}>
+          <span className={`text-xs ${hitThreshold ? 'text-anchor-positive' : 'text-anchor-textMuted'}`}>
             {hitThreshold ? '✓' : '阈值:' + threshold}
           </span>
         </div>
@@ -83,7 +83,7 @@ export function ThresholdBar({ label, value, threshold, unit = '%', invertColors
       <div className="h-1.5 bg-anchor-bg rounded-sm overflow-hidden">
         <div
           className={`h-full rounded-sm transition-all ${
-            isPositive ? 'bg-anchor-up' : 'bg-anchor-down'
+            isPositive ? 'bg-anchor-positive' : 'bg-anchor-negative'
           }`}
           style={{ width: `${ratio * 100}%` }}
         />
@@ -154,8 +154,8 @@ export function HitIndicator({ hit, label }: HitIndicatorProps) {
     <span
       className={`inline-flex items-center gap-1 text-xs font-mono px-1.5 py-0.5 rounded ${
         hit
-          ? 'bg-anchor-up/10 text-anchor-up'
-          : 'bg-anchor-down/10 text-anchor-down'
+          ? 'bg-anchor-positive/10 text-anchor-positive'
+          : 'bg-anchor-negative/10 text-anchor-negative'
       }`}
     >
       {hit ? '✓' : '✗'} {label || ''}
@@ -193,13 +193,13 @@ export function RuleTable({ title, rules }: RuleTableProps) {
             key={i}
             className={`flex items-center justify-between px-3 py-2 rounded-sm border ${
               rule.hit
-                ? 'bg-anchor-up/5 border-anchor-up/20'
+                ? 'bg-anchor-positive/5 border-anchor-up/20'
                 : 'bg-anchor-bg border-anchor-border'
             }`}
           >
             <div className="flex items-center gap-3">
               {rule.hit !== undefined && (
-                <span className={rule.hit ? 'text-anchor-up' : 'text-anchor-down'}>
+                <span className={rule.hit ? 'text-anchor-positive' : 'text-anchor-negative'}>
                   {rule.hit ? '✓' : '✗'}
                 </span>
               )}
@@ -209,7 +209,7 @@ export function RuleTable({ title, rules }: RuleTableProps) {
               <code className="text-anchor-textMuted font-mono">{rule.formula}</code>
               <span className="text-anchor-textSecondary">{rule.threshold}</span>
               {rule.currentValue !== undefined && rule.currentValue !== null && (
-                <span className={`font-mono ${rule.hit ? 'text-anchor-up' : 'text-anchor-text'}`}>
+                <span className={`font-mono ${rule.hit ? 'text-anchor-positive' : 'text-anchor-text'}`}>
                   = {rule.currentValue.toFixed(2)}
                 </span>
               )}

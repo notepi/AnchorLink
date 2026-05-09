@@ -158,7 +158,7 @@ def minimal_member_data(trade_date):
             amount=100000.0,
             turnover_rate=None,
             net_mf_amount=None,
-            is_valid=True,
+            pe_ttm=None, pb=None, is_valid=True,
         ),
         "688433.SH": MemberData(
             symbol="688433.SH",
@@ -168,7 +168,7 @@ def minimal_member_data(trade_date):
             amount=50000.0,
             turnover_rate=None,
             net_mf_amount=None,
-            is_valid=True,
+            pe_ttm=None, pb=None, is_valid=True,
         ),
     }
 
@@ -308,7 +308,7 @@ class TestOptionalFieldsMissing:
             amount=100000.0,
             turnover_rate=None,  # 缺失
             net_mf_amount=None,
-            is_valid=True,
+            pe_ttm=None, pb=None, is_valid=True,
         )
 
         # 核心字段有效
@@ -325,7 +325,7 @@ class TestOptionalFieldsMissing:
             amount=100000.0,
             turnover_rate=3.0,
             net_mf_amount=None,  # 缺失
-            is_valid=True,
+            pe_ttm=None, pb=None, is_valid=True,
         )
 
         # 核心字段有效
@@ -511,7 +511,7 @@ class TestEdgeCases:
             amount=None,
             turnover_rate=None,
             net_mf_amount=None,
-            is_valid=False,
+            pe_ttm=None, pb=None, is_valid=False,
             invalid_reason="missing",
         )
 

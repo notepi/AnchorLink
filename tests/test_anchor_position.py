@@ -50,7 +50,7 @@ def sample_anchor_data():
         amount=120000.0,
         turnover_rate=5.0,
         net_mf_amount=8000000.0,
-        is_valid=True,
+        pe_ttm=None, pb=None, is_valid=True,
     )
 
 
@@ -66,7 +66,7 @@ def sample_market_data():
             amount=100000.0,
             turnover_rate=3.0,
             net_mf_amount=5000000.0,
-            is_valid=True,
+            pe_ttm=None, pb=None, is_valid=True,
         ),
         "600343.SH": MemberData(
             symbol="600343.SH",
@@ -76,7 +76,7 @@ def sample_market_data():
             amount=80000.0,
             turnover_rate=2.0,
             net_mf_amount=-2000000.0,
-            is_valid=True,
+            pe_ttm=None, pb=None, is_valid=True,
         ),
         "600879.SH": MemberData(
             symbol="600879.SH",
@@ -86,7 +86,7 @@ def sample_market_data():
             amount=150000.0,
             turnover_rate=6.0,
             net_mf_amount=10000000.0,
-            is_valid=True,
+            pe_ttm=None, pb=None, is_valid=True,
         ),
     }
 
@@ -350,7 +350,7 @@ class TestCalculateRelativeStrength:
             amount=100000.0,
             turnover_rate=3.0,
             net_mf_amount=-5000000.0,
-            is_valid=True,
+            pe_ttm=None, pb=None, is_valid=True,
         )
 
         rs = calculate_relative_strength(
@@ -378,7 +378,7 @@ class TestCalculateRelativeStrength:
             amount=100000.0,
             turnover_rate=3.0,
             net_mf_amount=3000000.0,
-            is_valid=True,
+            pe_ttm=None, pb=None, is_valid=True,
         )
 
         rs = calculate_relative_strength(
@@ -454,7 +454,7 @@ class TestQualityCheck:
             amount=100000.0,
             turnover_rate=3.0,
             net_mf_amount=5000000.0,
-            is_valid=True,
+            pe_ttm=None, pb=None, is_valid=True,
         )
 
         status, reason = check_relative_strength_quality(
@@ -633,7 +633,7 @@ class TestEdgeCases:
             amount=100000.0,
             turnover_rate=3.0,
             net_mf_amount=0.0,
-            is_valid=True,
+            pe_ttm=None, pb=None, is_valid=True,
         )
 
         pool_state = PoolState(
@@ -675,7 +675,7 @@ class TestEdgeCases:
             amount=500000.0,
             turnover_rate=15.0,
             net_mf_amount=50000000.0,
-            is_valid=True,
+            pe_ttm=None, pb=None, is_valid=True,
         )
 
         pool_state = PoolState(
@@ -717,7 +717,7 @@ class TestEdgeCases:
             amount=500000.0,
             turnover_rate=15.0,
             net_mf_amount=-50000000.0,
-            is_valid=True,
+            pe_ttm=None, pb=None, is_valid=True,
         )
 
         pool_state = PoolState(
@@ -759,7 +759,7 @@ class TestEdgeCases:
             amount=100000.0,
             turnover_rate=3.0,
             net_mf_amount=5000000.0,
-            is_valid=True,
+            pe_ttm=None, pb=None, is_valid=True,
         )
 
         market_data = {}  # 无其他成员

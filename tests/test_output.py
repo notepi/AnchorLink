@@ -253,7 +253,7 @@ def sample_market_data():
             amount=500000,
             turnover_rate=2.5,
             net_mf_amount=10000000,
-            is_valid=True,
+            pe_ttm=None, pb=None, is_valid=True,
         ),
         "688433.SH": MemberData(
             symbol="688433.SH",
@@ -263,7 +263,7 @@ def sample_market_data():
             amount=300000,
             turnover_rate=1.8,
             net_mf_amount=5000000,
-            is_valid=True,
+            pe_ttm=None, pb=None, is_valid=True,
         ),
     }
 

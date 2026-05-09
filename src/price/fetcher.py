@@ -47,6 +47,26 @@ MAX_RETRIES = 3
 # 重试间隔基数（指数退避）
 RETRY_BASE_DELAY = 1.0
 
+# 合并去重的主键
+_DEDUP_KEYS = ["ts_code", "trade_date"]
+
+
+def _merge_save(new_df: pd.DataFrame, output_path: Path) -> pd.DataFrame:
+    """合并去重保存：读取已有数据，与新数据合并后按 ts_code+trade_date 去重"""
+    if output_path.exists():
+        existing = pd.read_parquet(output_path)
+        if not existing.empty:
+            before = len(existing)
+            combined = pd.concat([existing, new_df], ignore_index=True)
+            combined = combined.drop_duplicates(subset=_DEDUP_KEYS, keep="last")
+            combined.to_parquet(output_path, index=False)
+            print(f"[INFO] 合并: {before} + {len(new_df)} → {len(combined)} 条（去重后）")
+            return combined
+
+    new_df.to_parquet(output_path, index=False)
+    print(f"[INFO] 新建: {len(new_df)} 条 → {output_path}")
+    return new_df
+
 
 def get_tushare_token() -> str:
     """
@@ -314,11 +334,9 @@ def fetch_market_data(
     output_dir = Path(output_path).parent
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # 9. 保存日线数据
-    df.to_parquet(output_path, index=False)
-    print(f"\n[INFO] 数据已保存至 {output_path}")
+    # 9. 合并去重保存日线数据
+    df = _merge_save(df, Path(output_path))
     print(f"[INFO] 总记录数: {len(df)}")
-    print(f"[INFO] 列名: {df.columns.tolist()}")
 
     # 10. 获取 daily_basic（PE/PB/PS/市值）- anchor + core_universe 用于估值对比
     anchor_code = config.get("anchor", {}).get("code", "")
@@ -374,8 +392,8 @@ def _fetch_daily_basic_all(pro, ts_codes: list[str], start_date: str, end_date: 
     if all_dfs:
         combined = pd.concat(all_dfs, ignore_index=True)
         out = output_dir / "daily_basic.parquet"
-        combined.to_parquet(out, index=False)
-        print(f"[INFO] daily_basic: 共 {len(combined)} 条 → {out}")
+        combined = _merge_save(combined, out)
+        print(f"[INFO] daily_basic: 共 {len(combined)} 条")
     else:
         print("[WARN] daily_basic: 所有股票返回空数据")
 
@@ -416,6 +434,48 @@ def _fetch_moneyflow(pro, ts_code: str, start_date: str, end_date: str, output_d
             print("[WARN] moneyflow: 返回空数据")
     except Exception as e:
         print(f"[WARN] moneyflow 获取失败（不影响主流程）: {e}")
+
+
+def _fetch_moneyflow_all(pro, ts_codes: list[str], start_date: str, end_date: str, output_dir: Path):
+    """
+    获取多只股票的资金流向数据，保存到 raw 层
+
+    Args:
+        pro: Tushare API 实例
+        ts_codes: 股票代码列表
+        start_date: 开始日期
+        end_date: 结束日期
+        output_dir: 输出目录
+    """
+    all_dfs = []
+
+    for i, ts_code in enumerate(ts_codes):
+        try:
+            print(f"[INFO] 获取 {ts_code} moneyflow ({i + 1}/{len(ts_codes)})...")
+            df = pro.moneyflow(
+                ts_code=ts_code,
+                start_date=start_date,
+                end_date=end_date,
+                fields="ts_code,trade_date,buy_sm_vol,sell_sm_vol,buy_md_vol,sell_md_vol,buy_lg_vol,sell_lg_vol,buy_elg_vol,sell_elg_vol,net_mf_vol,net_mf_amount"
+            )
+            if df is not None and not df.empty:
+                all_dfs.append(df)
+                print(f"[INFO] moneyflow {ts_code}: {len(df)} 条")
+
+            # 节流
+            if i < len(ts_codes) - 1:
+                time.sleep(REQUEST_INTERVAL)
+
+        except Exception as e:
+            print(f"[WARN] moneyflow {ts_code} 获取失败: {e}")
+
+    if all_dfs:
+        combined = pd.concat(all_dfs, ignore_index=True)
+        out = output_dir / "moneyflow.parquet"
+        combined = _merge_save(combined, out)
+        print(f"[INFO] moneyflow: 共 {len(combined)} 条")
+    else:
+        print("[WARN] moneyflow: 所有股票返回空数据")
 
 
 def fetch_for_registry(
@@ -494,23 +554,20 @@ def fetch_for_registry(
     output_dir = Path(output_path).parent
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # 9. 保存日线数据
-    df.to_parquet(output_path, index=False)
-    print(f"\n[INFO] 数据已保存至 {output_path}")
+    # 9. 合并去重保存日线数据
+    df = _merge_save(df, Path(output_path))
     print(f"[INFO] 总记录数: {len(df)}")
-    print(f"[INFO] 列名: {df.columns.tolist()}")
 
-    # 10. 获取 daily_basic（direct_peers 用于估值对比）
-    direct_peers_members = registry.get_members("direct_peers", enabled_only=True)
-    valuation_codes = [m.symbol for m in direct_peers_members if m.include_in_benchmark]
-    valuation_codes.append(anchor.symbol)
-    valuation_codes = list(set(valuation_codes))
+    # 10. 获取 daily_basic（所有池子成员的估值/换手率数据）
+    # 需要：所有池子成员的 turnover_rate、pe_ttm、pb
+    all_symbols = registry.get_all_symbols()
 
-    if valuation_codes:
-        _fetch_daily_basic_all(pro, valuation_codes, start_date, end_date, output_dir)
+    if all_symbols:
+        _fetch_daily_basic_all(pro, all_symbols, start_date, end_date, output_dir)
 
-    # 11. 获取 anchor 的资金流向数据
-    _fetch_moneyflow(pro, anchor.symbol, start_date, end_date, output_dir)
+    # 11. 获取所有池子成员的资金流向数据（而非仅 anchor）
+    all_symbols = registry.get_all_symbols()
+    _fetch_moneyflow_all(pro, all_symbols, start_date, end_date, output_dir)
 
     return df
 

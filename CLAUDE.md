@@ -22,11 +22,18 @@
 uv run python scripts/run_all.py
 ```
 
+### 扩展历史天数
+
+```bash
+uv run python scripts/run_all.py --days 365
+```
+
 ### 独立模块
 
 ```bash
-uv run python -m src.price.run       # 行情数据线
-uv run python -m src.dailyreport.run # 日报生成
+uv run python -m src.price.run --days 120       # 行情数据线（指定回溯天数）
+uv run python -m src.dailyreport.run             # 日报生成
+uv run python scripts/build_history_analysis.py  # 历史分析（全量重建）
 ```
 
 ## 数据说明

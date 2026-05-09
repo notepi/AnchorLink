@@ -74,8 +74,8 @@ export default function DebugPage() {
 
   const poolFilters = [
     { value: 'all', label: '全部' },
-    { value: 'direct_peers', label: '核心同类' },
-    { value: 'industry_chain', label: '产业链' },
+    { value: 'direct_peers', label: '核心' },
+    { value: 'industry_chain', label: '产业' },
   ];
 
   if (!data.snapshot) {

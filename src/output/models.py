@@ -65,6 +65,7 @@ class AnchorPositionOutput:
     turnover_rank: Optional[int] = None
     moneyflow_rank: Optional[int] = None
     total_count: Optional[int] = None
+    valuation_percentile: Optional[float] = None  # 估值分位（0-100，仅 direct_peers 有意义）
 
 
 @dataclass(frozen=True)

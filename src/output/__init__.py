@@ -62,6 +62,7 @@ from src.output.report_generator import (
 from src.config.loader import PoolRegistry
 from src.pool_state.models import PoolState, MemberData
 from src.anchor_position.relative_strength import RelativeStrength
+from src.anchor_position.ranking_calculator import RankingCalculator
 from src.group_rotation.models import GroupRotation
 from src.signal.models import SignalResult
 from src.linkage.models import LinkageAnalysis
@@ -111,16 +112,62 @@ def write_all(
         registry, pool_states, anchor_positions, group_rotation, signal_result, linkage_analysis
     )
 
+    # 计算 direct_peers 所有成员的估值分位
+    valuation_percentiles = _calculate_valuation_percentiles(
+        registry, market_data
+    )
+
     # 写入 JSON
     write_json(snapshot, output_dir / "industry_snapshot.json")
 
     # 写入 CSV
-    write_peer_matrix(registry, market_data, anchor_positions, output_dir / "peer_matrix.csv")
+    write_peer_matrix(
+        registry, market_data, anchor_positions,
+        valuation_percentiles,
+        output_dir / "peer_matrix.csv"
+    )
 
     # 写入 Markdown 报告
     write_report(snapshot, pool_states, signal_result, output_dir / "industry_report.md")
 
     return snapshot
+
+
+def _calculate_valuation_percentiles(
+    registry: PoolRegistry,
+    market_data: dict[str, MemberData],
+) -> dict[str, float]:
+    """
+    计算 direct_peers 所有成员的估值分位
+
+    Args:
+        registry: 配置注册表
+        market_data: symbol -> MemberData
+
+    Returns:
+        {symbol: percentile} 仅包含 direct_peers 成员
+    """
+    # 获取 direct_peers ranking_scope 成员
+    ranking_scope = registry.get_ranking_scope("direct_peers", include_anchor=True)
+
+    # 构建 members_data 列表
+    members_data = []
+    anchor_symbol = registry.get_anchor().symbol
+
+    for symbol in ranking_scope:
+        member_data = market_data.get(symbol)
+        if member_data is None:
+            continue
+
+        members_data.append({
+            "symbol": symbol,
+            "pe_ttm": member_data.pe_ttm,
+            "pb": member_data.pb,
+        })
+
+    # 计算所有成员的估值分位
+    calculator = RankingCalculator(registry)
+    return calculator.calculate_all_valuation_percentiles(members_data)
 
 
 __all__ = [

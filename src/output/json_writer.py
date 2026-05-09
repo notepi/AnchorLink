@@ -132,6 +132,7 @@ def build_anchor_position(
             turnover_rank=direct_peers.rank_turnover,
             moneyflow_rank=direct_peers.rank_fund,
             total_count=direct_peers.total_count,
+            valuation_percentile=direct_peers.valuation_percentile,
         )
     else:
         return AnchorPositionOutput(
@@ -331,6 +332,7 @@ def snapshot_to_dict(snapshot: IndustrySnapshot) -> dict:
             "turnover_rank": snapshot.anchor_position.turnover_rank,
             "moneyflow_rank": snapshot.anchor_position.moneyflow_rank,
             "total_count": snapshot.anchor_position.total_count,
+            "valuation_percentile": snapshot.anchor_position.valuation_percentile,
         },
         "group_rotation": {
             "strongest_group": snapshot.group_rotation.strongest_group,

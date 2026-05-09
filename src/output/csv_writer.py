@@ -48,6 +48,7 @@ def build_csv_row(
     instrument: Optional[Instrument],
     member_data: Optional[MemberData],
     ranking_data: Optional[dict],
+    valuation_percentile: Optional[float] = None,
 ) -> dict:
     """
     构建 CSV 单行数据
@@ -57,6 +58,7 @@ def build_csv_row(
         instrument: 证券主数据
         member_data: 当日行情数据
         ranking_data: 排名数据（可选）
+        valuation_percentile: 估值分位（仅 direct_peers 成员）
 
     Returns:
         CSV 行 dict
@@ -74,7 +76,7 @@ def build_csv_row(
         "turnover_rate": member_data.turnover_rate if member_data and member_data.turnover_rate is not None else "",
         "fund_flow": member_data.net_mf_amount if member_data and member_data.net_mf_amount is not None else "",
         "return_rank": ranking_data.get("rank_return", "") if ranking_data else "",
-        "valuation_percentile": ranking_data.get("valuation_percentile", "") if ranking_data else "",
+        "valuation_percentile": valuation_percentile if valuation_percentile is not None else "",
     }
 
     return row
@@ -88,6 +90,7 @@ def write_peer_matrix(
     registry: PoolRegistry,
     market_data: dict[str, MemberData],
     anchor_positions: dict[str, RelativeStrength],
+    valuation_percentiles: dict[str, float],
     path: str | Path,
 ) -> None:
     """
@@ -97,6 +100,7 @@ def write_peer_matrix(
         registry: 配置注册表
         market_data: 所有成员的当日行情数据
         anchor_positions: 相对位置数据（用于获取排名）
+        valuation_percentiles: 各成员的估值分位（仅 direct_peers）
         path: 输出路径
 
     关键特性：
@@ -131,8 +135,11 @@ def write_peer_matrix(
             # 获取排名数据（从 anchor_positions）
             ranking_data = _get_ranking_data(membership.symbol, universe_id, anchor_positions)
 
+            # 获取估值分位（仅 direct_peers 成员）
+            vp = valuation_percentiles.get(membership.symbol)
+
             # 构建行
-            row = build_csv_row(membership, instrument, member_data, ranking_data)
+            row = build_csv_row(membership, instrument, member_data, ranking_data, vp)
             rows.append(row)
 
     # 写入 CSV

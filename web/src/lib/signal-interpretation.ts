@@ -6,8 +6,8 @@
 import { Signal, GroupRotation } from '@/types';
 
 // 业务常量阈值
-const THEME_STRONGER_THRESHOLD = -0.5; // 主题池相对主线池涨幅差超过 0.5% 视为情绪炒作信号
-const TRADING_WARM_THRESHOLD = 0.5;    // 交易观察池涨幅超过 0.5% 视为升温
+const THEME_STRONGER_THRESHOLD = -0.5; // 主题池相对核心池涨幅差超过 0.5% 视为情绪炒作信号
+const TRADING_WARM_THRESHOLD = 0.5;    // 交易池涨幅超过 0.5% 视为升温
 
 // 组合解读结果
 export interface SignalInterpretation {
@@ -116,13 +116,13 @@ export function interpretSignals(
   if (groupRotation) {
     const themeStronger = groupRotation.core_vs_theme_spread !== null &&
                           groupRotation.core_vs_theme_spread < THEME_STRONGER_THRESHOLD;
-    const tradingWarming = rotationSignals.some(s => s.label.includes('交易观察池升温'));
+    const tradingWarming = rotationSignals.some(s => s.label.includes('交易池升温'));
 
     if (themeStronger && tradingWarming) {
       divergences.push({
         pattern: '情绪炒作',
-        signals: ['主题池强于主线池', '交易观察池升温'],
-        interpretation: '资金转向情绪池，主线逻辑松动',
+        signals: ['主题池强于核心池', '交易池升温'],
+        interpretation: '资金转向情绪池，核心逻辑松动',
         suggestion: '警惕主线松动，关注短线机会',
       });
     }
@@ -130,9 +130,9 @@ export function interpretSignals(
     if (!themeStronger && betaPositive) {
       resonances.push({
         pattern: '主线清晰',
-        signals: ['产业链强于主题池', '行业Beta为正'],
-        interpretation: '产业链领涨且行业上涨，主线逻辑清晰',
-        suggestion: '可坚守主线逻辑',
+        signals: ['产业强于主题池', '行业Beta为正'],
+        interpretation: '产业领涨且行业上涨，核心逻辑清晰',
+        suggestion: '可坚守核心逻辑',
       });
     }
   }

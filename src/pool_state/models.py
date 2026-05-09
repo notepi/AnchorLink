@@ -60,7 +60,7 @@ class MemberData:
     """
     成员当日数据（用于计算）
 
-    包含当日行情、成交、资金数据，以及有效性标记
+    包含当日行情、成交、资金、估值数据，以及有效性标记
     """
 
     symbol: str
@@ -76,6 +76,10 @@ class MemberData:
 
     # 资金数据
     net_mf_amount: Optional[float]  # 资金净流入（元）
+
+    # 估值数据
+    pe_ttm: Optional[float]  # 市盈率（TTM）
+    pb: Optional[float]      # 市净率
 
     # 数据有效性标记
     is_valid: bool  # 是否有效（正常交易且有涨跌幅）

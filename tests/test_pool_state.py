@@ -42,7 +42,7 @@ def sample_member_data():
             amount=100000.0,
             turnover_rate=3.0,
             net_mf_amount=5000000.0,
-            is_valid=True,
+            pe_ttm=None, pb=None, is_valid=True,
         ),
         MemberData(
             symbol="600343.SH",
@@ -52,7 +52,7 @@ def sample_member_data():
             amount=80000.0,
             turnover_rate=2.0,
             net_mf_amount=-2000000.0,
-            is_valid=True,
+            pe_ttm=None, pb=None, is_valid=True,
         ),
         MemberData(
             symbol="600879.SH",
@@ -62,7 +62,7 @@ def sample_member_data():
             amount=120000.0,
             turnover_rate=4.0,
             net_mf_amount=8000000.0,
-            is_valid=True,
+            pe_ttm=None, pb=None, is_valid=True,
         ),
     ]
 
@@ -79,7 +79,7 @@ def sample_member_data_with_missing():
             amount=100000.0,
             turnover_rate=3.0,
             net_mf_amount=5000000.0,
-            is_valid=True,
+            pe_ttm=None, pb=None, is_valid=True,
         ),
         MemberData(
             symbol="600343.SH",
@@ -89,7 +89,7 @@ def sample_member_data_with_missing():
             amount=None,
             turnover_rate=None,
             net_mf_amount=None,
-            is_valid=False,
+            pe_ttm=None, pb=None, is_valid=False,
             invalid_reason="missing",
         ),
     ]
@@ -147,7 +147,7 @@ class TestBenchmarkCalculations:
                 amount=1000.0,
                 turnover_rate=1.0,
                 net_mf_amount=None,
-                is_valid=True,
+                pe_ttm=None, pb=None, is_valid=True,
             )
         ]
         result = calculate_median_return(single_data)
@@ -181,7 +181,7 @@ class TestBenchmarkCalculations:
                 amount=1000.0,
                 turnover_rate=1.0,
                 net_mf_amount=None,
-                is_valid=True,
+                pe_ttm=None, pb=None, is_valid=True,
             )
         ]
         result = calculate_up_ratio(up_data)
@@ -198,7 +198,7 @@ class TestBenchmarkCalculations:
                 amount=1000.0,
                 turnover_rate=1.0,
                 net_mf_amount=None,
-                is_valid=True,
+                pe_ttm=None, pb=None, is_valid=True,
             )
         ]
         result = calculate_up_ratio(down_data)
@@ -247,7 +247,7 @@ class TestBenchmarkCalculations:
                 amount=1000.0,
                 turnover_rate=1.0,
                 net_mf_amount=1000000.0,
-                is_valid=True,
+                pe_ttm=None, pb=None, is_valid=True,
             )
         ]
         result = calculate_fund_positive_ratio(positive_data)
@@ -264,7 +264,7 @@ class TestBenchmarkCalculations:
                 amount=1000.0,
                 turnover_rate=1.0,
                 net_mf_amount=None,  # 无资金数据
-                is_valid=True,
+                pe_ttm=None, pb=None, is_valid=True,
             )
         ]
         result = calculate_fund_positive_ratio(no_fund_data)
@@ -490,7 +490,7 @@ class TestPoolStateDataclass:
             amount=1000.0,
             turnover_rate=1.0,
             net_mf_amount=None,
-            is_valid=True,
+            pe_ttm=None, pb=None, is_valid=True,
         )
 
         with pytest.raises(AttributeError):
@@ -547,7 +547,7 @@ class TestEdgeCases:
                 amount=1000.0,
                 turnover_rate=1.0,
                 net_mf_amount=0.0,
-                is_valid=True,
+                pe_ttm=None, pb=None, is_valid=True,
             )
         ]
 
@@ -568,7 +568,7 @@ class TestEdgeCases:
                 amount=1000.0,
                 turnover_rate=10.0,
                 net_mf_amount=None,
-                is_valid=True,
+                pe_ttm=None, pb=None, is_valid=True,
             ),
             MemberData(
                 symbol="B",
@@ -578,7 +578,7 @@ class TestEdgeCases:
                 amount=500.0,
                 turnover_rate=5.0,
                 net_mf_amount=None,
-                is_valid=True,
+                pe_ttm=None, pb=None, is_valid=True,
             ),
         ]
 
@@ -601,7 +601,7 @@ class TestEdgeCases:
                 amount=1000.0,
                 turnover_rate=1.0,
                 net_mf_amount=None,
-                is_valid=True,
+                pe_ttm=None, pb=None, is_valid=True,
             ),
             MemberData(
                 symbol="B",
@@ -611,7 +611,7 @@ class TestEdgeCases:
                 amount=500.0,
                 turnover_rate=1.0,
                 net_mf_amount=None,
-                is_valid=True,
+                pe_ttm=None, pb=None, is_valid=True,
             ),
         ]
 

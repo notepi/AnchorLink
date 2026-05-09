@@ -4,8 +4,10 @@
 
 用法：
     python -m src.price.run
+    python -m src.price.run --days 365
 """
 
+import argparse
 import sys
 
 from src.config.loader import PoolRegistry
@@ -16,8 +18,12 @@ from src.price.data_product import build_price_data_product
 
 def main():
     """运行行情数据线 MVP 流程"""
+    parser = argparse.ArgumentParser(description="行情数据线")
+    parser.add_argument("--days", type=int, default=60, help="回溯天数（默认60）")
+    args = parser.parse_args()
+
     print("=" * 60)
-    print("行情数据线 MVP - 开始运行")
+    print(f"行情数据线 MVP - 开始运行 (回溯 {args.days} 天)")
     print("=" * 60)
 
     # Step 1: 加载 PoolRegistry
@@ -32,13 +38,13 @@ def main():
     # Step 1: 获取数据（使用 PoolRegistry）
     print("\n[Step 1/3] 获取市场数据...")
     try:
-        df = fetch_for_registry(registry)
+        df = fetch_for_registry(registry, days=args.days)
         if df.empty:
             print("[ERROR] 未获取到数据，流程终止")
             return 1
         print(f"[INFO] 获取数据成功: {len(df)} 条记录")
     except Exception as e:
-        print(f"[ERROR] 获取数据失败: {e}")
+        print(f"[ERROR] 数据获取失败: {e}")
         return 1
 
     # Step 2: 标准化

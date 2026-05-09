@@ -220,6 +220,8 @@ class PoolStateCalculator:
                     amount=None,
                     turnover_rate=None,
                     net_mf_amount=None,
+                    pe_ttm=None,
+                    pb=None,
                     is_valid=False,
                     invalid_reason="missing",
                 ))
@@ -239,6 +241,8 @@ class PoolStateCalculator:
                     amount=row.get("amount"),
                     turnover_rate=None,
                     net_mf_amount=None,
+                    pe_ttm=None,
+                    pb=None,
                     is_valid=False,
                     invalid_reason="no_pct_chg",
                 ))
@@ -250,6 +254,9 @@ class PoolStateCalculator:
             # 获取资金净流入（从 moneyflow）
             net_mf_amount = self._get_net_mf_amount(symbol, trade_date)
 
+            # 获取估值数据（从 daily_basic）
+            pe_ttm, pb = self._get_valuation_data(symbol, trade_date)
+
             result.append(MemberData(
                 symbol=symbol,
                 trade_date=trade_date,
@@ -258,6 +265,8 @@ class PoolStateCalculator:
                 amount=row.get("amount"),
                 turnover_rate=turnover_rate,
                 net_mf_amount=net_mf_amount,
+                pe_ttm=pe_ttm,
+                pb=pb,
                 is_valid=True,
                 invalid_reason=None,
             ))
@@ -332,6 +341,28 @@ class PoolStateCalculator:
             return None
 
         return data.iloc[0].get("net_mf_amount")
+
+    def _get_valuation_data(self, symbol: str, trade_date: str) -> tuple[Optional[float], Optional[float]]:
+        """获取估值数据（pe_ttm, pb）"""
+
+        if self.daily_basic is None or self.daily_basic.empty:
+            return None, None
+
+        date_dt = pd.to_datetime(trade_date, format="%Y%m%d")
+
+        data = self.daily_basic[
+            (self.daily_basic["ts_code"] == symbol) &
+            (self.daily_basic["trade_date"] == date_dt)
+        ]
+
+        if data.empty:
+            return None, None
+
+        row = data.iloc[0]
+        pe_ttm = row.get("pe_ttm")
+        pb = row.get("pb")
+
+        return pe_ttm, pb
 
     def _determine_overall_status(
         self,

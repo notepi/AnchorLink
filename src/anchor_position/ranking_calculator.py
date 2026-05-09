@@ -90,7 +90,7 @@ class RankingCalculator:
         valuation_percentile = None
         if universe_id == "direct_peers":
             valuation_percentile = self._calculate_valuation_percentile(
-                anchor_data, market_data, ranking_symbols
+                members_data, anchor_data.symbol
             )
 
         return {
@@ -130,6 +130,8 @@ class RankingCalculator:
                     "amount": anchor_data.amount,
                     "turnover_rate": anchor_data.turnover_rate,
                     "net_mf_amount": anchor_data.net_mf_amount,
+                    "pe_ttm": anchor_data.pe_ttm,
+                    "pb": anchor_data.pb,
                 }
             else:
                 # 使用 market_data
@@ -142,6 +144,8 @@ class RankingCalculator:
                     "amount": member_data.amount,
                     "turnover_rate": member_data.turnover_rate,
                     "net_mf_amount": member_data.net_mf_amount,
+                    "pe_ttm": member_data.pe_ttm,
+                    "pb": member_data.pb,
                 }
 
             dataset.append(data)
@@ -211,28 +215,132 @@ class RankingCalculator:
 
     def _calculate_valuation_percentile(
         self,
-        anchor_data: MemberData,
-        market_data: dict[str, MemberData],
-        ranking_symbols: list[str],
+        members_data: list[dict],
+        anchor_symbol: str,
     ) -> Optional[float]:
         """
         计算估值分位（仅 direct_peers）
 
         Args:
-            anchor_data: Anchor 数据
-            market_data: 其他成员数据
-            ranking_symbols: ranking_scope symbols
+            members_data: 排名数据集（包含 pe_ttm, pb）
+            anchor_symbol: Anchor symbol
 
         Returns:
             估值分位（0-100），None 表示无法计算
 
         Note:
-            - 当前 MemberData 不含估值数据（pe/pb）
-            - 后续版本需要扩展 MemberData 或在此处单独获取 daily_basic
+            - 使用 PE_TTM 计算分位（若为负或None则使用PB）
+            - 分位 = Anchor估值在成员中的排名位置百分比
+            - 0 = 最便宜，100 = 最贵
         """
-        # 当前 MemberData 不含估值数据，返回 None
-        # TODO: 后续版本扩展 MemberData 添加 pe/pb 字段
+        # 收集所有成员的估值数据
+        valuation_data = []
+
+        for member in members_data:
+            symbol = member["symbol"]
+            pe_ttm = member.get("pe_ttm")
+            pb = member.get("pb")
+
+            # 优先使用 PE_TTM（排除负值，负PE表示亏损）
+            if pe_ttm is not None and pe_ttm > 0:
+                valuation_data.append((symbol, pe_ttm, "pe_ttm"))
+            elif pb is not None and pb > 0:
+                valuation_data.append((symbol, pb, "pb"))
+
+        # 至少需要 3 个有效估值数据才能计算分位
+        if len(valuation_data) < 3:
+            return None
+
+        # 找到 Anchor 的估值
+        anchor_valuation = None
+        for symbol, value, metric in valuation_data:
+            if symbol == anchor_symbol:
+                anchor_valuation = (value, metric)
+                break
+
+        if anchor_valuation is None:
+            return None
+
+        anchor_value, anchor_metric = anchor_valuation
+
+        # 只使用相同指标的数据进行比较
+        same_metric_data = [
+            (s, v) for s, v, m in valuation_data if m == anchor_metric
+        ]
+
+        if len(same_metric_data) < 3:
+            return None
+
+        # 按估值升序排序（值越小越便宜）
+        sorted_data = sorted(same_metric_data, key=lambda x: x[1])
+
+        # 计算分位（0 = 最便宜，100 = 最贵）
+        total = len(sorted_data)
+        for i, (symbol, value) in enumerate(sorted_data):
+            if symbol == anchor_symbol:
+                percentile = (i / (total - 1)) * 100 if total > 1 else 50.0
+                return percentile
+
         return None
+
+    def calculate_all_valuation_percentiles(
+        self,
+        members_data: list[dict],
+    ) -> dict[str, float]:
+        """
+        计算所有成员的估值分位
+
+        Args:
+            members_data: 排名数据集（包含 pe_ttm, pb）
+
+        Returns:
+            {symbol: percentile} 其中 percentile 0-100
+            0 = 最便宜，100 = 最贵
+
+        Note:
+            - PE组和PB组分开计算（使用相同指标比较）
+            - 至少需要3个有效估值数据才计算
+        """
+        # 1. 收集所有成员的估值数据
+        valuation_data = []
+
+        for member in members_data:
+            symbol = member["symbol"]
+            pe_ttm = member.get("pe_ttm")
+            pb = member.get("pb")
+
+            # 优先使用 PE_TTM（排除负值，负PE表示亏损）
+            if pe_ttm is not None and pe_ttm > 0:
+                valuation_data.append((symbol, pe_ttm, "pe_ttm"))
+            elif pb is not None and pb > 0:
+                valuation_data.append((symbol, pb, "pb"))
+
+        if len(valuation_data) < 3:
+            return {}
+
+        # 2. 分组按指标计算（PE组和PB组分开）
+        pe_group = [(s, v) for s, v, m in valuation_data if m == "pe_ttm"]
+        pb_group = [(s, v) for s, v, m in valuation_data if m == "pb"]
+
+        result = {}
+
+        # 3. 计算 PE 组分位（升序，最小=最便宜=0%）
+        if len(pe_group) >= 3:
+            sorted_pe = sorted(pe_group, key=lambda x: x[1])
+            total = len(sorted_pe)
+            for i, (symbol, value) in enumerate(sorted_pe):
+                percentile = (i / (total - 1)) * 100 if total > 1 else 50.0
+                result[symbol] = percentile
+
+        # 4. 计算 PB 组分位（升序，最小=最便宜=0%）
+        if len(pb_group) >= 3:
+            sorted_pb = sorted(pb_group, key=lambda x: x[1])
+            total = len(sorted_pb)
+            for i, (symbol, value) in enumerate(sorted_pb):
+                percentile = (i / (total - 1)) * 100 if total > 1 else 50.0
+                result[symbol] = percentile
+
+        return result
 
     def _empty_ranking_result(self) -> dict:
         """返回空排名结果"""

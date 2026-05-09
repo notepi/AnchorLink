@@ -3,7 +3,22 @@ import { join } from 'path';
 import { cache } from 'react';
 import YAML from 'yaml';
 import Papa from 'papaparse';
-import type { IndustrySnapshot, PeerMatrixRow, PoolConfig, DateInfo } from '@/types';
+import type {
+  IndustrySnapshot,
+  PeerMatrixRow,
+  PoolConfig,
+  DateInfo,
+  HistorySummaryRow,
+  QuadrantStat,
+  SignalLiftRow,
+  ExtremeDivergence,
+  RollingMetricRow,
+  StateTransition,
+  EventPathRow,
+  CounterIntuitiveSignal,
+  ConditionalSignalEffect,
+  OperatorHistoryView,
+} from '@/types';
 
 // ============================================================
 // 数据目录配置
@@ -316,3 +331,70 @@ export async function getArchiveEntries(): Promise<Array<{
     return [];
   }
 }
+
+// ============================================================
+// 历史分析数据读取（data/output/history_*.csv）
+// ============================================================
+
+async function readHistoryCsv<T>(filename: string): Promise<T[]> {
+  try {
+    const filePath = join(OUTPUT_DIR, filename);
+    const content = await readFile(filePath, 'utf-8');
+    const result = Papa.parse<T>(content, {
+      header: true,
+      skipEmptyLines: true,
+      dynamicTyping: true,
+    });
+    return result.data;
+  } catch (error) {
+    console.error(`Failed to read ${filename}:`, error);
+    return [];
+  }
+}
+
+export const getHistorySummary = cache(async (): Promise<HistorySummaryRow[]> => {
+  return readHistoryCsv<HistorySummaryRow>('history_summary.csv');
+});
+
+export const getQuadrantStats = cache(async (): Promise<QuadrantStat[]> => {
+  return readHistoryCsv<QuadrantStat>('history_quadrant_stats.csv');
+});
+
+export const getSignalLifts = cache(async (): Promise<SignalLiftRow[]> => {
+  return readHistoryCsv<SignalLiftRow>('history_signal_lift.csv');
+});
+
+export const getExtremeDivergences = cache(async (): Promise<ExtremeDivergence[]> => {
+  return readHistoryCsv<ExtremeDivergence>('history_extreme_divergences.csv');
+});
+
+export const getRollingMetrics = cache(async (): Promise<RollingMetricRow[]> => {
+  return readHistoryCsv<RollingMetricRow>('history_rolling_metrics.csv');
+});
+
+export const getStateTransitions = cache(async (): Promise<StateTransition[]> => {
+  return readHistoryCsv<StateTransition>('history_state_transitions.csv');
+});
+
+export const getEventStudy = cache(async (): Promise<EventPathRow[]> => {
+  return readHistoryCsv<EventPathRow>('history_event_study.csv');
+});
+
+export const getCounterIntuitiveSignals = cache(async (): Promise<CounterIntuitiveSignal[]> => {
+  return readHistoryCsv<CounterIntuitiveSignal>('history_counter_intuitive_signals.csv');
+});
+
+export const getConditionalSignalEffects = cache(async (): Promise<ConditionalSignalEffect[]> => {
+  return readHistoryCsv<ConditionalSignalEffect>('history_conditional_signal_effects.csv');
+});
+
+export const getHistoryOperatorPlaybook = cache(async (): Promise<OperatorHistoryView | null> => {
+  try {
+    const filePath = join(OUTPUT_DIR, 'history_operator_playbook.json');
+    const content = await readFile(filePath, 'utf-8');
+    return JSON.parse(content) as OperatorHistoryView;
+  } catch (error) {
+    console.error('Failed to read history_operator_playbook.json:', error);
+    return null;
+  }
+});

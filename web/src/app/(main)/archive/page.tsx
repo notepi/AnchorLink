@@ -32,7 +32,7 @@ export default async function ArchivePage() {
                 <span className={`text-xs px-2 py-0.5 rounded ${
                   entry.type === 'metrics'
                     ? 'bg-anchor-accent/10 text-anchor-accent'
-                    : 'bg-anchor-up/10 text-anchor-up'
+                    : 'bg-anchor-positive/10 text-anchor-positive'
                 }`}>
                   {entry.type === 'metrics' ? '指标' : '事件'}
                 </span>

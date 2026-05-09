@@ -254,3 +254,322 @@ export interface DateInfo {
   hasSnapshot: boolean;
   hasMatrix: boolean;
 }
+
+// ============================================================
+// 历史分析类型（history_*.csv）
+// ============================================================
+
+export interface HistorySummaryRow {
+  date: string;
+  anchor_return: number | null;
+  direct_peers_median: number | null;
+  industry_chain_median: number | null;
+  theme_pool_median: number | null;
+  trading_watchlist_median: number | null;
+  relative_strength_vs_direct: number | null;
+  relative_strength_vs_industry_chain: number | null;
+  relative_strength_vs_theme: number | null;
+  direct_up_ratio: number | null;
+  chain_up_ratio: number | null;
+  amount_expansion_ratio: number | null;
+  moneyflow_positive_ratio: number | null;
+  strongest_group: string | null;
+  weakest_group: string | null;
+  industry_beta: string | null;
+  anchor_alpha: string | null;
+  risk_level: string | null;
+  signal_labels: string | null;
+  signal_categories: string | null;
+  signal_pairs: string | null;
+  data_quality_status: string;
+  next_1d_return: number | null;
+  next_3d_return: number | null;
+  next_5d_return: number | null;
+  next_1d_excess_vs_chain: number | null;
+  next_3d_excess_vs_chain: number | null;
+  next_5d_excess_vs_chain: number | null;
+}
+
+export interface QuadrantStat {
+  quadrant: string;
+  count: number;
+  avg_next_1d: number | null;
+  avg_next_3d: number | null;
+  avg_next_5d: number | null;
+  avg_next_1d_excess: number | null;
+  win_rate_1d: number | null;
+  avg_relative_strength: number | null;
+}
+
+export interface SignalLiftRow {
+  label: string;
+  category: string;
+  appearance_count: number;
+  avg_next_1d: number | null;
+  avg_next_3d: number | null;
+  avg_next_5d: number | null;
+  avg_next_1d_excess: number | null;
+  win_rate_1d: number | null;
+  baseline_avg_next_1d: number | null;
+  baseline_win_rate_1d: number | null;
+  avg_next_1d_delta_pp: number | null;
+  lift_next_1d: number | null;
+  lift_win_rate: number | null;
+  min_count_passed: boolean;
+}
+
+export interface ExtremeDivergence {
+  date: string;
+  anchor_return: number | null;
+  industry_chain_median: number | null;
+  divergence: number;
+  industry_beta: string | null;
+  anchor_alpha: string | null;
+  risk_level: string | null;
+  signal_labels: string | null;
+}
+
+export interface RollingMetricRow {
+  date: string;
+  excess_5d: number | null;
+  excess_10d: number | null;
+  outperform_streak: number | null;
+  beta_streak: number | null;
+  theme_vs_core_streak: number | null;
+  risk_high_streak: number | null;
+}
+
+export interface StateTransition {
+  from_state: string;
+  to_state: string;
+  count: number;
+  probability: number;
+}
+
+export interface EventPathRow {
+  event_date: string;
+  offset: number;
+  date: string;
+  anchor_return: number | null;
+  chain_median: number | null;
+  excess: number | null;
+}
+
+// ============================================================
+// 信号洞察派生类型
+// ============================================================
+
+export interface SignalInsight {
+  label: string;
+  category: string;
+  deltaPp: number;
+  winRate: number;
+  count: number;
+  stabilityScore: number;
+}
+
+export interface BusinessGroup {
+  name: string;
+  description: string;
+  signals: SignalLiftRow[];
+}
+
+export type TrendStatus = 'trend_improving' | 'trend_deteriorating' | 'trend_stable' | 'trend_insufficient';
+
+export interface SignalTrend {
+  label: string;
+  trend: TrendStatus;
+  recentDelta: number | null;
+  historicalDelta: number | null;
+}
+
+export interface Combination {
+  labels: string[];
+  count: number;
+  avgNext1d: number | null;
+  winRate: number | null;
+}
+
+export interface TradingRule {
+  type: 'long' | 'caution';
+  conditions: string[];
+  stats: { avg: number; winRate: number; count: number };
+  dateRange: { start: string; end: string };
+}
+
+// 新增：历史分析优化相关类型
+export interface CombinationSynergy {
+  labels: string[];
+  count: number;
+  avgNext1d: number;
+  winRate: number | null;
+  synergy: number;
+  bestSingleLabel: string;
+}
+
+export interface DecisionSummary {
+  confidence: 'high' | 'medium' | 'low';
+  stance: 'active_watch' | 'cautious_watch' | 'wait';
+  headline: string;
+  riskPoints: string[];
+  reasons: string[];
+}
+
+export interface TradingPlaybook {
+  stance: DecisionSummary['stance'];
+  confidence: DecisionSummary['confidence'];
+  summary: string;
+  evidence: string[];
+  triggers: string[];
+  invalidations: string[];
+  sampleNote: string;
+}
+
+// View Model types (re-exported from history-analysis)
+export interface CoreMetrics {
+  sampleReturn: {
+    avgDailyReturn: number | null;
+    medianReturn: number | null;
+    positiveRatio: number | null;
+  };
+  relativeToIndustry: {
+    avgChainMedian: number | null;
+    avgDailyExcess: number | null;
+    outperformRatio: number | null;
+  };
+  scenarioQuality: {
+    bestQuadrant: QuadrantStat | null;
+    worstQuadrant: QuadrantStat | null;
+    validQuadrantCount: number;
+  };
+  eventRisk: {
+    divergenceCount: number;
+    maxPositiveDivergence: number | null;
+    maxNegativeDivergence: number | null;
+  };
+}
+
+// Input types for history analysis functions
+export interface DecisionSummaryInput {
+  coreMetrics: CoreMetrics;
+  signalInsights: {
+    highValue: SignalInsight[];
+    lowValue: SignalInsight[];
+  };
+  combinationSynergies: CombinationSynergy[];
+  rollingMetrics: RollingMetricRow[];
+  sampleDays: number;
+}
+
+export interface TradingPlaybookInput {
+  decisionSummary: DecisionSummary;
+  signalInsights: {
+    highValue: SignalInsight[];
+    lowValue: SignalInsight[];
+  };
+  combinationSynergies: CombinationSynergy[];
+  signalTrends: SignalTrend[];
+  sampleDays: number;
+  latestRolling: RollingMetricRow | null;
+}
+
+export interface SignalCardConclusionInput {
+  signal: SignalInsight;
+  kind: 'high_value' | 'caution';
+  trend: SignalTrend | null;
+}
+
+// ============================================================
+// 历史验证工作台后端视图（history_operator_playbook.json）
+// ============================================================
+
+export interface CounterIntuitiveSignal {
+  label: string;
+  display_label: string;
+  category: string;
+  appearance_count: number;
+  avg_next_1d: number | null;
+  win_rate_1d: number | null;
+  avg_next_1d_delta_pp: number | null;
+  intuitive_direction: 'positive' | 'negative' | 'neutral';
+  actual_direction: 'positive' | 'negative' | 'neutral';
+  degree: number;
+  verdict: 'counter_intuitive_opportunity' | 'signal_trap';
+  explanation: string;
+}
+
+export interface ConditionalSignalEffect {
+  label: string;
+  display_label: string;
+  category: string;
+  quadrant: string;
+  quadrant_count: number;
+  signal_in_quadrant_count: number;
+  avg_next_1d_in_quadrant: number | null;
+  win_rate_in_quadrant: number | null;
+  avg_next_1d_delta_pp_vs_quadrant: number | null;
+  overall_avg_next_1d: number | null;
+  verdict: 'works_in_condition' | 'fails_in_condition' | 'insufficient';
+}
+
+export interface HistoryRegime {
+  confidence: 'high' | 'medium' | 'low';
+  status: 'stable' | 'weakening' | 'invalid';
+  headline: string;
+  reasons: string[];
+  risk_points: string[];
+  latest_rolling_date: string | null;
+}
+
+export interface OperatorSignalRole {
+  label: string;
+  display_label: string;
+  category: string;
+  business_tag: string;
+  role: 'primary_trigger' | 'confirmation' | 'risk_invalidator' | 'context_only' | 'ignore';
+  insight_type: 'counter_intuitive' | 'trap' | 'normal';
+  priority: number;
+  count: number;
+  avg_next_1d: number | null;
+  delta_pp: number | null;
+  win_rate: number | null;
+  trend: TrendStatus;
+  best_condition_quadrant: string | null;
+  conclusion: string;
+  reason: string;
+}
+
+export interface OperatorConfirmationPair {
+  labels: string[];
+  display_labels: string[];
+  count: number;
+  avg_next_1d: number;
+  win_rate: number | null;
+  best_single_label: string;
+  synergy: number;
+  verdict: 'useful_confirmation' | 'no_incremental_edge';
+  conclusion: string;
+}
+
+export interface OperatorPlaybook {
+  stance: 'active_watch' | 'cautious_watch' | 'wait';
+  headline: string;
+  watch_for: string[];
+  confirmations: string[];
+  invalidations: string[];
+  sample_note: string;
+}
+
+export interface OperatorHistoryView {
+  as_of_date: string;
+  date_range_start: string;
+  date_range_end: string;
+  sample_days: number;
+  regime: HistoryRegime;
+  playbook: OperatorPlaybook;
+  signal_roles: OperatorSignalRole[];
+  counter_intuitive_signals: CounterIntuitiveSignal[];
+  signal_traps: CounterIntuitiveSignal[];
+  conditional_effects: ConditionalSignalEffect[];
+  confirmation_pairs: OperatorConfirmationPair[];
+}

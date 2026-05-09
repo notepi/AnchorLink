@@ -190,6 +190,8 @@ def _build_member_data_dict(
                 amount=None,
                 turnover_rate=None,
                 net_mf_amount=None,
+                pe_ttm=None,
+                pb=None,
                 is_valid=False,
                 invalid_reason="missing",
             )
@@ -204,6 +206,8 @@ def _build_member_data_dict(
 
         # 获取换手率（从 daily_basic）
         turnover_rate = None
+        pe_ttm = None
+        pb = None
         if daily_basic_df is not None and not daily_basic_df.empty:
             basic_row = daily_basic_df[
                 (daily_basic_df["ts_code"] == symbol) &
@@ -211,6 +215,8 @@ def _build_member_data_dict(
             ]
             if not basic_row.empty:
                 turnover_rate = basic_row.iloc[0].get("turnover_rate")
+                pe_ttm = basic_row.iloc[0].get("pe_ttm")
+                pb = basic_row.iloc[0].get("pb")
 
         # 获取资金净流入（从 moneyflow）
         net_mf_amount = None
@@ -234,6 +240,8 @@ def _build_member_data_dict(
             amount=amount,
             turnover_rate=turnover_rate,
             net_mf_amount=net_mf_amount,
+            pe_ttm=pe_ttm,
+            pb=pb,
             is_valid=is_valid,
             invalid_reason=invalid_reason,
         )

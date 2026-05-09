@@ -29,8 +29,8 @@ export default async function ConclusionPage() {
   const anchorAlphaTree = {
     label: 'anchor_alpha 判定',
     children: [
-      { condition: '"个股Alpha为正" OR "跑赢核心同类" in signals', label: '"positive"', result: 'positive' },
-      { condition: '"个股Alpha为负" OR "跑输核心同类" in signals', label: '"negative"', result: 'negative' },
+      { condition: '"个股Alpha为正" OR "跑赢核心池" in signals', label: '"positive"', result: 'positive' },
+      { condition: '"个股Alpha为负" OR "跑输核心池" in signals', label: '"negative"', result: 'negative' },
       { label: '"neutral"', result: 'neutral' },
     ],
   };
@@ -48,17 +48,17 @@ export default async function ConclusionPage() {
 
   // Summary 生成模板
   const SUMMARY_TEMPLATE = [
-    { part: 1, template: '行业环境{Beta}，增材制造本业确认池中位数涨跌幅{X.XX}%' },
-    { part: 2, template: '锚定标的{Alpha}，涨跌幅{X.XX}%，相对本业池{X.XX}%' },
+    { part: 1, template: '行业环境{Beta}，核心池中位数涨跌幅{X.XX}%' },
+    { part: 2, template: '锚定标的{Alpha}，涨跌幅{X.XX}%，相对核心池{X.XX}%' },
     { part: 3, template: '{pool}池最强（中位数{X.XX}%），{pool}池最弱（{X.XX}%）' },
     { part: 4, template: '整体风险等级：{Risk}' },
   ];
 
   // next_watch 规则
   const NEXT_WATCH_RULES = [
-    { trigger: '跑赢本业池 / 个股Alpha为正', watch: '是否连续跑赢本业池' },
+    { trigger: '跑赢核心池 / 个股Alpha为正', watch: '是否连续跑赢核心池' },
     { trigger: '放量上涨/下跌 / 主力资金领先', watch: '成交额是否维持放大' },
-    { trigger: '主题扩散强于本业池 / 交易联动池升温', watch: '主题池热度是否传导到本业池' },
+    { trigger: '主题扩散强于核心池 / 交易联动池升温', watch: '主题池热度是否传导到核心池' },
     { trigger: '行业分化', watch: '分化是否继续扩大' },
     { trigger: '任何 abnormal 信号', watch: '异常联动是否持续' },
   ];
@@ -107,12 +107,12 @@ export default async function ConclusionPage() {
               label: 'anchor_alpha',
               children: [
                 {
-                  condition: '"个股Alpha为正" OR "跑赢核心同类"',
+                  condition: '"个股Alpha为正" OR "跑赢核心池"',
                   label: '"positive"',
                   isHighlighted: conclusion?.anchor_alpha === 'positive',
                 },
                 {
-                  condition: '"个股Alpha为负" OR "跑输核心同类"',
+                  condition: '"个股Alpha为负" OR "跑输核心池"',
                   label: '"negative"',
                   isHighlighted: conclusion?.anchor_alpha === 'negative',
                 },
@@ -171,8 +171,8 @@ export default async function ConclusionPage() {
               <div className="flex items-center justify-between">
                 <span className="text-xs text-anchor-textMuted">industry_beta</span>
                 <span className={`text-sm font-mono px-2 py-0.5 rounded ${
-                  conclusion?.industry_beta === 'positive' ? 'bg-anchor-up/10 text-anchor-up' :
-                  conclusion?.industry_beta === 'negative' ? 'bg-anchor-down/10 text-anchor-down' :
+                  conclusion?.industry_beta === 'positive' ? 'bg-anchor-positive/10 text-anchor-positive' :
+                  conclusion?.industry_beta === 'negative' ? 'bg-anchor-negative/10 text-anchor-negative' :
                   'bg-anchor-textMuted/10 text-anchor-textMuted'
                 }`}>
                   {conclusion?.industry_beta || '--'}
@@ -182,8 +182,8 @@ export default async function ConclusionPage() {
               <div className="flex items-center justify-between">
                 <span className="text-xs text-anchor-textMuted">anchor_alpha</span>
                 <span className={`text-sm font-mono px-2 py-0.5 rounded ${
-                  conclusion?.anchor_alpha === 'positive' ? 'bg-anchor-up/10 text-anchor-up' :
-                  conclusion?.anchor_alpha === 'negative' ? 'bg-anchor-down/10 text-anchor-down' :
+                  conclusion?.anchor_alpha === 'positive' ? 'bg-anchor-positive/10 text-anchor-positive' :
+                  conclusion?.anchor_alpha === 'negative' ? 'bg-anchor-negative/10 text-anchor-negative' :
                   'bg-anchor-textMuted/10 text-anchor-textMuted'
                 }`}>
                   {conclusion?.anchor_alpha || '--'}
@@ -193,8 +193,8 @@ export default async function ConclusionPage() {
               <div className="flex items-center justify-between">
                 <span className="text-xs text-anchor-textMuted">risk_level</span>
                 <span className={`text-sm font-mono px-2 py-0.5 rounded ${
-                  conclusion?.risk_level === 'low' ? 'bg-anchor-up/10 text-anchor-up' :
-                  conclusion?.risk_level === 'high' ? 'bg-anchor-down/10 text-anchor-down' :
+                  conclusion?.risk_level === 'low' ? 'bg-anchor-positive/10 text-anchor-positive' :
+                  conclusion?.risk_level === 'high' ? 'bg-anchor-negative/10 text-anchor-negative' :
                   'bg-yellow-500/10 text-yellow-500'
                 }`}>
                   {conclusion?.risk_level || '--'}
@@ -213,7 +213,7 @@ export default async function ConclusionPage() {
                 <div key={i} className="flex items-center justify-between text-xs">
                   <span className="text-anchor-text">{signal.label}</span>
                   <span className={`px-1.5 py-0.5 rounded ${
-                    signal.confidence === 'high' ? 'bg-anchor-up/10 text-anchor-up' :
+                    signal.confidence === 'high' ? 'bg-anchor-positive/10 text-anchor-positive' :
                     signal.confidence === 'medium' ? 'bg-yellow-500/10 text-yellow-500' :
                     'bg-anchor-textMuted/10 text-anchor-textMuted'
                   }`}>

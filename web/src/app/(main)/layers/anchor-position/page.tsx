@@ -48,6 +48,7 @@ export default async function AnchorPositionPage() {
     moneyflow: snapshot?.anchor_position?.moneyflow_rank ?? null,
   };
   const totalCount = snapshot?.anchor_position?.total_count ?? null;
+  const valuationPercentile = snapshot?.anchor_position?.valuation_percentile ?? null;
 
   // 计算 position 判定
   const position = relativeStrengths.direct_peers !== null
@@ -136,7 +137,7 @@ export default async function AnchorPositionPage() {
             <div className="text-xs text-anchor-textMuted mb-1">锚定标的涨跌幅</div>
             <div className={`text-2xl font-mono ${
               anchorReturn !== null
-                ? anchorReturn >= 0 ? 'text-anchor-up' : 'text-anchor-down'
+                ? anchorReturn >= 0 ? 'text-anchor-positive' : 'text-anchor-negative'
                 : 'text-anchor-textMuted'
             }`}>
               {anchorReturn !== null
@@ -150,17 +151,17 @@ export default async function AnchorPositionPage() {
             <div className="text-xs text-anchor-textMuted mb-3">相对强弱（vs 各池中位数）</div>
             <div className="space-y-3">
               <ThresholdBar
-                label="vs 增材制造本业确认池"
+                label="vs 核心池"
                 value={relativeStrengths.direct_peers}
                 threshold={0.5}
               />
               <ThresholdBar
-                label="vs 商业航天硬科技主池"
+                label="vs 产业池"
                 value={relativeStrengths.industry_chain}
                 threshold={0.5}
               />
               <ThresholdBar
-                label="vs 商业航天主题温度计"
+                label="vs 主题池"
                 value={relativeStrengths.theme_pool}
                 threshold={0.5}
               />
@@ -173,9 +174,9 @@ export default async function AnchorPositionPage() {
                 {position && (
                   <span className={`text-xs px-2 py-0.5 rounded ${
                     position === 'outperform'
-                      ? 'bg-anchor-up/10 text-anchor-up'
+                      ? 'bg-anchor-positive/10 text-anchor-positive'
                       : position === 'underperform'
-                      ? 'bg-anchor-down/10 text-anchor-down'
+                      ? 'bg-anchor-negative/10 text-anchor-negative'
                       : 'bg-anchor-textMuted/10 text-anchor-textMuted'
                   }`}>
                     {position === 'outperform' ? '跑赢' : position === 'underperform' ? '跑输' : '中性'}
@@ -217,8 +218,8 @@ export default async function AnchorPositionPage() {
                           </span>
                           {totalCount && (
                             <span className={`text-xs ml-2 ${
-                              rankValue / totalCount <= 0.3 ? 'text-anchor-up' :
-                              rankValue / totalCount >= 0.7 ? 'text-anchor-down' :
+                              rankValue / totalCount <= 0.3 ? 'text-anchor-positive' :
+                              rankValue / totalCount >= 0.7 ? 'text-anchor-negative' :
                               'text-anchor-textMuted'
                             }`}>
                               {rankValue / totalCount <= 0.3 ? '前排' :
@@ -233,6 +234,34 @@ export default async function AnchorPositionPage() {
                   </div>
                 );
               })}
+            </div>
+          </div>
+
+          {/* 估值分位 */}
+          <div className="bg-anchor-bgSecondary rounded-sm p-4 border border-anchor-border">
+            <div className="text-xs text-anchor-textMuted mb-1">估值分位（仅核心池）</div>
+            <div className="flex items-center gap-3">
+              <div className={`text-2xl font-mono ${
+                valuationPercentile !== null
+                  ? valuationPercentile <= 30 ? 'text-anchor-positive' :
+                    valuationPercentile >= 70 ? 'text-anchor-negative' :
+                    'text-anchor-text'
+                  : 'text-anchor-textMuted'
+              }`}>
+                {valuationPercentile !== null
+                  ? `${valuationPercentile.toFixed(0)}%`
+                  : '--'}
+              </div>
+              <div className="text-xs text-anchor-textMuted">
+                {valuationPercentile !== null && (
+                  valuationPercentile <= 30 ? '估值偏低' :
+                  valuationPercentile >= 70 ? '估值偏高' :
+                  '估值适中'
+                )}
+              </div>
+            </div>
+            <div className="mt-2 text-xs text-anchor-textMuted">
+              估值分位越低越便宜，越高越贵（基于 PE_TTM 或 PB）
             </div>
           </div>
         </div>

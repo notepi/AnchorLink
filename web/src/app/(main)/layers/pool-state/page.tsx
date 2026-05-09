@@ -193,9 +193,9 @@ export default async function PoolStatePage() {
                   <span className="text-anchor-text">{node.condition}</span>
                   <span className="text-anchor-textMuted">→</span>
                   <span className={
-                    node.result === 'ok' ? 'text-anchor-up' :
+                    node.result === 'ok' ? 'text-anchor-positive' :
                     node.result === 'partial' ? 'text-yellow-500' :
-                    'text-anchor-down'
+                    'text-anchor-negative'
                   }>{node.label}</span>
                 </div>
               ))}
@@ -250,9 +250,9 @@ export default async function PoolStatePage() {
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="text-sm font-medium text-anchor-text">{POOL_NAMES[poolId]}</h3>
                   <span className={`text-xs px-2 py-0.5 rounded ${
-                    state.data_status === 'ok' ? 'bg-anchor-up/10 text-anchor-up' :
+                    state.data_status === 'ok' ? 'bg-anchor-positive/10 text-anchor-positive' :
                     state.data_status === 'partial' ? 'bg-yellow-500/10 text-yellow-500' :
-                    'bg-anchor-down/10 text-anchor-down'
+                    'bg-anchor-negative/10 text-anchor-negative'
                   }`}>
                     {state.data_status === 'ok' ? 'OK' : state.data_status === 'partial' ? 'Partial' : 'Insufficient'}
                   </span>

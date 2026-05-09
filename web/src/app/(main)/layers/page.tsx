@@ -191,7 +191,7 @@ export default async function LayersPage() {
         </h2>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-sm bg-anchor-up/30" />
+            <div className="w-3 h-3 rounded-sm bg-anchor-positive/30" />
             <span className="text-xs text-anchor-text">OK</span>
           </div>
           <span className="text-anchor-textMuted">→</span>
@@ -201,15 +201,15 @@ export default async function LayersPage() {
           </div>
           <span className="text-anchor-textMuted">→</span>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-sm bg-anchor-down/30" />
+            <div className="w-3 h-3 rounded-sm bg-anchor-negative/30" />
             <span className="text-xs text-anchor-text">Insufficient</span>
           </div>
           <span className="text-anchor-textMuted mx-4">|</span>
           <span className="text-xs text-anchor-textMuted">
             当前状态: <span className={
-              dataStatus === 'ok' ? 'text-anchor-up' :
+              dataStatus === 'ok' ? 'text-anchor-positive' :
               dataStatus === 'partial' ? 'text-yellow-500' :
-              'text-anchor-down'
+              'text-anchor-negative'
             }>{dataStatus === 'ok' ? '正常' : dataStatus === 'partial' ? '部分缺失' : '数据不足'}</span>
           </span>
         </div>
@@ -283,7 +283,7 @@ export default async function LayersPage() {
                 <div className="text-xs text-anchor-textMuted mb-1">{POOL_NAMES[poolId]}</div>
                 <div className={`text-lg font-mono ${
                   isPositive === null ? 'text-anchor-textMuted' :
-                  isPositive ? 'text-anchor-up' : 'text-anchor-down'
+                  isPositive ? 'text-anchor-positive' : 'text-anchor-negative'
                 }`}>
                   {median !== null && median !== undefined
                     ? `${isPositive ? '+' : ''}${median.toFixed(2)}%`
