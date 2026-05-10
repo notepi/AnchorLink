@@ -116,7 +116,7 @@ function parseSignalCategories(categoriesStr: string | null): string[] {
   return categoriesStr.split(',').map((s) => s.trim()).filter(Boolean);
 }
 
-interface SignalPairJson {
+export interface SignalPairJson {
   label: string;
   category: string;
 }
@@ -132,7 +132,7 @@ function parseSignalPairs(pairsStr: string | null): SignalPairJson[] {
   return [];
 }
 
-function extractLabelCategoryPairs(row: HistorySummaryRow): SignalPairJson[] {
+export function extractLabelCategoryPairs(row: HistorySummaryRow): SignalPairJson[] {
   // Prefer signal_pairs JSON
   const pairs = parseSignalPairs(row.signal_pairs);
   if (pairs.length > 0) return pairs;

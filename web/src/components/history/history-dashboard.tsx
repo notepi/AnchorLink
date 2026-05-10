@@ -10,6 +10,7 @@ import type {
   StateTransition,
   EventPathRow,
   OperatorHistoryView,
+  HistoryPersonalityProfile,
 } from '@/types';
 import {
   filterSummaryByDateRange,
@@ -38,9 +39,15 @@ import { DivergenceTimeline } from './divergence-timeline';
 import { TransitionHeatmap } from './transition-heatmap';
 import { OperatorDecisionPanel } from './operator-decision-panel';
 import { OperatorPlaybookPanel } from './operator-playbook-panel';
+import { TodayHistoryMappingPanel } from './today-history-mapping-panel';
 import { OperatorSignalInsights } from './operator-signal-insights';
 import { QuadrantSignalBreakdown } from './quadrant-signal-breakdown';
 import { OperatorCombinationSummary } from './operator-combination-summary';
+import { PersonalitySummaryCard } from './personality-summary-card';
+import { MetricsBar } from './metrics-bar';
+import { HabitPatternList } from './habit-pattern-list';
+import { RelationshipProfilePanel } from './relationship-profile-panel';
+import { PathPatternPanel } from './path-pattern-panel';
 
 interface HistoryDashboardProps {
   initialSummary: HistorySummaryRow[];
@@ -51,6 +58,7 @@ interface HistoryDashboardProps {
   initialTransitions: StateTransition[];
   initialEvents: EventPathRow[];
   initialOperatorView: OperatorHistoryView | null;
+  initialPersonalityProfile: HistoryPersonalityProfile | null;
 }
 
 export function HistoryDashboard({
@@ -62,8 +70,9 @@ export function HistoryDashboard({
   initialTransitions,
   initialEvents,
   initialOperatorView,
+  initialPersonalityProfile,
 }: HistoryDashboardProps) {
-  // 日期范围（YYYYMMDD 格式）
+  // 日期范围
   const sortedDates = useMemo(() => {
     return [...initialSummary].map((r) => r.date).sort();
   }, [initialSummary]);
@@ -119,120 +128,193 @@ export function HistoryDashboard({
     return deriveDivergenceFollowThrough(filteredDivergences, filteredEvents);
   }, [filteredDivergences, filteredEvents]);
 
-  // 新增：信号趋势
   const signalTrends = useMemo(() => {
     return deriveSignalTrends(filteredSignals, filteredSummary);
   }, [filteredSignals, filteredSummary]);
 
-  // 新增：信号组合
   const combinations = useMemo(() => {
     return analyzeSignalCombinations(filteredSummary);
   }, [filteredSummary]);
 
-  // 新增：组合协同
   const combinationSynergies = useMemo(() => {
     return deriveCombinationSynergy(combinations, filteredSignals, { minCount: 8 });
   }, [combinations, filteredSignals]);
 
-  // 趋势指标按 label 索引，方便组件查找
   const trendMap = useMemo(() => {
     const map = new Map<string, typeof signalTrends[number]>();
     for (const t of signalTrends) map.set(t.label, t);
     return map;
   }, [signalTrends]);
 
+  // 从 personality profile 分离模式
+  const likesPatterns = useMemo(() => {
+    return initialPersonalityProfile?.habit_patterns.filter(p => p.habit_type === 'likes') || [];
+  }, [initialPersonalityProfile]);
+
+  const dislikesPatterns = useMemo(() => {
+    return initialPersonalityProfile?.habit_patterns.filter(p => p.habit_type === 'dislikes') || [];
+  }, [initialPersonalityProfile]);
+
   return (
-    <div className="space-y-6 p-4">
-      {/* 筛选栏 */}
-      <FilterBar
-        sortedDates={sortedDates}
-        startDate={startDate}
-        endDate={endDate}
-        signalCategory={signalCategory}
-        onStartDateChange={setStartDate}
-        onEndDateChange={setEndDate}
-        onSignalCategoryChange={setSignalCategory}
-        sampleDays={filteredSummary.filter((r) => r.data_quality_status !== 'insufficient_data').length}
-      />
+    <div className="space-y-4 p-4 max-w-[1600px] mx-auto">
+      {/* 主标题 */}
+      <div className="flex items-center justify-between">
+        <h1 className="text-sm font-semibold text-anchor-text tracking-wide">
+          历史性格档案
+        </h1>
+        {/* 筛选器弱化 */}
+        <FilterBar
+          sortedDates={sortedDates}
+          startDate={startDate}
+          endDate={endDate}
+          signalCategory={signalCategory}
+          onStartDateChange={setStartDate}
+          onEndDateChange={setEndDate}
+          onSignalCategoryChange={setSignalCategory}
+          sampleDays={filteredSummary.filter((r) => r.data_quality_status !== 'insufficient_data').length}
+        />
+      </div>
 
-      {initialOperatorView ? (
+      {/* 历史性格画像区 */}
+      {initialPersonalityProfile ? (
         <>
-          <OperatorDecisionPanel view={initialOperatorView} />
+          {/* 顶部档案摘要 */}
+          <PersonalitySummaryCard
+            summary={initialPersonalityProfile.personality_summary}
+            summaryMetrics={initialPersonalityProfile.summary_metrics}
+            sampleDays={initialPersonalityProfile.sample_days}
+            validSampleDays={initialPersonalityProfile.valid_sample_days}
+            sampleWarnings={initialPersonalityProfile.sample_warnings}
+            likesCount={likesPatterns.length}
+            dislikesCount={dislikesPatterns.length}
+            counterIntuitiveCount={initialPersonalityProfile.counter_intuitive_patterns.length}
+            trapCount={initialPersonalityProfile.trap_patterns.length}
+          />
 
-          <section className="bg-anchor-bgSecondary rounded-sm p-4 border border-anchor-border">
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-              <RollingMetricsChart data={filteredRolling} />
-              <HistoryTrendChart data={filteredSummary} />
+          {/* 横排指标 */}
+          <MetricsBar
+            metrics={initialPersonalityProfile.summary_metrics}
+            sampleDays={initialPersonalityProfile.valid_sample_days}
+          />
+
+          {/* 左右两列主体 */}
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+            {/* 左列 */}
+            <div className="space-y-4">
+              <div className="bg-anchor-bgSecondary border border-anchor-border p-3">
+                <HabitPatternList patterns={likesPatterns} type="likes" />
+              </div>
+              <div className="bg-anchor-bgSecondary border border-anchor-border p-3">
+                <HabitPatternList patterns={dislikesPatterns} type="dislikes" />
+              </div>
+              <div className="bg-anchor-bgSecondary border border-anchor-border p-3">
+                <RelationshipProfilePanel profile={initialPersonalityProfile.relationship_profile} />
+              </div>
             </div>
-          </section>
 
-          <OperatorPlaybookPanel view={initialOperatorView} />
-          <OperatorSignalInsights
-            opportunities={initialOperatorView.counter_intuitive_signals}
-            traps={initialOperatorView.signal_traps}
-            roles={initialOperatorView.signal_roles}
-          />
-          <QuadrantSignalBreakdown
-            effects={initialOperatorView.conditional_effects}
-            summary={filteredSummary}
-          />
-          <OperatorCombinationSummary pairs={initialOperatorView.confirmation_pairs} />
+            {/* 右列 */}
+            <div className="space-y-4">
+              <div className="bg-anchor-bgSecondary border border-anchor-border p-3">
+                <HabitPatternList
+                  patterns={initialPersonalityProfile.counter_intuitive_patterns}
+                  type="counter_intuitive"
+                />
+              </div>
+              <div className="bg-anchor-bgSecondary border border-anchor-border p-3">
+                <HabitPatternList
+                  patterns={initialPersonalityProfile.trap_patterns}
+                  type="trap"
+                />
+              </div>
+              <div className="bg-anchor-bgSecondary border border-anchor-border p-3">
+                <PathPatternPanel patterns={initialPersonalityProfile.path_patterns} />
+              </div>
+            </div>
+          </div>
         </>
       ) : (
         <div className="bg-anchor-bgSecondary rounded-sm p-4 border border-anchor-border">
           <h2 className="text-xs font-medium text-anchor-textSecondary uppercase tracking-wide mb-2">
-            操盘视图未生成
+            历史性格画像未生成
           </h2>
           <p className="text-xs text-anchor-textMuted">
-            请先运行历史分析脚本生成 history_operator_playbook.json。
+            请先运行历史分析脚本生成 history_personality_profile.json。
           </p>
         </div>
       )}
 
-      {/* 结论卡片 */}
-      <ConclusionCard conclusion={conclusion} />
-
-      {/* 核心指标 */}
-      <CoreMetrics metrics={coreMetrics} />
-
-      {/* 四象限 + 信号明细 */}
-      <details className="bg-anchor-bgSecondary rounded-sm border border-anchor-border">
-        <summary className="cursor-pointer p-4 text-xs font-medium text-anchor-textSecondary uppercase tracking-wide">
-          查看完整信号排行 / 组合明细 / 四象限
+      {/* 折叠区：今日判断 */}
+      <details className="bg-anchor-bgSecondary border border-anchor-border">
+        <summary className="cursor-pointer p-3 text-xs font-medium text-anchor-textSecondary uppercase tracking-wide">
+          今日操盘视图
         </summary>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 p-4 pt-0">
-        <div className="bg-anchor-bgSecondary rounded-sm p-4 border border-anchor-border">
-          <QuadrantGrid
-            data={filteredQuadrants}
-            bestQuadrant={conclusion.bestQuadrant}
-            worstQuadrant={conclusion.worstQuadrant}
-          />
-        </div>
-        <div className="bg-anchor-bgSecondary rounded-sm p-4 border border-anchor-border">
-          <SignalLiftTable data={filteredSignals} trendMap={trendMap} />
-        </div>
-        </div>
-
-        <div className="p-4 pt-0">
-          <SignalCombinations combinations={combinations} />
+        <div className="p-3 pt-0 space-y-4">
+          {initialOperatorView ? (
+            <>
+              <OperatorDecisionPanel view={initialOperatorView} />
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                <RollingMetricsChart data={filteredRolling} />
+                <HistoryTrendChart data={filteredSummary} />
+              </div>
+              <OperatorPlaybookPanel view={initialOperatorView} />
+              <TodayHistoryMappingPanel summary={filteredSummary} />
+              <OperatorSignalInsights
+                opportunities={initialOperatorView.counter_intuitive_signals}
+                traps={initialOperatorView.signal_traps}
+                roles={initialOperatorView.signal_roles}
+                sampleDays={initialOperatorView.sample_days}
+                dateRangeStart={initialOperatorView.date_range_start}
+                dateRangeEnd={initialOperatorView.date_range_end}
+              />
+              <QuadrantSignalBreakdown
+                effects={initialOperatorView.conditional_effects}
+                summary={filteredSummary}
+              />
+              <OperatorCombinationSummary pairs={initialOperatorView.confirmation_pairs} />
+            </>
+          ) : (
+            <div className="bg-anchor-bgSecondary p-4 border border-anchor-border">
+              <p className="text-xs text-anchor-textMuted">操盘视图未生成</p>
+            </div>
+          )}
         </div>
       </details>
 
-      {/* 极端背离 */}
-      <div className="bg-anchor-bgSecondary rounded-sm p-4 border border-anchor-border">
-        <DivergenceTimeline
-          divergences={divergencesWithFollowThrough}
-          events={filteredEvents}
-        />
-      </div>
-
-      {/* 状态转移 */}
-      <div className="bg-anchor-bgSecondary rounded-sm p-4 border border-anchor-border">
-        <TransitionHeatmap
-          data={filteredTransitions}
-          summaries={transitionSummaries}
-        />
-      </div>
+      {/* 折叠区：完整统计明细 */}
+      <details className="bg-anchor-bgSecondary border border-anchor-border">
+        <summary className="cursor-pointer p-3 text-xs font-medium text-anchor-textSecondary uppercase tracking-wide">
+          完整统计明细
+        </summary>
+        <div className="p-3 pt-0 space-y-4">
+          <ConclusionCard conclusion={conclusion} />
+          <CoreMetrics metrics={coreMetrics} />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="bg-anchor-bgSecondary p-3 border border-anchor-border">
+              <QuadrantGrid
+                data={filteredQuadrants}
+                bestQuadrant={conclusion.bestQuadrant}
+                worstQuadrant={conclusion.worstQuadrant}
+              />
+            </div>
+            <div className="bg-anchor-bgSecondary p-3 border border-anchor-border">
+              <SignalLiftTable data={filteredSignals} trendMap={trendMap} />
+            </div>
+          </div>
+          <SignalCombinations combinations={combinations} />
+          <div className="bg-anchor-bgSecondary p-3 border border-anchor-border">
+            <DivergenceTimeline
+              divergences={divergencesWithFollowThrough}
+              events={filteredEvents}
+            />
+          </div>
+          <div className="bg-anchor-bgSecondary p-3 border border-anchor-border">
+            <TransitionHeatmap
+              data={filteredTransitions}
+              summaries={transitionSummaries}
+            />
+          </div>
+        </div>
+      </details>
     </div>
   );
 }

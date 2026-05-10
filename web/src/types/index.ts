@@ -573,3 +573,115 @@ export interface OperatorHistoryView {
   conditional_effects: ConditionalSignalEffect[];
   confirmation_pairs: OperatorConfirmationPair[];
 }
+
+// ============================================================
+// 历史性格画像（history_personality_profile.json）
+// ============================================================
+
+export interface ConditionEffect {
+  quadrant: string;
+  count: number;
+  avg_next_1d: number | null;
+  win_rate_1d: number | null;
+  delta_pp_vs_quadrant: number | null;
+}
+
+export interface PersonalityPattern {
+  label: string;
+  display_label: string;
+  category: string;
+  pattern_kind: 'environment' | 'signal' | 'quadrant' | 'relationship' | 'event';
+  habit_type: 'likes' | 'dislikes' | 'counter_intuitive' | 'trap' | 'context';
+  count: number;
+  avg_next_1d: number | null;
+  avg_next_3d: number | null;
+  avg_next_5d: number | null;
+  avg_next_1d_excess: number | null;
+  avg_next_1d_delta_pp: number | null;
+  win_rate_1d: number | null;
+  effect_score: number | null;
+  significance: 'strong' | 'suggestive' | 'weak' | 'insufficient';
+  confidence: 'high' | 'medium' | 'low';
+  best_condition: ConditionEffect | null;
+  worst_condition: ConditionEffect | null;
+  explanation: string;
+  source: 'signal_lift' | 'quadrant_stats' | 'conditional_signal_effects' | 'counter_intuitive' | 'event_study';
+}
+
+export interface PersonalitySummaryMetrics {
+  baseline_win_rate_1d: number | null;
+  median_excess_3d: number | null;
+  median_adverse_3d_proxy: number | null;
+  payoff_ratio: number | null;
+  sharpe_like_ratio: number | null;
+  signal_coverage_ratio: number | null;
+}
+
+export interface PersonalitySummary {
+  headline: string;
+  traits: string[];
+  strongest_pattern_label: string | null;
+  weakest_pattern_label: string | null;
+  confidence: 'high' | 'medium' | 'low';
+  generation_method: string;
+}
+
+export interface RelationshipPattern {
+  relation: 'follows' | 'leads' | 'lags' | 'mean_reverts' | 'diverges' | 'unstable';
+  confidence: 'high' | 'medium' | 'low';
+  sample_count: number;
+  evidence: string[];
+  same_day_corr: number | null;
+  anchor_leads_corr: number | null;
+  anchor_lags_corr: number | null;
+  avg_relative_strength: number | null;
+  outperform_ratio: number | null;
+  repair_after_underperform_ratio: number | null;
+  continuation_after_outperform_ratio: number | null;
+  stability: 'stable' | 'changed' | 'unstable' | 'insufficient';
+}
+
+export interface RelationshipProfile {
+  anchor_vs_chain: RelationshipPattern;
+  anchor_vs_theme: RelationshipPattern;
+  anchor_vs_core: RelationshipPattern;
+  anchor_vs_trading_watchlist: RelationshipPattern;
+}
+
+export interface PathPatternPoint {
+  offset: number;
+  anchor_return: number | null;
+  chain_median: number | null;
+  excess: number | null;
+}
+
+export interface PathPattern {
+  event_label: string;
+  count: number;
+  avg_path: PathPatternPoint[];
+  summary: string;
+  confidence: 'high' | 'medium' | 'low';
+}
+
+export interface PersonalityStability {
+  status: 'stable' | 'changed' | 'insufficient';
+  recent_window_days: number;
+  early_vs_recent_notes: string[];
+}
+
+export interface HistoryPersonalityProfile {
+  as_of_date: string;
+  date_range_start: string;
+  date_range_end: string;
+  sample_days: number;
+  valid_sample_days: number;
+  summary_metrics: PersonalitySummaryMetrics;
+  personality_summary: PersonalitySummary;
+  habit_patterns: PersonalityPattern[];
+  counter_intuitive_patterns: PersonalityPattern[];
+  trap_patterns: PersonalityPattern[];
+  relationship_profile: RelationshipProfile;
+  path_patterns: PathPattern[];
+  stability: PersonalityStability;
+  sample_warnings: string[];
+}

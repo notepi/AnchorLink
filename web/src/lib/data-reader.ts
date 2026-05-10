@@ -18,6 +18,7 @@ import type {
   CounterIntuitiveSignal,
   ConditionalSignalEffect,
   OperatorHistoryView,
+  HistoryPersonalityProfile,
 } from '@/types';
 
 // ============================================================
@@ -395,6 +396,17 @@ export const getHistoryOperatorPlaybook = cache(async (): Promise<OperatorHistor
     return JSON.parse(content) as OperatorHistoryView;
   } catch (error) {
     console.error('Failed to read history_operator_playbook.json:', error);
+    return null;
+  }
+});
+
+export const getHistoryPersonalityProfile = cache(async (): Promise<HistoryPersonalityProfile | null> => {
+  try {
+    const filePath = join(OUTPUT_DIR, 'history_personality_profile.json');
+    const content = await readFile(filePath, 'utf-8');
+    return JSON.parse(content) as HistoryPersonalityProfile;
+  } catch (error) {
+    console.error('Failed to read history_personality_profile.json:', error);
     return null;
   }
 });

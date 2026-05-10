@@ -13,6 +13,7 @@ from pathlib import Path
 from src.history_analysis.models import (
     ConditionalSignalEffect,
     CounterIntuitiveSignal,
+    HistoryPersonalityProfile,
     HistoryRow,
     RollingMetrics,
     QuadrantStats,
@@ -177,3 +178,12 @@ def write_operator_playbook_json(view: OperatorHistoryView, path: Path) -> None:
 
     with open(path, "w", encoding="utf-8") as f:
         json.dump(asdict(view), f, ensure_ascii=False, indent=2, default=_json_default)
+
+
+def write_personality_profile_json(profile: HistoryPersonalityProfile, path: Path) -> None:
+    """写入 history_personality_profile.json"""
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(asdict(profile), f, ensure_ascii=False, indent=2, default=_json_default)

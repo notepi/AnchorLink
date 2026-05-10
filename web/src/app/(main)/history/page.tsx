@@ -7,6 +7,7 @@ import {
   getStateTransitions,
   getEventStudy,
   getHistoryOperatorPlaybook,
+  getHistoryPersonalityProfile,
 } from '@/lib/data-reader';
 import { HistoryDashboard } from '@/components/history/history-dashboard';
 
@@ -20,6 +21,7 @@ export default async function HistoryPage() {
     transitions,
     events,
     operatorView,
+    personalityProfile,
   ] = await Promise.all([
     getHistorySummary(),
     getQuadrantStats(),
@@ -29,6 +31,7 @@ export default async function HistoryPage() {
     getStateTransitions(),
     getEventStudy(),
     getHistoryOperatorPlaybook(),
+    getHistoryPersonalityProfile(),
   ]);
 
   return (
@@ -41,6 +44,7 @@ export default async function HistoryPage() {
       initialTransitions={transitions}
       initialEvents={events}
       initialOperatorView={operatorView}
+      initialPersonalityProfile={personalityProfile}
     />
   );
 }

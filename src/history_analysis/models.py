@@ -216,6 +216,134 @@ class OperatorPlaybook:
 
 
 @dataclass(frozen=True)
+class PersonalitySummaryMetrics:
+    """历史性格画像顶部摘要指标。"""
+    baseline_win_rate_1d: float | None
+    median_excess_3d: float | None
+    median_adverse_3d_proxy: float | None
+    payoff_ratio: float | None
+    sharpe_like_ratio: float | None
+    signal_coverage_ratio: float | None
+
+
+@dataclass(frozen=True)
+class PersonalitySummary:
+    """历史性格摘要。"""
+    headline: str
+    traits: list[str]
+    strongest_pattern_label: str | None
+    weakest_pattern_label: str | None
+    confidence: str
+    generation_method: str
+
+
+@dataclass(frozen=True)
+class ConditionEffect:
+    """条件效果（用于 PersonalityPattern 的 best/worst condition）。"""
+    quadrant: str
+    count: int
+    avg_next_1d: float | None
+    win_rate_1d: float | None
+    delta_pp_vs_quadrant: float | None
+
+
+@dataclass(frozen=True)
+class PersonalityPattern:
+    """性格模式：喜欢/讨厌/反直觉/陷阱。"""
+    label: str
+    display_label: str
+    category: str
+    pattern_kind: str
+    habit_type: str
+    count: int
+    avg_next_1d: float | None
+    avg_next_3d: float | None
+    avg_next_5d: float | None
+    avg_next_1d_excess: float | None
+    avg_next_1d_delta_pp: float | None
+    win_rate_1d: float | None
+    effect_score: float | None
+    significance: str
+    confidence: str
+    best_condition: ConditionEffect | None
+    worst_condition: ConditionEffect | None
+    explanation: str
+    source: str
+
+
+@dataclass(frozen=True)
+class RelationshipPattern:
+    """与参照池的关系模式。"""
+    relation: str
+    confidence: str
+    sample_count: int
+    evidence: list[str]
+    same_day_corr: float | None
+    anchor_leads_corr: float | None
+    anchor_lags_corr: float | None
+    avg_relative_strength: float | None
+    outperform_ratio: float | None
+    repair_after_underperform_ratio: float | None
+    continuation_after_outperform_ratio: float | None
+    stability: str
+
+
+@dataclass(frozen=True)
+class RelationshipProfile:
+    """产业联动画像：与4个参照池的关系。"""
+    anchor_vs_chain: RelationshipPattern
+    anchor_vs_theme: RelationshipPattern
+    anchor_vs_core: RelationshipPattern
+    anchor_vs_trading_watchlist: RelationshipPattern
+
+
+@dataclass(frozen=True)
+class PathPatternPoint:
+    """路径画像的单个点。"""
+    offset: int
+    anchor_return: float | None
+    chain_median: float | None
+    excess: float | None
+
+
+@dataclass(frozen=True)
+class PathPattern:
+    """路径画像：按事件类型聚合的 T-5 到 T+5 路径。"""
+    event_label: str
+    count: int
+    avg_path: list[PathPatternPoint]
+    summary: str
+    confidence: str
+
+
+@dataclass(frozen=True)
+class PersonalityStability:
+    """性格稳定性评估。"""
+    status: str
+    recent_window_days: int
+    early_vs_recent_notes: list[str]
+
+
+@dataclass(frozen=True)
+class HistoryPersonalityProfile:
+    """历史性格画像主模型。"""
+    as_of_date: str
+    date_range_start: str
+    date_range_end: str
+    sample_days: int
+    valid_sample_days: int
+    summary_metrics: PersonalitySummaryMetrics
+    personality_summary: PersonalitySummary
+    habit_patterns: list[PersonalityPattern]
+    counter_intuitive_patterns: list[PersonalityPattern]
+    trap_patterns: list[PersonalityPattern]
+    relationship_profile: RelationshipProfile
+    path_patterns: list[PathPattern]
+    stability: PersonalityStability
+    sample_warnings: list[str]
+
+
+@dataclass(frozen=True)
 class OperatorHistoryView:
     """历史验证工作台后端视图模型。"""
     as_of_date: str
