@@ -6,13 +6,11 @@
 
 ## 预览
 
-> [在线体验完整 Demo](docs/demo.html) — 暗色主题，信号面板 + 历史分析 + 性格档案 + 时间轴
-
-<!-- 截图占位：浏览器打开 docs/demo.html 截图后取消注释
 <p align="center">
   <img src="docs/assets/demo-preview.png" width="80%">
 </p>
--->
+
+> [在线体验完整 Demo](docs/demo.html) — 暗色主题，信号面板 + 历史分析 + 性格档案 + 时间轴
 
 ## 数据管道
 
