@@ -94,7 +94,7 @@ def get_all_stock_codes() -> list[str]:
 
     # 添加锚定标的
     if "anchor" in config:
-        codes.append(config["anchor"]["code"])
+        codes.append(config["anchor"].get("symbol") or config["anchor"].get("code", ""))
 
     # 添加各层级股票
     for layer in ["core_universe", "extended_universe", "research_core", "research_candidates"]:

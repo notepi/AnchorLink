@@ -171,7 +171,7 @@ def build_price_data_product(config_path: str = None, output_path: str = None) -
         output_path = DEFAULT_OUTPUT_PATH
 
     config = load_config(config_path)
-    anchor_symbol = config["anchor"]["code"]
+    anchor_symbol = config["anchor"].get("symbol") or config["anchor"].get("code", "")
 
     market = _load_market_data_with_status()
     latest_trade_date = market["latest_trade_date"]

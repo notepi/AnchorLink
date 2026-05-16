@@ -115,7 +115,7 @@ def extract_stock_codes(config: dict) -> list[dict]:
         # anchor
         anchor = config.get("anchor", {})
         if anchor.get("code"):
-            stocks.append({"ts_code": anchor["code"], "name": anchor.get("name", "")})
+            stocks.append({"ts_code": anchor.get("symbol") or anchor.get("code", ""), "name": anchor.get("name", "")})
 
         # core_universe
         for item in config.get("core_universe", []):
@@ -370,24 +370,35 @@ def _fetch_daily_basic_all(pro, ts_codes: list[str], start_date: str, end_date: 
     all_dfs = []
 
     for i, ts_code in enumerate(ts_codes):
-        try:
-            print(f"[INFO] 获取 {ts_code} daily_basic ({i + 1}/{len(ts_codes)})...")
-            df = pro.daily_basic(
-                ts_code=ts_code,
-                start_date=start_date,
-                end_date=end_date,
-                fields="ts_code,trade_date,pe,pe_ttm,pb,ps_ttm,total_mv,circ_mv,turnover_rate,turnover_rate_f,free_share"
-            )
-            if df is not None and not df.empty:
-                all_dfs.append(df)
-                print(f"[INFO] daily_basic {ts_code}: {len(df)} 条")
+        df = None
+        for attempt in range(MAX_RETRIES):
+            try:
+                print(f"[INFO] 获取 {ts_code} daily_basic ({i + 1}/{len(ts_codes)})...")
+                df = pro.daily_basic(
+                    ts_code=ts_code,
+                    start_date=start_date,
+                    end_date=end_date,
+                    fields="ts_code,trade_date,pe,pe_ttm,pb,ps_ttm,total_mv,circ_mv,turnover_rate,turnover_rate_f,free_share"
+                )
+                break
+            except Exception as e:
+                error_msg = str(e).lower()
+                if attempt < MAX_RETRIES - 1 and ("timeout" in error_msg or "timed out" in error_msg):
+                    wait = RETRY_BASE_DELAY * (2 ** attempt)
+                    print(f"[WARN] daily_basic {ts_code} 超时，{wait:.0f}s 后重试 ({attempt+1}/{MAX_RETRIES})")
+                    time.sleep(wait)
+                else:
+                    print(f"[WARN] daily_basic {ts_code} 获取失败: {e}")
+                    df = None
+                    break
 
-            # 节流
-            if i < len(ts_codes) - 1:
-                time.sleep(REQUEST_INTERVAL)
+        if df is not None and not df.empty:
+            all_dfs.append(df)
+            print(f"[INFO] daily_basic {ts_code}: {len(df)} 条")
 
-        except Exception as e:
-            print(f"[WARN] daily_basic {ts_code} 获取失败: {e}")
+        # 节流
+        if i < len(ts_codes) - 1:
+            time.sleep(REQUEST_INTERVAL)
 
     if all_dfs:
         combined = pd.concat(all_dfs, ignore_index=True)
@@ -450,24 +461,35 @@ def _fetch_moneyflow_all(pro, ts_codes: list[str], start_date: str, end_date: st
     all_dfs = []
 
     for i, ts_code in enumerate(ts_codes):
-        try:
-            print(f"[INFO] 获取 {ts_code} moneyflow ({i + 1}/{len(ts_codes)})...")
-            df = pro.moneyflow(
-                ts_code=ts_code,
-                start_date=start_date,
-                end_date=end_date,
-                fields="ts_code,trade_date,buy_sm_vol,sell_sm_vol,buy_md_vol,sell_md_vol,buy_lg_vol,sell_lg_vol,buy_elg_vol,sell_elg_vol,net_mf_vol,net_mf_amount"
-            )
-            if df is not None and not df.empty:
-                all_dfs.append(df)
-                print(f"[INFO] moneyflow {ts_code}: {len(df)} 条")
+        df = None
+        for attempt in range(MAX_RETRIES):
+            try:
+                print(f"[INFO] 获取 {ts_code} moneyflow ({i + 1}/{len(ts_codes)})...")
+                df = pro.moneyflow(
+                    ts_code=ts_code,
+                    start_date=start_date,
+                    end_date=end_date,
+                    fields="ts_code,trade_date,buy_sm_vol,sell_sm_vol,buy_md_vol,sell_md_vol,buy_lg_vol,sell_lg_vol,buy_elg_vol,sell_elg_vol,net_mf_vol,net_mf_amount"
+                )
+                break
+            except Exception as e:
+                error_msg = str(e).lower()
+                if attempt < MAX_RETRIES - 1 and ("timeout" in error_msg or "timed out" in error_msg):
+                    wait = RETRY_BASE_DELAY * (2 ** attempt)
+                    print(f"[WARN] moneyflow {ts_code} 超时，{wait:.0f}s 后重试 ({attempt+1}/{MAX_RETRIES})")
+                    time.sleep(wait)
+                else:
+                    print(f"[WARN] moneyflow {ts_code} 获取失败: {e}")
+                    df = None
+                    break
 
-            # 节流
-            if i < len(ts_codes) - 1:
-                time.sleep(REQUEST_INTERVAL)
+        if df is not None and not df.empty:
+            all_dfs.append(df)
+            print(f"[INFO] moneyflow {ts_code}: {len(df)} 条")
 
-        except Exception as e:
-            print(f"[WARN] moneyflow {ts_code} 获取失败: {e}")
+        # 节流
+        if i < len(ts_codes) - 1:
+            time.sleep(REQUEST_INTERVAL)
 
     if all_dfs:
         combined = pd.concat(all_dfs, ignore_index=True)
@@ -518,9 +540,30 @@ def fetch_for_registry(
     print(f"[INFO] 共需获取 {len(ts_codes)} 只股票数据")
     print(f"[INFO] 股票池: {ts_codes}")
 
-    # 3. 计算日期范围
+    # 3. 计算日期范围（增量：向前补新 + 向后扩展）
     end_date = datetime.now().strftime("%Y%m%d")
-    start_date = (datetime.now() - timedelta(days=days)).strftime("%Y%m%d")
+    earliest_needed = (datetime.now() - timedelta(days=days)).strftime("%Y%m%d")
+    market_parquet = Path(output_path)
+    if market_parquet.exists():
+        try:
+            existing = pd.read_parquet(market_parquet, columns=["trade_date"])
+            if not existing.empty:
+                min_date = existing["trade_date"].min()
+                max_date = existing["trade_date"].max()
+                if min_date <= earliest_needed:
+                    # 已有数据够老，只需向前补新
+                    start_date = max_date
+                    print(f"[INFO] 增量模式：已有数据至 {max_date}，从该日期开始拉取")
+                else:
+                    # 需要向后扩展历史
+                    start_date = earliest_needed
+                    print(f"[INFO] 扩展模式：已有数据最早 {min_date}，需扩展至 {earliest_needed}")
+            else:
+                start_date = earliest_needed
+        except Exception:
+            start_date = earliest_needed
+    else:
+        start_date = earliest_needed
     print(f"[INFO] 日期范围: {start_date} ~ {end_date}")
 
     # 4. 获取日线数据
@@ -558,6 +601,37 @@ def fetch_for_registry(
     df = _merge_save(df, Path(output_path))
     print(f"[INFO] 总记录数: {len(df)}")
 
+    # 9.5 补缺：检查日期覆盖不足的股票，单独拉取
+    if market_parquet.exists():
+        try:
+            existing_df = pd.read_parquet(market_parquet, columns=["ts_code", "trade_date"])
+            partial_codes = []
+            for ts_code in ts_codes:
+                stock_dates = existing_df[existing_df["ts_code"] == ts_code]["trade_date"]
+                if stock_dates.empty:
+                    partial_codes.append(ts_code)
+                else:
+                    min_date = stock_dates.min()
+                    if isinstance(min_date, pd.Timestamp):
+                        min_str = min_date.strftime("%Y%m%d")
+                    else:
+                        min_str = str(min_date)[:8]
+                    if min_str > earliest_needed:
+                        partial_codes.append(ts_code)
+            if partial_codes:
+                print(f"[INFO] 补缺模式：{len(partial_codes)} 只股票数据覆盖不足，尝试补拉")
+                df_missing = fetch_daily_data(pro, partial_codes, earliest_needed, end_date)
+                if df_missing is not None and not df_missing.empty:
+                    required_cols = ["ts_code", "trade_date", "open", "high", "low", "close", "vol", "amount"]
+                    df_missing = df_missing[[c for c in required_cols if c in df_missing.columns]]
+                    df_missing["name"] = df_missing["ts_code"].map(name_map)
+                    df = _merge_save(df_missing, market_parquet)
+                    print(f"[INFO] 补缺后总记录数: {len(df)}")
+                else:
+                    print(f"[WARN] 补缺失败：{partial_codes} 仍无数据")
+        except Exception as e:
+            print(f"[WARN] 补缺检查失败: {e}")
+
     # 10. 获取 daily_basic（所有池子成员的估值/换手率数据）
     # 需要：所有池子成员的 turnover_rate、pe_ttm、pb
     all_symbols = registry.get_all_symbols()
@@ -568,6 +642,13 @@ def fetch_for_registry(
     # 11. 获取所有池子成员的资金流向数据（而非仅 anchor）
     all_symbols = registry.get_all_symbols()
     _fetch_moneyflow_all(pro, all_symbols, start_date, end_date, output_dir)
+
+    # 12. 同步 normalized 层（确保 raw 更新后 normalized 不落后）
+    try:
+        from src.price.normalizer import normalize
+        normalize()
+    except Exception as e:
+        print(f"[WARN] normalized 同步失败: {e}")
 
     return df
 

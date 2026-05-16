@@ -1,0 +1,32 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls *)",
+      "Bash(find *)",
+      "Bash(cat *)",
+      "Bash(head *)",
+      "Bash(tail *)",
+      "Bash(grep *)",
+      "Bash(wc *)",
+      "Bash(du *)",
+      "Bash(rm *)",
+      "Bash(mv *)",
+      "Bash(cp *)",
+      "Bash(mkdir *)",
+      "Bash(sed *)",
+      "Bash(sort *)",
+      "Bash(uv *)",
+      "Bash(git *)",
+      "Bash(npm *)",
+      "Bash(npx *)",
+      "Bash(python3 *)",
+      "Bash(pkill *)",
+      "Bash(kill *)",
+      "Bash(lsof *)",
+      "Bash(curl *)",
+      "Bash(chmod *)",
+      "Bash(bash *)",
+      "Read(*)"
+    ]
+  }
+}

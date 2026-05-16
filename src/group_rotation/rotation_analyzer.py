@@ -155,17 +155,12 @@ def _filter_all_valid_groups(
         有效池子状态 dict
 
     过滤规则：
-        1. data_status != "insufficient_data"
-        2. median_return 有效
+        median_return 有效即可展示（insufficient_data 池子如果有值也纳入）
     """
     valid = {}
 
     for universe_id, pool_state in pool_states.items():
-        # 检查数据状态
-        if pool_state.data_status == "insufficient_data":
-            continue
-
-        # 检查 median_return 是否有效
+        # 只要有 median_return 就纳入展示（partial/insufficient 也可展示）
         if pool_state.median_return is None:
             continue
 

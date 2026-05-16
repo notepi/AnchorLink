@@ -199,7 +199,12 @@ class PoolStateCalculator:
         """获取成员当日数据"""
 
         result = []
-        date_dt = pd.to_datetime(trade_date, format="%Y%m%d")
+        # 兼容 trade_date 列为 str 或 datetime 类型
+        td_dtype = self.market_data["trade_date"].dtype
+        if pd.api.types.is_string_dtype(td_dtype):
+            date_val: str | pd.Timestamp = trade_date
+        else:
+            date_val = pd.to_datetime(trade_date, format="%Y%m%d")
 
         for member in members:
             symbol = member.symbol
@@ -207,7 +212,7 @@ class PoolStateCalculator:
             # 从 market_data 获取当日行情
             day_data = self.market_data[
                 (self.market_data["ts_code"] == symbol) &
-                (self.market_data["trade_date"] == date_dt)
+                (self.market_data["trade_date"] == date_val)
             ]
 
             if day_data.empty:

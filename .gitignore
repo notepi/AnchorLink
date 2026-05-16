@@ -54,6 +54,7 @@ web/node_modules/
 *.tsbuildinfo
 __pycache__/
 *.pyc
+.pytest_cache/
 
 # 运行产物（保留目录结构，忽略内容）
 data/*/

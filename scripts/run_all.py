@@ -68,6 +68,16 @@ def main():
                 print("[ERROR] 历史分析失败")
                 success = False
 
+        # 4. 前端数据构建
+        if success:
+            result = subprocess.run(
+                [sys.executable, str(PROJECT_ROOT / "scripts" / "build_dashboard_view.py")],
+                cwd=PROJECT_ROOT,
+            )
+            if result.returncode != 0:
+                print("[ERROR] 前端数据构建失败")
+                success = False
+
     print("\n" + "=" * 60)
     if success:
         print("所有任务完成")

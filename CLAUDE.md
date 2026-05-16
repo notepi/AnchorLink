@@ -1,10 +1,11 @@
-# AnchorLink - 锚定联动分析系统
+# AnchorLink
 
-锚定一家公司，与板块联动对比分析。当前标的：铂力特 (688333.SH)。
+锚定联动分析系统。锚定一家公司，与板块联动对比分析。当前标的：铂力特 (688333.SH)。
+
+当前阶段：数据管道健壮性已修复（补缺逻辑、normalized 同步、超时重试），历史数据已扩展到 365 天。下一步是 history-v2 前端 P1 区块填充真实数据。
 
 ## 协作流程
 
-严格按以下顺序执行：
 1. 用户定任务
 2. Claude 做 plan → 写入 `.claude/plans/active/`
 3. 用户确认 plan
@@ -13,55 +14,32 @@
 6. **用户确认测试通过后**，Claude 才能修改 CLAUDE.md
 7. plan 归档到 `.claude/plans/archive/`
 
+## 数据管道
 
-## 操作指令
-
-### 每日更新
-
-```bash
-uv run python scripts/run_all.py
-```
-
-### 扩展历史天数
-
-```bash
-uv run python scripts/run_all.py --days 365
-```
-
-### 独立模块
-
-```bash
-uv run python -m src.price.run --days 120       # 行情数据线（指定回溯天数）
-uv run python -m src.dailyreport.run             # 日报生成
-uv run python scripts/build_history_analysis.py  # 历史分析（全量重建）
-```
-
-## 数据说明
-
-### 文件位置
-
-| 目录 | 内容 |
-|------|------|
-| data/price/ | 行情数据（raw/normalized/processed/analytics） |
-| data/output/ | 前端数据产品 |
-| archive/metrics/ | 指标归档（近5日连续性计算） |
-| reports/ | 生成的日报 |
-
-### 数据接口
-
-统一使用 Tushare，配置 `.env`:
+四步必须按顺序执行，不可跳步：
 
 ```
-TUSHARE_TOKEN=xxx
+src.price.run → src.dailyreport.run → build_history_analysis.py → build_dashboard_view.py
 ```
 
-## 文档索引
+统一入口：`uv run python scripts/run_all.py`
 
-| 文档 | 内容 |
-|------|------|
-| docs/usage.md | 使用说明（快速上手） |
-| docs/prd.md | 产品需求文档（开发视角） |
-| docs/prd_business_review.md | 业务方案评审（业务视角） |
-| docs/file_structure.md | 项目目录结构 |
-| docs/field_glossary.md | 指标字典（85个字段） |
-| docs/pool_governance.md | 股票池治理规范 |
+## 代码规范
+
+- Python：snake_case 变量/函数，PascalCase 类，绝对导入 `from src.module import ...`
+- TypeScript：camelCase 变量/函数，PascalCase 类型/组件，`@/` 路径别名
+- JSON 字段：camelCase（Python 端在 build_dashboard_view.py 转换）
+- 日期格式：内部 `YYYYMMDD` 字符串，显示 `YYYY-MM-DD`，禁止 Date 对象入 JSON
+- 错误处理：`raise ValueError()` / `raise FileNotFoundError()` + `from e` 链式
+- 日志：`print()` 加 `[INFO]`/`[OK]`/`[WARN]`/`[ERROR]` 前缀，不用 logging 模块
+- 数据类：`@dataclass(frozen=True)`，不可变
+
+## 禁止事项
+
+- 不可直接读取 `data/price/raw/`，必须走 normalizer → normalized
+- 不可跳过 PoolRegistry.validate()，配置变更后必须校验
+- 不可修改 `config/pools.yaml` 不更新 version 和 changelog
+- 不可把 theme_pool / trading_watchlist 用于 benchmark 计算
+- 不可跳步执行数据管道（信号依赖池状态，池状态依赖行情数据）
+- 不可删除 `data/output/` 下的历史日报目录（回测依赖）
+- 不可用 Python 相对导入，必须绝对导入
