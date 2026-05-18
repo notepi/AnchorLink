@@ -34,6 +34,19 @@ src.price.run → src.dailyreport.run → build_history_analysis.py → build_da
 - 日志：`print()` 加 `[INFO]`/`[OK]`/`[WARN]`/`[ERROR]` 前缀，不用 logging 模块
 - 数据类：`@dataclass(frozen=True)`，不可变
 
+## 术语管理
+
+所有池名称、状态标签、路径标签的展示文本以 `docs/glossary.md` 为唯一口径，代码常量在 `web/src/lib/glossary.ts`。
+
+- 修改展示术语前，先更新 `docs/glossary.md`，再同步到 `glossary.ts`
+- 不可在组件中硬编码池名称或状态标签的展示文本，必须从 `glossary.ts` 引用
+
+## 前端开发
+
+- 修改前端代码后，必须清 `.next` 缓存再重启 dev server：`rm -rf web/.next && npx next dev`
+- `npm run build` 通过不代表 dev server 没问题，改模块结构（新增/删除文件、改 import）后 webpack 缓存可能损坏导致 Internal Server Error
+- 重启后用 `curl` 验证页面不返回错误，再告知用户去浏览器验证
+
 ## 禁止事项
 
 - 不可直接读取 `data/price/raw/`，必须走 normalizer → normalized
