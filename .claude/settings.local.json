@@ -26,7 +26,15 @@
       "Bash(curl *)",
       "Bash(chmod *)",
       "Bash(bash *)",
-      "Read(*)"
+      "Read(*)",
+      "Bash(xxd)",
+      "WebSearch",
+      "WebFetch(domain:arco.design)",
+      "WebFetch(domain:docusaurus.io)",
+      "WebFetch(domain:developers.google.com)",
+      "WebFetch(domain:www.writethedocs.org)",
+      "WebFetch(domain:bundlephobia.com)",
+      "WebFetch(domain:echarts.apache.org)"
     ]
   }
 }
