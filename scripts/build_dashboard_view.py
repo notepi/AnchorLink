@@ -18,6 +18,7 @@ from collections import Counter, defaultdict
 from statistics import mean
 from typing import Any
 
+import pandas as pd
 import yaml
 
 
@@ -261,6 +262,21 @@ def signal_groups_for_row(row: dict[str, Any], habit_type_map: dict[str, str]) -
     for signal in split_signals(row.get("signal_labels")):
         groups[signal_group(signal, habit_type_map)].append(signal)
     return groups
+
+
+def load_anchor_close_prices(anchor_code: str) -> dict[str, float]:
+    parquet_path = os.path.join(PROJECT_ROOT, "data", "price", "normalized", "market_data_normalized.parquet")
+    if not os.path.exists(parquet_path):
+        print("[WARN] 真实股价文件不存在，将使用归一化指数")
+        return {}
+    df = pd.read_parquet(parquet_path)
+    anchor_df = df[df["ts_code"] == anchor_code]
+    close_by_date: dict[str, float] = {}
+    for _, row in anchor_df.iterrows():
+        trade_date = str(row["trade_date"])[:10].replace("-", "")
+        close_by_date[trade_date] = float(row["close"])
+    print(f"[OK] 加载真实收盘价：{len(close_by_date)} 条，标的 {anchor_code}")
+    return close_by_date
 
 
 def load_all_data() -> dict[str, Any]:
@@ -666,32 +682,36 @@ def build_trends(
     rolling_metrics: list[dict[str, Any]],
     history_summary: list[dict[str, Any]],
     personality_profile: dict[str, Any],
+    close_by_date: dict[str, float],
 ) -> dict[str, Any]:
     print("正在构建 trends...")
-    recent_rolling = last_n(rolling_metrics, 30)
-    excess_return = [
-        {
-            "date": str(row.get("date") or ""),
+    recent_rolling = rolling_metrics
+    excess_return = []
+    for row in recent_rolling:
+        date_str = str(row.get("date") or "")
+        excess_return.append({
+            "date": date_str,
+            "price": close_by_date.get(date_str),
             "excess5d": row.get("excess_5d"),
             "excess10d": row.get("excess_10d"),
             "outperformStreak": row.get("outperform_streak"),
             "betaStreak": row.get("beta_streak"),
             "themeVsCoreStreak": row.get("theme_vs_core_streak"),
             "riskHighStreak": row.get("risk_high_streak"),
-        }
-        for row in recent_rolling
-    ]
+        })
 
-    recent_summary = last_n(history_summary, 30)
+    recent_summary = history_summary
     follow_deviation = []
     for row in recent_summary:
+        date_str = str(row.get("date") or "")
         anchor = row.get("anchor_return")
         industry = row.get("industry_chain_median")
         excess = row.get("relative_strength_vs_industry_chain")
         if excess is None and anchor is not None and industry is not None:
             excess = anchor - industry
         follow_deviation.append({
-            "date": str(row.get("date") or ""),
+            "date": date_str,
+            "price": close_by_date.get(date_str),
             "anchor": anchor,
             "industry": industry,
             "excess": excess,
@@ -700,14 +720,13 @@ def build_trends(
 
     habit_type_map = build_habit_type_map(personality_profile)
     signal_timeline = []
-    price = 100.0
     for row in history_summary:
+        date_str = str(row.get("date") or "")
         day_return = row.get("anchor_return") or 0
-        price *= 1 + float(day_return) / 100
         signals = split_signals(row.get("signal_labels"))
         signal_timeline.append({
-            "date": str(row.get("date") or ""),
-            "price": round(price, 4),
+            "date": date_str,
+            "price": close_by_date.get(date_str),
             "return": day_return,
             "signals": signals,
             "groups": signal_groups_for_row(row, habit_type_map),
@@ -983,6 +1002,8 @@ def main() -> None:
     print("开始生成 dashboard_view.json")
     print("=" * 60)
     data = load_all_data()
+    anchor_code = data["config"].get("anchor", {}).get("symbol", "")
+    close_by_date = load_anchor_close_prices(anchor_code) if anchor_code else {}
     transitions = build_transitions(data["history_summary"], data["state_transitions"])
     similar_cases, window_stats = compute_similar_cases(data["history_summary"])
 
@@ -1004,7 +1025,7 @@ def main() -> None:
             data["quadrant_stats"],
         ),
         "mapData": build_map_data(transitions, data["history_summary"], data["personality_profile"]),
-        "trends": build_trends(data["rolling_metrics"], data["history_summary"], data["personality_profile"]),
+        "trends": build_trends(data["rolling_metrics"], data["history_summary"], data["personality_profile"], close_by_date),
         "tableData": build_table_data(
             transitions,
             data["history_summary"],
