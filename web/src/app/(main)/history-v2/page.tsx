@@ -1,9 +1,10 @@
+import { Suspense } from 'react';
 import { getDashboardView } from '@/lib/dashboard-view-reader';
 import TopBar from '@/components/history-v2/TopBar';
 import TradingView from '@/components/history-v2/TradingView';
 import HistoryMapping from '@/components/history-v2/HistoryMapping';
 import TransitionHeatmap from '@/components/history-v2/TransitionHeatmap';
-import StabilityPanel from '@/components/history-v2/StabilityPanel';
+import StabilityPanel from '@/components/history-v2/StabilityPanelClient';
 import PersonalityProfile from '@/components/history-v2/PersonalityProfile';
 import SignalTimeline from '@/components/history-v2/SignalTimeline';
 import '../../../styles/history-v2.css';
@@ -22,7 +23,9 @@ export default async function HistoryV2Page() {
   return (
     <div className="history-v2-page">
       <main className="page">
-        <TopBar meta={dashboard.meta} filter={dashboard.filter} sortedDates={sortedDates} />
+        <Suspense fallback={<div className="topbar" />}>
+          <TopBar meta={dashboard.meta} filter={dashboard.filter} sortedDates={sortedDates} />
+        </Suspense>
         <TradingView cards={dashboard.cards} advice={dashboard.aiInsight.advice} />
         <HistoryMapping
           currentMapping={dashboard.summary.currentMapping}

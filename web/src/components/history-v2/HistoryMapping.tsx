@@ -13,13 +13,13 @@ export default function HistoryMapping({ currentMapping, pathLabel, similarCases
   const casesToShow = similarCases?.slice?.(0, 5) ?? [];
 
   return (
-    <details className="mapping-section" open>
+    <details className="collapsible-section" open>
       <summary>
-        <div className="mapping-title-wrap">
+        <div className="section-title-wrap">
           <h2 className="section-title">今日历史映射</h2>
           <p className="section-note" style={{ marginTop: '6px' }}>把选定日期的整体状态放回历史样本中，观察相似状态后的路径分布，不代表预测。</p>
         </div>
-        <span className="mapping-meta">相似样本 {currentMapping?.similarSampleCount ?? 0} 个</span>
+        <span className="section-meta">相似样本 {currentMapping?.similarSampleCount ?? 0} 个</span>
       </summary>
 
       <div className="mapping-current">

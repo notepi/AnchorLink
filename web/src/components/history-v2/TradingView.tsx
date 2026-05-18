@@ -1,21 +1,14 @@
 import type { DashboardView } from '@/types/dashboard-view';
 import { formatPercent, formatPp, formatNumber, formatConfidence } from '@/lib/history-v2/formatters';
+import { CONFIDENCE_LABEL } from '@/lib/glossary';
 
 interface TradingViewProps {
   cards: DashboardView['cards'];
   advice: DashboardView['aiInsight']['advice'];
 }
 
-// Badge值映射：英文→中文
-const badgeMap: Record<string, string> = {
-  'stable': '稳定',
-  'deteriorating': '下降',
-  'concerning': '警告',
-  'insufficient': '不足',
-  'high': '高',
-  'medium': '中',
-  'low': '低'
-};
+// Badge值映射：英文→中文（复用 glossary 置信度标签）
+const badgeMap: Record<string, string> = { ...CONFIDENCE_LABEL };
 
 // 格式化卡片值
 const formatCardValue = (card?: DashboardView['cards'][number]) => {
@@ -42,11 +35,14 @@ const formatCardValue = (card?: DashboardView['cards'][number]) => {
 
 export default function TradingView({ cards, advice }: TradingViewProps) {
   return (
-    <section className="section">
-      <div className="section-head">
-        <h2 className="section-title">今日操盘视图</h2>
-        <p className="section-note">保留现有判断卡结构，只把它放到页面主线最前面。</p>
-      </div>
+    <details className="collapsible-section" open>
+      <summary>
+        <div className="section-title-wrap">
+          <h2 className="section-title">今日操盘视图</h2>
+          <p className="section-note" style={{ marginTop: '6px' }}>保留现有判断卡结构，只把它放到页面主线最前面。</p>
+        </div>
+        <span className="section-meta">{cards?.length ?? 0} 项指标</span>
+      </summary>
 
       <div className="grid-3">
         {cards?.slice?.(0, 3)?.map?.((card, index) => (
@@ -79,6 +75,6 @@ export default function TradingView({ cards, advice }: TradingViewProps) {
           <p>{advice?.constraint ?? '暂无约束'}</p>
         </div>
       </div>
-    </section>
+    </details>
   );
 }

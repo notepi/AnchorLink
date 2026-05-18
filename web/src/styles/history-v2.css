@@ -251,14 +251,15 @@
   overflow-wrap: anywhere;
 }
 
-.history-v2-page .mapping-section {
+/* ── Collapsible section (all P1 panels) ── */
+.history-v2-page .collapsible-section {
   border: 1px solid var(--border);
   background: var(--panel);
   padding: 16px;
   margin-top: 16px;
 }
 
-.history-v2-page .mapping-section summary {
+.history-v2-page .collapsible-section summary {
   cursor: pointer;
   list-style: none;
   display: flex;
@@ -269,22 +270,22 @@
   padding: 16px;
 }
 
-.history-v2-page .mapping-section summary::-webkit-details-marker { display: none; }
-.history-v2-page .mapping-section summary::after {
+.history-v2-page .collapsible-section summary::-webkit-details-marker { display: none; }
+.history-v2-page .collapsible-section summary::after {
   content: "⌃";
   color: var(--muted);
   font-size: 13px;
 }
-.history-v2-page .mapping-section:not([open]) summary {
+.history-v2-page .collapsible-section:not([open]) summary {
   margin-bottom: -16px;
 }
-.history-v2-page .mapping-section:not([open]) summary::after { content: "⌄"; }
+.history-v2-page .collapsible-section:not([open]) summary::after { content: "⌄"; }
 
-.history-v2-page .mapping-title-wrap {
+.history-v2-page .section-title-wrap {
   min-width: 0;
 }
 
-.history-v2-page .mapping-meta {
+.history-v2-page .section-meta {
   color: var(--muted);
   font-size: 11px;
   white-space: nowrap;
@@ -431,6 +432,15 @@
   color: var(--text-2);
   font-weight: 650;
   margin-bottom: 8px;
+}
+
+.history-v2-page .chart-container {
+  width: 100%;
+  height: 210px;
+}
+
+.history-v2-page .chart-container a[href] {
+  display: none !important;
 }
 
 .history-v2-page .chart {
@@ -1401,7 +1411,7 @@
 
   .history-v2-page .topbar,
   .history-v2-page .section-head,
-  .history-v2-page .mapping-section summary {
+  .history-v2-page .collapsible-section summary {
     align-items: flex-start;
     flex-direction: column;
     gap: 8px;
@@ -1435,7 +1445,7 @@
   }
 
   .history-v2-page .section,
-  .history-v2-page .mapping-section {
+  .history-v2-page .collapsible-section {
     padding: 14px;
   }
 
@@ -1446,7 +1456,7 @@
   }
 
   .history-v2-page .section,
-  .history-v2-page .mapping-section,
+  .history-v2-page .collapsible-section,
   .history-v2-page .card,
   .history-v2-page .advice,
   .history-v2-page .mapping-current,

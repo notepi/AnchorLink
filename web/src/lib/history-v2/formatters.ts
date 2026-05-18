@@ -3,6 +3,8 @@
  * 所有格式化逻辑完全对齐旧历史页面的显示规则
  */
 
+import { PATH_LABEL, RELATION_LABEL, CONFIDENCE_LABEL } from '@/lib/glossary';
+
 /**
  * 日期格式化
  * @param value 原始日期字符串，格式为YYYYMMDD
@@ -105,14 +107,7 @@ export function formatWinRate(value: number | null | undefined, decimals: number
  */
 export function formatConfidence(value: string | null | undefined): string {
   if (!value) return '--';
-
-  const map: Record<string, string> = {
-    high: '高',
-    medium: '中',
-    low: '低'
-  };
-
-  return map[value] || value;
+  return CONFIDENCE_LABEL[value] || value;
 }
 
 /**
@@ -122,25 +117,8 @@ export function formatConfidence(value: string | null | undefined): string {
  */
 export function formatPathLabel(value: string | null | undefined): { text: string; class: string } {
   if (!value) return { text: '未知', class: '' };
-
-  const map: Record<string, { text: string; class: string }> = {
-    strong_rise: { text: '强势延续', class: '' },
-    pullback_after_rise: { text: '冲高回落', class: '' },
-    continue_fall: { text: '继续走弱', class: '' },
-    weak_repair: { text: '弱势修复', class: '' },
-    range_bound: { text: '区间震荡', class: '' },
-    disagreement: { text: '样本分歧', class: '' },
-    unknown: { text: '未知', class: '' },
-    强势延续: { text: '强势延续', class: '' },
-    冲高回落: { text: '冲高回落', class: '' },
-    继续走弱: { text: '继续走弱', class: '' },
-    弱势修复: { text: '弱势修复', class: '' },
-    分化震荡: { text: '分化震荡', class: '' },
-    样本分歧: { text: '样本分歧', class: '' },
-    未知: { text: '未知', class: '' }
-  };
-
-  return map[value] || { text: value, class: '' };
+  const text = PATH_LABEL[value];
+  return text ? { text, class: '' } : { text: value, class: '' };
 }
 
 /**
@@ -203,17 +181,7 @@ export function formatStars(value: number | null | undefined): string {
  */
 export function formatRelationType(value: string | null | undefined): string {
   if (!value) return '--';
-
-  const map: Record<string, string> = {
-    follows: '跟随',
-    leads: '领先',
-    lags: '滞后',
-    mean_reverts: '均值回归',
-    diverges: '独立',
-    unstable: '不稳定'
-  };
-
-  return map[value] || value;
+  return RELATION_LABEL[value] || value;
 }
 
 /**
@@ -227,8 +195,8 @@ export function formatQuadrantName(value: string | null | undefined, short: bool
 
   if (!short) return value;
 
-  // 简化规则："行业X+个股Y" → "X+Y"
-  return value.replace(/行业([强中弱])\+个股([强中弱])/, '$1+$2');
+  // 简化规则："产业链X+个股Y" → "X+Y"（兼容旧格式"行业X+个股Y"）
+  return value.replace(/(?:产业链|行业)([强中弱])\+个股([强中弱])/, '$1+$2');
 }
 
 /**

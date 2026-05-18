@@ -1,6 +1,7 @@
 import React from 'react';
 import type { DashboardView, QuadrantState } from '@/types/dashboard-view';
 import { formatPercent, formatWinRate } from '@/lib/history-v2/formatters';
+import { BETA_LABEL, ALPHA_LABEL } from '@/lib/glossary';
 
 interface TransitionHeatmapProps {
   transitionData: DashboardView['tableData']['stateTransitions'];
@@ -10,16 +11,19 @@ interface TransitionHeatmapProps {
   transitionVerdict: DashboardView['summary']['transitionVerdict'];
 }
 
+type BetaKey = 'positive' | 'neutral' | 'negative';
+type AlphaKey = 'positive' | 'neutral' | 'negative';
+
 const STATE_ORDER: Array<{ key: QuadrantState; shortLabel: string; label: string }> = [
-  { key: 'positive+positive', shortLabel: '强+强', label: '行业强+个股强' },
-  { key: 'positive+neutral', shortLabel: '强+中', label: '行业强+个股中' },
-  { key: 'positive+negative', shortLabel: '强+弱', label: '行业强+个股弱' },
-  { key: 'neutral+positive', shortLabel: '中+强', label: '行业中+个股强' },
-  { key: 'neutral+neutral', shortLabel: '中+中', label: '行业中+个股中' },
-  { key: 'neutral+negative', shortLabel: '中+弱', label: '行业中+个股弱' },
-  { key: 'negative+positive', shortLabel: '弱+强', label: '行业弱+个股强' },
-  { key: 'negative+neutral', shortLabel: '弱+中', label: '行业弱+个股中' },
-  { key: 'negative+negative', shortLabel: '弱+弱', label: '行业弱+个股弱' }
+  { key: 'positive+positive', shortLabel: '强+强', label: `${BETA_LABEL.positive}+${ALPHA_LABEL.positive}` },
+  { key: 'positive+neutral',  shortLabel: '强+中', label: `${BETA_LABEL.positive}+${ALPHA_LABEL.neutral}` },
+  { key: 'positive+negative', shortLabel: '强+弱', label: `${BETA_LABEL.positive}+${ALPHA_LABEL.negative}` },
+  { key: 'neutral+positive',  shortLabel: '中+强', label: `${BETA_LABEL.neutral}+${ALPHA_LABEL.positive}` },
+  { key: 'neutral+neutral',   shortLabel: '中+中', label: `${BETA_LABEL.neutral}+${ALPHA_LABEL.neutral}` },
+  { key: 'neutral+negative',  shortLabel: '中+弱', label: `${BETA_LABEL.neutral}+${ALPHA_LABEL.negative}` },
+  { key: 'negative+positive', shortLabel: '弱+强', label: `${BETA_LABEL.negative}+${ALPHA_LABEL.positive}` },
+  { key: 'negative+neutral',  shortLabel: '弱+中', label: `${BETA_LABEL.negative}+${ALPHA_LABEL.neutral}` },
+  { key: 'negative+negative', shortLabel: '弱+弱', label: `${BETA_LABEL.negative}+${ALPHA_LABEL.negative}` },
 ];
 
 const STATE_LABEL_BY_KEY = Object.fromEntries(STATE_ORDER.map((state) => [state.key, state.label])) as Record<QuadrantState, string>;
@@ -53,11 +57,14 @@ export default function TransitionHeatmap({
   };
 
   return (
-    <section className="section">
-      <div className="section-head">
-        <h2 className="section-title">状态迁移路径</h2>
-        <p className="section-note">先看左侧路径排行；右侧矩阵只保留为证据，橙色行表示当前状态。</p>
-      </div>
+    <details className="collapsible-section" open>
+      <summary>
+        <div className="section-title-wrap">
+          <h2 className="section-title">状态迁移路径</h2>
+          <p className="section-note" style={{ marginTop: '6px' }}>先看左侧路径排行；右侧矩阵只保留为证据，橙色行表示当前状态。</p>
+        </div>
+        <span className="section-meta">{pathRanking?.length ?? 0} 条路径 · n={pathRanking?.[0]?.count ?? 0}</span>
+      </summary>
 
       <div className="path-layout">
         <div className="card">
@@ -104,7 +111,7 @@ export default function TransitionHeatmap({
           <div className="matrix-guide">
             <div>
               <strong>矩阵读法</strong>
-              左边是当前状态，顶部是下一交易日状态；状态格式是「主线池 + 个股」。
+              左边是当前状态，顶部是下一交易日状态；状态格式是「产业链 + 个股」。
             </div>
             <div className="matrix-pills">
               {guidePills.length > 0 ? guidePills.map((transition) => (
@@ -146,9 +153,9 @@ export default function TransitionHeatmap({
               );
             })}
           </div>
-          <div className="matrix-caption">这里的“主线池”不是宽泛行业指数，而是商业航天硬科技产业链 benchmark；强/中/弱的顺序是「主线池状态 + 个股状态」。例如“弱+中”表示主线池弱、个股中性。</div>
+          <div className="matrix-caption">这里的"产业链"是航天主池（商业航天硬科技产业链 benchmark），不是宽泛行业指数；强/中/弱的顺序是「产业链状态 + 个股状态」。例如"弱+中"表示产业链弱、个股中性。</div>
         </div>
       </div>
-    </section>
+    </details>
   );
 }

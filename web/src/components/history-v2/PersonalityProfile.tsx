@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import type { DashboardView, PathPatternPoint } from '@/types/dashboard-view';
 import { formatPercent, formatPp, formatNumber, formatWinRate, formatStars, formatRelationType, getValueColorClass, formatSignificance } from '@/lib/history-v2/formatters';
+import { POOL } from '@/lib/glossary';
 
 interface PersonalityProfileProps {
   personalityData: DashboardView['personality'];
@@ -62,7 +63,7 @@ export default function PersonalityProfile({ personalityData, profile }: Persona
       label: 'T+3 超额',
       value: `${formatPp(summaryMetrics.medianExcess3d, 2)}`,
       valueClass: getValueColorClass(summaryMetrics.medianExcess3d),
-      explain: `平均三天后比主线池${summaryMetrics.medianExcess3d && summaryMetrics.medianExcess3d > 0 ? '多' : '少'} ${Math.abs(summaryMetrics.medianExcess3d || 0).toFixed(2)} 个百分点。`
+      explain: `平均三天后比${POOL.industry_chain.short}${summaryMetrics.medianExcess3d && summaryMetrics.medianExcess3d > 0 ? '多' : '少'} ${Math.abs(summaryMetrics.medianExcess3d || 0).toFixed(2)} 个百分点。`
     },
     {
       label: 'T+3 不利',
@@ -97,11 +98,14 @@ export default function PersonalityProfile({ personalityData, profile }: Persona
   const trapPatternsList = trapPatterns.slice(0, 4);
 
   return (
-    <section className="section">
-      <div className="section-head">
-        <h2 className="section-title">历史性格档案</h2>
-        <p className="section-note">这块作为成熟模块保留，承担“长期是什么性格”的主叙事。</p>
-      </div>
+    <details className="collapsible-section" open>
+      <summary>
+        <div className="section-title-wrap">
+          <h2 className="section-title">历史性格档案</h2>
+          <p className="section-note" style={{ marginTop: '6px' }}>这块作为成熟模块保留，承担"长期是什么性格"的主叙事。</p>
+        </div>
+        <span className="section-meta">{validSampleDays ?? '--'}/{sampleDays ?? '--'} 样本{' · '}{summary?.confidence === 'high' ? '高置信' : summary?.confidence === 'medium' ? '中置信' : '低置信'}</span>
+      </summary>
 
       <div className="profile-top">
         <div className="donut-area">
@@ -247,7 +251,7 @@ export default function PersonalityProfile({ personalityData, profile }: Persona
           <div className="list-card">
             <h3>产业联动关系</h3>
             <div className="relation-row">
-              <span>产业链</span>
+              <span>{POOL.industry_chain.short}</span>
               <span className="badge blue">{formatRelationType(relationshipProfile?.anchorVsChain?.relation)}</span>
               <span className={`${getValueColorClass(relationshipProfile?.anchorVsChain?.avgRelativeStrength)} mono`}>
                 {formatPp(relationshipProfile?.anchorVsChain?.avgRelativeStrength, 2)}
@@ -255,7 +259,7 @@ export default function PersonalityProfile({ personalityData, profile }: Persona
               <span className="muted">r={relationshipProfile?.anchorVsChain?.sameDayCorr?.toFixed(2) ?? '--'}</span>
             </div>
             <div className="relation-row">
-              <span>主题池</span>
+              <span>{POOL.theme_pool.short}</span>
               <span className="badge blue">{formatRelationType(relationshipProfile?.anchorVsTheme?.relation)}</span>
               <span className={`${getValueColorClass(relationshipProfile?.anchorVsTheme?.avgRelativeStrength)} mono`}>
                 {formatPp(relationshipProfile?.anchorVsTheme?.avgRelativeStrength, 2)}
@@ -263,7 +267,7 @@ export default function PersonalityProfile({ personalityData, profile }: Persona
               <span className="muted">r={relationshipProfile?.anchorVsTheme?.sameDayCorr?.toFixed(2) ?? '--'}</span>
             </div>
             <div className="relation-row">
-              <span>主线池</span>
+              <span>{POOL.direct_peers.short}</span>
               <span className="badge blue">{formatRelationType(relationshipProfile?.anchorVsCore?.relation)}</span>
               <span className={`${getValueColorClass(relationshipProfile?.anchorVsCore?.avgRelativeStrength)} mono`}>
                 {formatPp(relationshipProfile?.anchorVsCore?.avgRelativeStrength, 2)}
@@ -271,7 +275,7 @@ export default function PersonalityProfile({ personalityData, profile }: Persona
               <span className="muted">r={relationshipProfile?.anchorVsCore?.sameDayCorr?.toFixed(2) ?? '--'}</span>
             </div>
             <div className="relation-row">
-              <span>交易观察池</span>
+              <span>{POOL.trading_watchlist.short}</span>
               <span className="badge blue">{formatRelationType(relationshipProfile?.anchorVsTradingWatchlist?.relation)}</span>
               <span className={`${getValueColorClass(relationshipProfile?.anchorVsTradingWatchlist?.avgRelativeStrength)} mono`}>
                 {formatPp(relationshipProfile?.anchorVsTradingWatchlist?.avgRelativeStrength, 2)}
@@ -386,6 +390,6 @@ export default function PersonalityProfile({ personalityData, profile }: Persona
           </div>
         </div>
       </div>
-    </section>
+    </details>
   );
 }

@@ -156,7 +156,14 @@ export default function SignalTimeline({ signalData }: SignalTimelineProps) {
   const activeGroupCount = SIGNAL_TYPES.filter((config) => activeGroups[config.type]?.length).length;
 
   return (
-    <section className="section">
+    <details className="collapsible-section" open>
+      <summary>
+        <div className="section-title-wrap">
+          <h2 className="section-title">信号时间轴</h2>
+          <p className="section-note" style={{ marginTop: '6px' }}>上方看价格和信号密度，下方按具体信号拆成轨道，观察过去到现在的信号切换。</p>
+        </div>
+        <span className="section-meta">{timeline.length} 交易日</span>
+      </summary>
       <div className="signal-timeline-card" style={{ display: 'block' }}>
         <div className="signal-timeline-head">
           <div>
@@ -333,6 +340,6 @@ export default function SignalTimeline({ signalData }: SignalTimelineProps) {
           </div>
         </div>
       </div>
-    </section>
+    </details>
   );
 }
