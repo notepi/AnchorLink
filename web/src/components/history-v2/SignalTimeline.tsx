@@ -3,6 +3,7 @@
 import { useMemo, useState, type CSSProperties, type MouseEvent } from 'react';
 import type { DashboardView } from '@/types/dashboard-view';
 import { formatDate, formatPercent } from '@/lib/history-v2/formatters';
+import { SIGNAL_CATEGORY } from '@/lib/glossary';
 
 interface SignalTimelineProps {
   signalData: DashboardView['trends']['signalTimeline'];
@@ -11,10 +12,10 @@ interface SignalTimelineProps {
 type SignalGroupKey = 'pref' | 'avoid' | 'contra' | 'trap';
 
 const SIGNAL_TYPES: Array<{ type: SignalGroupKey; name: string; color: string }> = [
-  { type: 'pref', name: '偏好环境', color: '#ff4d4f' },
-  { type: 'avoid', name: '规避环境', color: '#20d477' },
-  { type: 'contra', name: '反直觉机会', color: '#a855f7' },
-  { type: 'trap', name: '信号陷阱', color: '#f97316' }
+  { type: 'pref', name: SIGNAL_CATEGORY.preference, color: '#ff4d4f' },
+  { type: 'avoid', name: SIGNAL_CATEGORY.avoid, color: '#20d477' },
+  { type: 'contra', name: SIGNAL_CATEGORY.counter_intuitive, color: '#a855f7' },
+  { type: 'trap', name: SIGNAL_CATEGORY.trap, color: '#f97316' }
 ];
 
 function fallbackGroup(signal: string): SignalGroupKey {
@@ -311,7 +312,7 @@ export default function SignalTimeline({ signalData }: SignalTimelineProps) {
               <div id="signalDayDate" className="signal-day-date mono">{activeDay?.date ?? '--'}</div>
             </div>
             <div className="signal-day-stat">
-              <span>股价指数</span>
+              <span>收盘价</span>
               <strong id="signalDayPrice" className="mono">{activeDay?.price?.toFixed?.(2) ?? '--'}</strong>
             </div>
             <div className="signal-day-stat">

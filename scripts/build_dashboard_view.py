@@ -322,7 +322,7 @@ def build_filter(personality_profile: dict[str, Any], history_summary: list[dict
     }
 
 
-def compute_similar_cases(history_summary: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+def compute_similar_cases(history_summary: list[dict[str, Any]], close_by_date: dict[str, float]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     latest = latest_row(history_summary)
     if not latest:
         return [], []
@@ -420,6 +420,7 @@ def compute_similar_cases(history_summary: list[dict[str, Any]]) -> tuple[list[d
             "similarity": round(similarity, 2),
             "matchingStates": matching_states or ["状态相似"],
             "matchingSignals": matching_signals or ["信号组合相似"],
+            "price": close_by_date.get(str(row.get("date") or "")),
         })
 
     rows = [row for _, row in top_candidates]
@@ -485,6 +486,8 @@ def build_summary(
     )
 
     habit_counts = Counter(habit.get("habit_type", "context") for habit in classified_habits(personality_profile))
+    habit_counts["counter_intuitive"] = len(personality_profile.get("counter_intuitive_patterns", []))
+    habit_counts["trap"] = len(personality_profile.get("trap_patterns", []))
     playbook = operator_playbook.get("playbook", {})
     watch_points = playbook.get("watch_for", [])[:3] or operator_playbook.get("regime", {}).get("reasons", [])[:3]
     if not watch_points:
@@ -743,6 +746,120 @@ def build_trends(
     }
 
 
+def _compute_sample_return(history_summary: list[dict[str, Any]]) -> dict[str, Any]:
+    returns = [r.get("next_1d_return") for r in history_summary if r.get("next_1d_return") is not None]
+    if not returns:
+        return {"avgDailyReturn": None, "medianReturn": None, "positiveRatio": None}
+    sorted_returns = sorted(returns)
+    avg = sum(returns) / len(returns)
+    mid = sorted_returns[len(sorted_returns) // 2]
+    pos = sum(1 for r in returns if r > 0) / len(returns)
+    return {"avgDailyReturn": round(avg, 4), "medianReturn": round(mid, 4), "positiveRatio": round(pos, 4)}
+
+
+def _compute_relative_to_industry(history_summary: list[dict[str, Any]]) -> dict[str, Any]:
+    pairs = [
+        (r["anchor_return"], r["industry_chain_median"])
+        for r in history_summary
+        if r.get("anchor_return") is not None and r.get("industry_chain_median") is not None
+    ]
+    if not pairs:
+        return {"avgChainMedian": None, "avgDailyExcess": None, "outperformRatio": None}
+    chain_meds = [p[1] for p in pairs]
+    excesses = [p[0] - p[1] for p in pairs]
+    avg_chain = sum(chain_meds) / len(chain_meds)
+    avg_excess = sum(excesses) / len(excesses)
+    outperform = sum(1 for e in excesses if e > 0) / len(excesses)
+    return {
+        "avgChainMedian": round(avg_chain, 4),
+        "avgDailyExcess": round(avg_excess, 4),
+        "outperformRatio": round(outperform, 4),
+    }
+
+
+def _compute_scenario_quality(quadrant_stats_list: list[dict[str, Any]]) -> dict[str, Any]:
+    valid = [q for q in quadrant_stats_list if (q.get("count") or 0) >= 3]
+    best = None
+    worst = None
+    if valid:
+        best = max(valid, key=lambda q: q.get("avgReturn1d") or float("-inf"))
+        worst = min(valid, key=lambda q: q.get("avgReturn1d") or float("inf"))
+    return {
+        "bestQuadrant": best,
+        "worstQuadrant": worst,
+        "validQuadrantCount": len(valid),
+    }
+
+
+def _compute_event_risk(extreme_divergences_list: list[dict[str, Any]]) -> dict[str, Any]:
+    degrees = [d.get("divergenceDegree") or 0 for d in extreme_divergences_list]
+    pos = [d for d in degrees if d > 0]
+    neg = [d for d in degrees if d < 0]
+    return {
+        "divergenceCount": len(extreme_divergences_list),
+        "maxPositiveDivergence": round(max(pos), 4) if pos else None,
+        "maxNegativeDivergence": round(min(neg), 4) if neg else None,
+    }
+
+
+def _best_quadrant(quadrant_stats_list: list[dict[str, Any]]) -> dict[str, Any] | None:
+    valid = [q for q in quadrant_stats_list if (q.get("count") or 0) >= 3]
+    if not valid:
+        return None
+    return max(valid, key=lambda q: q.get("avgReturn1d") or float("-inf"))
+
+
+def _worst_quadrant(quadrant_stats_list: list[dict[str, Any]]) -> dict[str, Any] | None:
+    valid = [q for q in quadrant_stats_list if (q.get("count") or 0) >= 3]
+    if not valid:
+        return None
+    return min(valid, key=lambda q: q.get("avgReturn1d") or float("inf"))
+
+
+def _compute_mean_reversion(history_summary: list[dict[str, Any]]) -> dict[str, Any]:
+    outperform_days = []
+    underperform_days = []
+    for i, row in enumerate(history_summary):
+        anchor = row.get("anchor_return")
+        chain = row.get("industry_chain_median")
+        next_ret = row.get("next_1d_return")
+        if anchor is None or chain is None or next_ret is None:
+            continue
+        if anchor > chain:
+            outperform_days.append(next_ret)
+        else:
+            underperform_days.append(next_ret)
+    out_reverse = sum(1 for r in outperform_days if r < 0) / len(outperform_days) if outperform_days else None
+    under_reverse = sum(1 for r in underperform_days if r > 0) / len(underperform_days) if underperform_days else None
+    return {
+        "outperformThenReverseRate": round(out_reverse, 4) if out_reverse is not None else None,
+        "underperformThenReverseRate": round(under_reverse, 4) if under_reverse is not None else None,
+    }
+
+
+def _build_signal_detail(signal_lifts: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return [
+        {
+            "label": row.get("label", ""),
+            "displayLabel": row.get("display_label", row.get("label", "")),
+            "category": row.get("category", ""),
+            "appearanceCount": row.get("count") or row.get("appearance_count") or 0,
+            "avgNext1d": row.get("avg_return_1d") or row.get("avg_next_1d"),
+            "avgNext3d": row.get("avg_return_3d") or row.get("avg_next_3d"),
+            "avgNext5d": row.get("avg_return_5d") or row.get("avg_next_5d"),
+            "avgNext1dExcess": row.get("excess_return_1d") or row.get("avg_next_1d_excess"),
+            "winRate1d": row.get("win_rate_1d"),
+            "baselineAvgNext1d": row.get("baseline_avg_next_1d"),
+            "baselineWinRate1d": row.get("baseline_win_rate_1d"),
+            "avgNext1dDeltaPp": row.get("avg_next_1d_delta_pp"),
+            "liftNext1d": row.get("lift_next_1d"),
+            "liftWinRate": row.get("lift_win_rate"),
+            "minCountPassed": row.get("min_count_passed", False),
+        }
+        for row in signal_lifts
+    ]
+
+
 def build_table_data(
     transitions: list[dict[str, Any]],
     history_summary: list[dict[str, Any]],
@@ -766,13 +883,12 @@ def build_table_data(
             "quadrant": key,
             "quadrantName": state_label(key),
             "count": row.get("count", 0),
-            "avgReturn1d": row.get("avg_next_1d"),
-            "avgReturn3d": row.get("avg_next_3d"),
-            "avgReturn5d": row.get("avg_next_5d"),
+            "avgNext1d": row.get("avg_next_1d"),
+            "avgNext3d": row.get("avg_next_3d"),
+            "avgNext5d": row.get("avg_next_5d"),
+            "avgNext1dExcess": row.get("avg_next_1d_excess") or row.get("avg_relative_strength"),
             "winRate1d": row.get("win_rate_1d"),
-            "winRate3d": row.get("win_rate_3d"),
-            "winRate5d": row.get("win_rate_5d"),
-            "riskLevel": "medium",
+            "avgRelativeStrength": row.get("avg_relative_strength"),
         })
 
     signal_lifts_list = [
@@ -797,14 +913,18 @@ def build_table_data(
     extreme_divergences_list = [
         {
             "date": str(row.get("date") or ""),
-            "divergenceType": row.get("divergence_type", ""),
-            "divergenceDegree": row.get("divergence_degree") or row.get("divergence"),
+            "divergence": row.get("divergence_degree") or row.get("divergence"),
             "anchorReturn": row.get("anchor_return"),
-            "chainReturn": row.get("chain_return") or row.get("industry_chain_median"),
-            "subsequentReturn1d": row.get("subsequent_return_1d") or row.get("t1_return"),
-            "subsequentReturn3d": row.get("subsequent_return_3d") or row.get("t3_return"),
-            "subsequentReturn5d": row.get("subsequent_return_5d"),
-            "reversionDays": row.get("reversion_days"),
+            "industryChainMedian": row.get("chain_return") or row.get("industry_chain_median"),
+            "t1Return": row.get("subsequent_return_1d") or row.get("t1_return"),
+            "t3Return": row.get("subsequent_return_3d") or row.get("t3_return"),
+            "t5Return": row.get("subsequent_return_5d"),
+            "t1Excess": row.get("subsequent_excess_1d") or row.get("t1_excess"),
+            "t3Excess": row.get("subsequent_excess_3d") or row.get("t3_excess"),
+            "industryBeta": row.get("industry_beta"),
+            "anchorAlpha": row.get("anchor_alpha"),
+            "riskLevel": row.get("risk_level"),
+            "signalLabels": row.get("signal_labels"),
         }
         for row in extreme_divergences
     ]
@@ -869,20 +989,25 @@ def build_table_data(
     playbook = operator_playbook.get("playbook", {})
     return {
         "coreMetrics": {
-            "baselineWinRate1d": summary_metrics.get("baseline_win_rate_1d"),
-            "baselineWinRate3d": summary_metrics.get("baseline_win_rate_3d"),
-            "baselineWinRate5d": summary_metrics.get("baseline_win_rate_5d"),
-            "medianExcess3d": summary_metrics.get("median_excess_3d"),
-            "medianAdverse3d": summary_metrics.get("median_adverse_3d_proxy"),
-            "payoffRatio": summary_metrics.get("payoff_ratio"),
-            "sharpeLikeRatio": summary_metrics.get("sharpe_like_ratio"),
-            "signalCoverageRatio": summary_metrics.get("signal_coverage_ratio"),
+            "sampleReturn": _compute_sample_return(history_summary),
+            "relativeToIndustry": _compute_relative_to_industry(history_summary),
+            "scenarioQuality": _compute_scenario_quality(quadrant_stats_list),
+            "eventRisk": _compute_event_risk(extreme_divergences_list),
         },
         "conclusion": {
             "summary": personality_profile.get("personality_summary", {}).get("headline", ""),
             "confidence": personality_profile.get("personality_summary", {}).get("confidence", "medium"),
             "traits": personality_profile.get("personality_summary", {}).get("traits", []),
             "stabilityStatus": personality_profile.get("stability", {}).get("status", "insufficient"),
+            "sampleDays": personality_profile.get("sample_days", len(history_summary)),
+            "dateRange": {
+                "start": str(history_summary[0].get("date", "")) if history_summary else "",
+                "end": str(history_summary[-1].get("date", "")) if history_summary else "",
+            },
+            "bestQuadrant": _best_quadrant(quadrant_stats_list),
+            "worstQuadrant": _worst_quadrant(quadrant_stats_list),
+            "meanReversion": _compute_mean_reversion(history_summary),
+            "warning": "；".join(personality_profile.get("sample_warnings", [])),
         },
         "quadrantStats": quadrant_stats_list,
         "signalLifts": signal_lifts_list,
@@ -909,7 +1034,7 @@ def build_table_data(
         "pathStats": path_stats,
         "windowStats": window_stats,
         "similarCases": similar_cases,
-        "signalDetail": None,
+        "signalDetail": _build_signal_detail(signal_lifts),
         "signalShift": None,
         "preferenceList": preference_list,
         "avoidList": avoid_list,
@@ -982,9 +1107,26 @@ def build_operator(operator_playbook: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def build_ai_insight(operator_playbook: dict[str, Any], personality_profile: dict[str, Any]) -> dict[str, Any]:
+def build_ai_insight(operator_playbook: dict[str, Any], personality_profile: dict[str, Any], signal_lifts: list[dict[str, Any]], extreme_divergences: list[dict[str, Any]]) -> dict[str, Any]:
     print("正在构建 aiInsight...")
     playbook = operator_playbook.get("playbook", {})
+
+    top_signals = sorted(
+        [s for s in signal_lifts if (s.get("avg_next_1d_delta_pp") or 0) != 0],
+        key=lambda s: abs(s.get("avg_next_1d_delta_pp") or 0),
+        reverse=True,
+    )[:3]
+    top_signal_names = [s.get("display_label") or s.get("label", "") for s in top_signals]
+
+    parts = []
+    if top_signal_names:
+        parts.append(f"最强信号：{'、'.join(top_signal_names)}")
+    parts.append(f"极端背离事件 {len(extreme_divergences)} 次")
+    combos = operator_playbook.get("combination_synergies", [])
+    if combos:
+        parts.append(f"信号组合效应 {len(combos)} 条")
+    research_details = "；".join(parts)
+
     return {
         "advice": {
             "watch": (playbook.get("watch_for") or [""])[0],
@@ -993,7 +1135,7 @@ def build_ai_insight(operator_playbook: dict[str, Any], personality_profile: dic
             "constraint": playbook.get("sample_note") or (personality_profile.get("sample_warnings") or [""])[0],
         },
         "watchPoints": operator_playbook.get("regime", {}).get("reasons", []),
-        "researchDetails": "",
+        "researchDetails": research_details,
     }
 
 
@@ -1005,7 +1147,7 @@ def main() -> None:
     anchor_code = data["config"].get("anchor", {}).get("symbol", "")
     close_by_date = load_anchor_close_prices(anchor_code) if anchor_code else {}
     transitions = build_transitions(data["history_summary"], data["state_transitions"])
-    similar_cases, window_stats = compute_similar_cases(data["history_summary"])
+    similar_cases, window_stats = compute_similar_cases(data["history_summary"], close_by_date)
 
     dashboard_view = {
         "meta": build_meta(data["personality_profile"], data["config"], data["history_summary"]),
@@ -1039,7 +1181,7 @@ def main() -> None:
         ),
         "personality": build_personality(data["personality_profile"], data["operator_playbook"]),
         "operator": build_operator(data["operator_playbook"]),
-        "aiInsight": build_ai_insight(data["operator_playbook"], data["personality_profile"]),
+        "aiInsight": build_ai_insight(data["operator_playbook"], data["personality_profile"], data["signal_lifts"], data["extreme_divergences"]),
     }
 
     path_label = dashboard_view["summary"].get("pathLabel")

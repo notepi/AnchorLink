@@ -7,6 +7,10 @@ import TransitionHeatmap from '@/components/history-v2/TransitionHeatmap';
 import StabilityPanel from '@/components/history-v2/StabilityPanelClient';
 import PersonalityProfile from '@/components/history-v2/PersonalityProfile';
 import SignalTimeline from '@/components/history-v2/SignalTimeline';
+import SignalLiftTable from '@/components/history-v2/SignalLiftTable';
+import QuadrantGrid from '@/components/history-v2/QuadrantGrid';
+import SignalCombinations from '@/components/history-v2/SignalCombinations';
+import DivergenceTimeline from '@/components/history-v2/DivergenceTimeline';
 import '../../../styles/history-v2.css';
 
 export default async function HistoryV2Page() {
@@ -32,6 +36,7 @@ export default async function HistoryV2Page() {
           pathLabel={dashboard.summary.pathLabel}
           similarCases={dashboard.tableData.similarCases}
           windowStats={dashboard.tableData.windowStats}
+          priceHistory={dashboard.trends.excessReturn}
         />
         <TransitionHeatmap
           transitionData={dashboard.tableData.stateTransitions}
@@ -53,7 +58,26 @@ export default async function HistoryV2Page() {
             <span className="muted">九宫格统计 / 信号排行 / 组合效应 / 极端背离事件</span>
           </summary>
           <div className="research-content">
-            这里保留原始统计视图作为研究入口，默认折叠，避免主页面重新变成统计表集合。
+            {dashboard.aiInsight.researchDetails && (
+              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '12px' }}>{dashboard.aiInsight.researchDetails}</p>
+            )}
+            <div className="profile-grid">
+              <div className="stack">
+                <QuadrantGrid
+                  data={dashboard.tableData.quadrantStats}
+                  bestQuadrant={dashboard.tableData.conclusion.bestQuadrant}
+                  worstQuadrant={dashboard.tableData.conclusion.worstQuadrant}
+                />
+                <SignalLiftTable data={dashboard.tableData.signalDetail} />
+              </div>
+              <div className="stack">
+                <SignalCombinations
+                  combinations={dashboard.tableData.signalCombinations}
+                  synergies={dashboard.tableData.combinationSynergies}
+                />
+                <DivergenceTimeline data={dashboard.tableData.extremeDivergences} />
+              </div>
+            </div>
           </div>
         </details>
       </main>

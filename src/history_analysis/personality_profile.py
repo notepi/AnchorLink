@@ -678,10 +678,93 @@ def _build_stability(
             early_vs_recent_notes=["样本不足"],
         )
 
+    recent = valid[-recent_window_days:]
+    early = valid[:-recent_window_days]
+
+    if len(recent) < 5:
+        return PersonalityStability(
+            status="insufficient",
+            recent_window_days=recent_window_days,
+            early_vs_recent_notes=["近期样本不足"],
+        )
+
+    # 近期跑赢率：anchor_return > industry_chain_median 的占比
+    recent_wins = sum(
+        1 for r in recent
+        if r.anchor_return is not None and r.industry_chain_median is not None
+        and r.anchor_return > r.industry_chain_median
+    )
+    recent_valid = sum(
+        1 for r in recent
+        if r.anchor_return is not None and r.industry_chain_median is not None
+    )
+    recent_win_rate = recent_wins / recent_valid if recent_valid > 0 else 0.0
+
+    # 近期超额均值
+    recent_excesses = [
+        r.anchor_return - r.industry_chain_median
+        for r in recent
+        if r.anchor_return is not None and r.industry_chain_median is not None
+    ]
+    recent_avg_excess = sum(recent_excesses) / len(recent_excesses) if recent_excesses else 0.0
+
+    # 早期跑赢率（如有）
+    early_win_rate = None
+    early_avg_excess = None
+    if len(early) >= 5:
+        early_wins = sum(
+            1 for r in early
+            if r.anchor_return is not None and r.industry_chain_median is not None
+            and r.anchor_return > r.industry_chain_median
+        )
+        early_valid = sum(
+            1 for r in early
+            if r.anchor_return is not None and r.industry_chain_median is not None
+        )
+        early_win_rate = early_wins / early_valid if early_valid > 0 else 0.0
+        early_excesses = [
+            r.anchor_return - r.industry_chain_median
+            for r in early
+            if r.anchor_return is not None and r.industry_chain_median is not None
+        ]
+        early_avg_excess = sum(early_excesses) / len(early_excesses) if early_excesses else 0.0
+
+    notes: list[str] = []
+
+    # 跑赢率描述
+    wr_pct = f"{recent_win_rate * 100:.0f}%"
+    if early_win_rate is not None:
+        delta = recent_win_rate - early_win_rate
+        if delta > 0.1:
+            notes.append(f"近期跑赢率 {wr_pct}，明显高于早期 {early_win_rate * 100:.0f}%")
+        elif delta < -0.1:
+            notes.append(f"近期跑赢率 {wr_pct}，明显低于早期 {early_win_rate * 100:.0f}%")
+        else:
+            notes.append(f"近期跑赢率 {wr_pct}，与早期 {early_win_rate * 100:.0f}% 接近")
+    else:
+        notes.append(f"近期跑赢率 {wr_pct}")
+
+    # 超额方向描述
+    if recent_avg_excess > 0.2:
+        notes.append("超额均值偏正，性格偏强")
+    elif recent_avg_excess < -0.2:
+        notes.append("超额均值偏负，性格偏弱")
+    else:
+        notes.append("超额均值接近零，跟随为主")
+
+    # 判定 status
+    win_rate_shifted = early_win_rate is not None and abs(recent_win_rate - early_win_rate) > 0.1
+    excess_shifted = early_avg_excess is not None and abs(recent_avg_excess - early_avg_excess) > 0.5
+
+    if win_rate_shifted or excess_shifted:
+        status = "changed"
+    else:
+        status = "stable"
+
     return PersonalityStability(
-        status="stable",
+        status=status,
         recent_window_days=recent_window_days,
-        early_vs_recent_notes=[],
+        early_vs_recent_notes=notes,
     )
 
 

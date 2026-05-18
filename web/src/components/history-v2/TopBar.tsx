@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import type { DashboardView } from '@/types/dashboard-view';
 import { formatDate } from '@/lib/history-v2/formatters';
+import { SIGNAL_CATEGORY } from '@/lib/glossary';
 
 interface TopBarProps {
   meta: DashboardView['meta'];
@@ -11,13 +12,7 @@ interface TopBarProps {
   sortedDates: string[];
 }
 
-const signalCategoryMap: Record<string, string> = {
-  all: '全部',
-  preference: '偏好环境',
-  avoid: '规避环境',
-  counter_intuitive: '反直觉机会',
-  trap: '信号陷阱'
-};
+const signalCategoryMap = SIGNAL_CATEGORY;
 
 const signalCategoryOptions = Object.entries(signalCategoryMap);
 

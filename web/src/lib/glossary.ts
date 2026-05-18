@@ -72,3 +72,13 @@ export const CONFIDENCE_LABEL: Record<string, string> = {
   concerning:    '警告',
   insufficient:  '不足',
 } as const;
+
+// ── 信号类别 ──
+
+export const SIGNAL_CATEGORY: Record<string, string> = {
+  all:                '全部',
+  preference:         '偏好环境',
+  avoid:              '规避环境',
+  counter_intuitive:  '反直觉机会',
+  trap:               '信号陷阱',
+} as const;

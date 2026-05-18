@@ -423,6 +423,8 @@ export interface SimilarCase {
   date: string;
   /** 案例状态 */
   state: string;
+  /** 当日收盘价 */
+  price: number | null;
   /** T+1收益 */
   next1dReturn: number | null;
   /** T+3收益 */
@@ -930,15 +932,7 @@ export interface DashboardView {
     /** 相似历史案例数据 */
     similarCases: SimilarCase[];
     /** 信号详情面板数据 */
-    signalDetail: {
-      signalName: string;
-      category: string;
-      appearanceCount: number;
-      avgNext1d: number | null;
-      avgNext1dDelta: number | null;
-      winRate: number | null;
-      bestCondition: string | null;
-    } | null;
+    signalDetail: SignalLift[];
     /** 信号变迁面板数据 */
     signalShift: {
       signalName: string;
