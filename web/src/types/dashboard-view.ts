@@ -114,6 +114,16 @@ export interface QuadrantStat {
   winRate1d: number | null;
   /** 平均相对强度 */
   avgRelativeStrength: number | null;
+  /** 「今日看板」次日 P10 */
+  t1P10?: number | null;
+  /** 「今日看板」次日 P50（中位数） */
+  t1P50?: number | null;
+  /** 「今日看板」次日 P90 */
+  t1P90?: number | null;
+  /** 「今日看板」操作建议 */
+  guidance?: QuadrantGuidance;
+  /** 「今日看板」一句话原因 */
+  reason?: string;
 }
 
 /** 核心指标 */
@@ -279,6 +289,10 @@ export interface RollingMetric {
   themeVsCoreStreak: number | null;
   /** 高风险连胜天数 */
   riskHighStreak: number | null;
+  /** 「今日看板」5d 超额历史百分位 */
+  excess5dPercentile?: number | null;
+  /** 「今日看板」10d 超额历史百分位 */
+  excess10dPercentile?: number | null;
 }
 
 /** 状态转移 */
@@ -459,6 +473,14 @@ export interface DateEntry {
     badge?: string;
     description: string;
   }>;
+  /** 今日看板：当日归因（anchor return 拆解） */
+  todayAttribution?: TodayAttribution | null;
+  /** 今日看板：极端位置警报 */
+  alerts?: Alert[];
+  /** 今日看板：状态迁移 top5 */
+  transitionTop5?: TransitionTarget[];
+  /** 今日看板：当日 4 池联动快照 */
+  poolCorrSnapshot?: PoolCorrelations | null;
 }
 
 /** 状态转移摘要 */
@@ -807,6 +829,103 @@ export interface TransitionVerdict {
   watchPoints: string[];
 }
 
+// ==============================
+// 「今日看板」专属类型
+// ==============================
+
+/** 操作建议档位 */
+export interface QuadrantGuidance {
+  /** 4 档 tier */
+  tier: 'good' | 'neu' | 'warn' | 'bad';
+  /** 显示图标 */
+  icon: string;
+  /** 中文标签 */
+  label: string;
+  /** 操作建议 */
+  action: string;
+}
+
+/** 极端位置警报 */
+export interface Alert {
+  /** 警报级别 */
+  level: 'critical' | 'warning';
+  /** 图标 */
+  icon: string;
+  /** 警报文本 */
+  text: string;
+}
+
+/** 状态迁移目标 */
+export interface TransitionTarget {
+  /** 目标状态 key */
+  toState: QuadrantState;
+  /** 目标状态中文标签 */
+  toStateLabel: string;
+  /** 历史出现次数 */
+  count: number;
+  /** 转移概率 */
+  probability: number;
+  /** 目标格 T+1 中位数 */
+  targetP50: number | null;
+  /** 目标格胜率 */
+  targetWinRate: number | null;
+  /** 是否留原地 */
+  isStay: boolean;
+  /** 目标格的操作建议 */
+  guidance: QuadrantGuidance;
+}
+
+/** 单池相关性快照 */
+export interface PoolCorrelationSnapshot {
+  /** 20 日滚动相关性 */
+  corr20d: number | null;
+  /** 60 日滚动相关性 */
+  corr60d: number | null;
+  /** 20 日相关性在 242 天里的百分位 */
+  percentile20d: number | null;
+  /** 全样本相关性 */
+  fullCorr: number | null;
+}
+
+/** 每日 4 池相关性 */
+export interface PoolCorrelations {
+  /** 日期 */
+  date: string;
+  /** 主线池 */
+  industryChain: PoolCorrelationSnapshot;
+  /** 同业池 */
+  directPeers: PoolCorrelationSnapshot;
+  /** 主题池 */
+  themePool: PoolCorrelationSnapshot;
+  /** 高 beta 池 */
+  tradingWatchlist: PoolCorrelationSnapshot;
+}
+
+/** 今日归因 */
+export interface TodayAttribution {
+  /** 当日日期 */
+  date: string;
+  /** 锚定收益 */
+  anchorReturn: number;
+  /** 各池子中位数 */
+  pools: {
+    directPeers: number | null;
+    industryChain: number | null;
+    themePool: number | null;
+    tradingWatchlist: number | null;
+  };
+  /** 个股 Alpha vs 主线池 */
+  alphaVsIndustryChain: number | null;
+  /** 个股 Alpha vs 同业 */
+  alphaVsDirectPeers: number | null;
+  /** 个股 Alpha vs 主题池 */
+  alphaVsThemePool: number | null;
+  /** 当前象限 key */
+  currentQuadrant: QuadrantState;
+  /** 当前象限标签 */
+  currentQuadrantLabel: string;
+}
+
 /** 转移路径排名 */
 export interface RankedPath {
   /** 排名 */
@@ -861,6 +980,14 @@ export interface DashboardView {
       /** 档案描述 */
       description: string;
     };
+    /** 「今日看板」极端位置警报列表 */
+    alerts?: Alert[];
+    /** 「今日看板」当前状态到下一状态 top 5 */
+    transitionTop5?: TransitionTarget[];
+    /** 「今日看板」今日归因 */
+    todayAttribution?: TodayAttribution | null;
+    /** 「今日看板」当前格的操作建议 */
+    currentQuadrantGuidance?: QuadrantGuidance;
   };
 
   /** 指标卡片数据 */
@@ -918,6 +1045,8 @@ export interface DashboardView {
     }>;
     /** 路径模式特征数据 */
     pathPatterns: Record<string, PathPatternPoint[]>;
+    /** 「今日看板」每日 4 池相关性 */
+    poolCorrelations?: PoolCorrelations[];
   };
 
   /** 表格/列表数据 */

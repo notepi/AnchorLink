@@ -198,6 +198,276 @@ def win_rate(values: list[Any]) -> float | None:
     return len([value for value in clean if value > 0]) / len(clean) if clean else None
 
 
+# ==============================
+# 今日看板 - 辅助函数
+# ==============================
+
+def compute_percentiles_inplace(values: list[Any]) -> list[int | None]:
+    """对每个 value 计算它在非 None 子集里的百分位（0-100 整数）。"""
+    valid = [(i, float(v)) for i, v in enumerate(values) if v is not None]
+    if not valid:
+        return [None] * len(values)
+    sorted_vals = sorted(v for _, v in valid)
+    n = len(sorted_vals)
+    result: list[int | None] = [None] * len(values)
+    for i, v in valid:
+        below = sum(1 for x in sorted_vals if x < v)
+        result[i] = round(below / n * 100)
+    return result
+
+
+def pearson_corr(a: list[Any], b: list[Any]) -> float | None:
+    """Pearson 相关系数，跳过 None。"""
+    pairs = [(float(x), float(y)) for x, y in zip(a, b) if x is not None and y is not None]
+    if len(pairs) < 3:
+        return None
+    n = len(pairs)
+    mean_x = sum(x for x, _ in pairs) / n
+    mean_y = sum(y for _, y in pairs) / n
+    sum_xy = sum((x - mean_x) * (y - mean_y) for x, y in pairs)
+    sum_xx = sum((x - mean_x) ** 2 for x, _ in pairs)
+    sum_yy = sum((y - mean_y) ** 2 for _, y in pairs)
+    denom = (sum_xx * sum_yy) ** 0.5
+    return sum_xy / denom if denom > 0 else None
+
+
+def compute_rolling_corr(
+    history_summary: list[dict[str, Any]],
+    pool_col: str,
+    window: int,
+) -> list[float | None]:
+    """每一行算 N 日滚动相关系数（anchor_return vs pool_col）。"""
+    n = len(history_summary)
+    result: list[float | None] = []
+    for i in range(n):
+        if i + 1 < window:
+            result.append(None)
+            continue
+        sub = history_summary[i + 1 - window: i + 1]
+        anchor_vals = [r.get("anchor_return") for r in sub]
+        pool_vals = [r.get(pool_col) for r in sub]
+        result.append(pearson_corr(anchor_vals, pool_vals))
+    return result
+
+
+POOL_COL_MAP = {
+    "industry_chain_median": "industryChain",
+    "direct_peers_median": "directPeers",
+    "theme_pool_median": "themePool",
+    "trading_watchlist_median": "tradingWatchlist",
+}
+
+
+def build_pool_correlations(history_summary: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """每日 4 池 20d/60d 滚动相关性 + 20d 百分位 + 全样本相关性。"""
+    rolling_data: dict[str, dict[str, Any]] = {}
+    for col, name in POOL_COL_MAP.items():
+        corr_20d = compute_rolling_corr(history_summary, col, 20)
+        corr_60d = compute_rolling_corr(history_summary, col, 60)
+        pct_20d = compute_percentiles_inplace(corr_20d)
+        anchor_all = [r.get("anchor_return") for r in history_summary]
+        pool_all = [r.get(col) for r in history_summary]
+        full_corr = pearson_corr(anchor_all, pool_all)
+        rolling_data[name] = {
+            "corr20d": corr_20d,
+            "corr60d": corr_60d,
+            "pct20d": pct_20d,
+            "fullCorr": full_corr,
+        }
+
+    result: list[dict[str, Any]] = []
+    for i, row in enumerate(history_summary):
+        date = str(row.get("date") or "")
+        entry: dict[str, Any] = {"date": date}
+        for name, data in rolling_data.items():
+            entry[name] = {
+                "corr20d": data["corr20d"][i],
+                "corr60d": data["corr60d"][i],
+                "percentile20d": data["pct20d"][i],
+                "fullCorr": data["fullCorr"],
+            }
+        result.append(entry)
+    return result
+
+
+def build_quadrant_distributions(history_summary: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    """每个象限的 T+1 分布：P10/P50/P90 + 胜率 + count。"""
+    quad_groups: dict[str, list[float]] = defaultdict(list)
+    for row in history_summary:
+        t1 = row.get("next_1d_return")
+        if t1 is None:
+            continue
+        key = state_key_from_row(row)
+        quad_groups[key].append(float(t1))
+
+    result: dict[str, dict[str, Any]] = {}
+    for key, vals in quad_groups.items():
+        if not vals:
+            continue
+        sorted_vals = sorted(vals)
+        n = len(sorted_vals)
+        p10_idx = max(0, min(n - 1, int(n * 0.1)))
+        p90_idx = max(0, min(n - 1, int(n * 0.9)))
+        result[key] = {
+            "count": n,
+            "p10": sorted_vals[p10_idx],
+            "p50": sorted_vals[n // 2],
+            "p90": sorted_vals[p90_idx],
+            "winRate": sum(1 for v in vals if v > 0) / n,
+        }
+    return result
+
+
+def guidance_for_winrate(wr: float | None) -> dict[str, str]:
+    """4 档操作建议：好买点 / 中性 / 偏弱 / 回避。"""
+    if wr is None:
+        return {"tier": "neu", "icon": "⚪", "label": "无数据", "action": "观望"}
+    pct = wr * 100
+    if pct >= 55:
+        return {"tier": "good", "icon": "🟢", "label": "好买点", "action": "关注买入"}
+    if pct >= 45:
+        return {"tier": "neu", "icon": "⚪", "label": "中性", "action": "持仓观望"}
+    if pct >= 40:
+        return {"tier": "warn", "icon": "⚠️", "label": "偏弱", "action": "暂不加仓"}
+    return {"tier": "bad", "icon": "🔴", "label": "回避", "action": "不追不加"}
+
+
+QUADRANT_REASONS = {
+    "positive+positive": "双强已透支，trap 格",
+    "positive+neutral": "个股没跟上行业，弱势",
+    "positive+negative": "跑输主线，机构或在出货",
+    "neutral+positive": "个股独走无行业支撑",
+    "neutral+neutral": "典型平淡日，无信号",
+    "neutral+negative": "历史最佳，反弹概率最高",
+    "negative+positive": "没方向优势，等下次迁移",
+    "negative+neutral": "最差格，无逆势能力",
+    "negative+negative": "双跌反弹机会，均值回归型最佳",
+}
+
+
+def build_transition_top5(
+    history_summary: list[dict[str, Any]],
+    quadrant_dist: dict[str, dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """从当前状态出发的 top 5 转移目标，含目标格的胜率和操作建议。"""
+    if not history_summary:
+        return []
+    latest = history_summary[-1]
+    cur_state = state_key_from_row(latest)
+
+    transitions: list[str] = []
+    for i in range(len(history_summary) - 1):
+        if state_key_from_row(history_summary[i]) == cur_state:
+            transitions.append(state_key_from_row(history_summary[i + 1]))
+
+    if not transitions:
+        return []
+    total = len(transitions)
+    counts = Counter(transitions).most_common(5)
+
+    result: list[dict[str, Any]] = []
+    for state, count in counts:
+        dist = quadrant_dist.get(state, {})
+        guidance = guidance_for_winrate(dist.get("winRate"))
+        result.append({
+            "toState": state,
+            "toStateLabel": state_label(state),
+            "count": count,
+            "probability": round(count / total, 3),
+            "targetP50": dist.get("p50"),
+            "targetWinRate": dist.get("winRate"),
+            "isStay": state == cur_state,
+            "guidance": guidance,
+        })
+    return result
+
+
+POOL_ZH_NAMES = {
+    "industryChain": "主线池",
+    "directPeers": "同业",
+    "themePool": "主题池",
+    "tradingWatchlist": "高 beta 池",
+}
+
+
+def build_today_alerts(
+    excess_return: list[dict[str, Any]],
+    pool_correlations: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """今天的极端位置警报（百分位 ≥ 85 或 ≤ 10）。"""
+    alerts: list[dict[str, Any]] = []
+    if not excess_return:
+        return alerts
+    latest_excess = excess_return[-1]
+
+    # 超额过热 / 超卖
+    e5_pct = latest_excess.get("excess5dPercentile")
+    e5_val = latest_excess.get("excess5d")
+    if e5_pct is not None and e5_val is not None:
+        if e5_pct >= 90:
+            alerts.append({
+                "level": "warning", "icon": "⚠️",
+                "text": f"5d 超额 +{e5_val:.2f}%，处于历史 P{e5_pct}（过热）",
+            })
+        elif e5_pct >= 85:
+            alerts.append({
+                "level": "warning", "icon": "⚠️",
+                "text": f"5d 超额 +{e5_val:.2f}%，处于历史 P{e5_pct}（接近过热）",
+            })
+        elif e5_pct <= 10:
+            alerts.append({
+                "level": "warning", "icon": "⚠️",
+                "text": f"5d 超额 {e5_val:+.2f}%，处于历史 P{e5_pct}（接近超卖）",
+            })
+
+    # 池子脱钩
+    if pool_correlations:
+        latest_corr = pool_correlations[-1]
+        for pool_key, pool_zh in POOL_ZH_NAMES.items():
+            cd = latest_corr.get(pool_key, {})
+            pct = cd.get("percentile20d")
+            cv = cd.get("corr20d")
+            if pct is None or cv is None:
+                continue
+            if pct <= 5:
+                alerts.append({
+                    "level": "critical", "icon": "🚨",
+                    "text": f"跟{pool_zh} 20d 相关性 = {cv:.2f}，处于历史 P{pct}（极端脱钩）",
+                })
+            elif pct <= 10:
+                alerts.append({
+                    "level": "critical", "icon": "🚨",
+                    "text": f"跟{pool_zh} 20d 相关性 = {cv:.2f}，处于历史 P{pct}",
+                })
+
+    return alerts
+
+
+def build_today_attribution(history_summary: list[dict[str, Any]]) -> dict[str, Any] | None:
+    """今日归因：anchor return 拆解到 4 池 + Alpha vs 同业。"""
+    if not history_summary:
+        return None
+    latest = history_summary[-1]
+    anchor_return = latest.get("anchor_return")
+    if anchor_return is None:
+        return None
+    return {
+        "date": str(latest.get("date") or ""),
+        "anchorReturn": anchor_return,
+        "pools": {
+            "directPeers": latest.get("direct_peers_median"),
+            "industryChain": latest.get("industry_chain_median"),
+            "themePool": latest.get("theme_pool_median"),
+            "tradingWatchlist": latest.get("trading_watchlist_median"),
+        },
+        "alphaVsIndustryChain": latest.get("relative_strength_vs_industry_chain"),
+        "alphaVsDirectPeers": latest.get("relative_strength_vs_direct"),
+        "alphaVsThemePool": latest.get("relative_strength_vs_theme"),
+        "currentQuadrant": state_key_from_row(latest),
+        "currentQuadrantLabel": state_label(state_key_from_row(latest)),
+    }
+
+
 def build_habit_type_map(personality_profile: dict[str, Any]) -> dict[str, str]:
     result: dict[str, str] = {}
     for habit in classified_habits(personality_profile):
@@ -466,7 +736,118 @@ def _build_date_cards(summary_row: dict[str, Any], rolling_row: dict[str, Any] |
     ]
 
 
-def build_date_index(history_summary: list[dict[str, Any]], close_by_date: dict[str, float], rolling_metrics: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+def attribution_for_date(row: dict[str, Any]) -> dict[str, Any] | None:
+    """单日归因：从 history_summary 某行计算 anchor return 拆解。"""
+    anchor_return = row.get("anchor_return")
+    if anchor_return is None:
+        return None
+    date_str = str(row.get("date") or "")
+    sk = state_key_from_row(row)
+    return {
+        "date": date_str,
+        "anchorReturn": anchor_return,
+        "pools": {
+            "directPeers": row.get("direct_peers_median"),
+            "industryChain": row.get("industry_chain_median"),
+            "themePool": row.get("theme_pool_median"),
+            "tradingWatchlist": row.get("trading_watchlist_median"),
+        },
+        "alphaVsIndustryChain": row.get("relative_strength_vs_industry_chain"),
+        "alphaVsDirectPeers": row.get("relative_strength_vs_direct"),
+        "alphaVsThemePool": row.get("relative_strength_vs_theme"),
+        "currentQuadrant": sk,
+        "currentQuadrantLabel": state_label(sk),
+    }
+
+
+def alerts_for_date(
+    excess_entry: dict[str, Any] | None,
+    corr_snap: dict[str, Any] | None,
+) -> list[dict[str, Any]]:
+    """单日极端位置警报（百分位 ≥ 85 或 ≤ 10）。"""
+    alerts: list[dict[str, Any]] = []
+
+    if excess_entry:
+        e5_pct = excess_entry.get("excess5dPercentile")
+        e5_val = excess_entry.get("excess5d")
+        if e5_pct is not None and e5_val is not None:
+            if e5_pct >= 90:
+                alerts.append({
+                    "level": "warning", "icon": "⚠️",
+                    "text": f"5d 超额 +{e5_val:.2f}%，处于历史 P{e5_pct}（过热）",
+                })
+            elif e5_pct >= 85:
+                alerts.append({
+                    "level": "warning", "icon": "⚠️",
+                    "text": f"5d 超额 +{e5_val:.2f}%，处于历史 P{e5_pct}（接近过热）",
+                })
+            elif e5_pct <= 10:
+                alerts.append({
+                    "level": "warning", "icon": "⚠️",
+                    "text": f"5d 超额 {e5_val:+.2f}%，处于历史 P{e5_pct}（接近超卖）",
+                })
+
+    if corr_snap:
+        for pool_key, pool_zh in POOL_ZH_NAMES.items():
+            cd = corr_snap.get(pool_key, {})
+            pct = cd.get("percentile20d")
+            cv = cd.get("corr20d")
+            if pct is None or cv is None:
+                continue
+            if pct <= 5:
+                alerts.append({
+                    "level": "critical", "icon": "🚨",
+                    "text": f"跟{pool_zh} 20d 相关性 = {cv:.2f}，处于历史 P{pct}（极端脱钩）",
+                })
+            elif pct <= 10:
+                alerts.append({
+                    "level": "critical", "icon": "🚨",
+                    "text": f"跟{pool_zh} 20d 相关性 = {cv:.2f}，处于历史 P{pct}",
+                })
+
+    return alerts
+
+
+def transition_top5_for_state(
+    history_summary: list[dict[str, Any]],
+    quadrant_dist: dict[str, dict[str, Any]],
+    cur_state: str,
+) -> list[dict[str, Any]]:
+    """从指定状态出发的 top 5 转移目标。"""
+    transitions: list[str] = []
+    for i in range(len(history_summary) - 1):
+        if state_key_from_row(history_summary[i]) == cur_state:
+            transitions.append(state_key_from_row(history_summary[i + 1]))
+
+    if not transitions:
+        return []
+    total = len(transitions)
+    counts = Counter(transitions).most_common(5)
+
+    result: list[dict[str, Any]] = []
+    for state, count in counts:
+        dist = quadrant_dist.get(state, {})
+        guidance = guidance_for_winrate(dist.get("winRate"))
+        result.append({
+            "toState": state,
+            "toStateLabel": state_label(state),
+            "count": count,
+            "probability": round(count / total, 3),
+            "targetP50": dist.get("p50"),
+            "targetWinRate": dist.get("winRate"),
+            "isStay": state == cur_state,
+            "guidance": guidance,
+        })
+    return result
+
+
+def build_date_index(
+    history_summary: list[dict[str, Any]],
+    close_by_date: dict[str, float],
+    rolling_metrics: list[dict[str, Any]],
+    pool_correlations_by_date: dict[str, dict[str, Any]],
+    quadrant_dist: dict[str, dict[str, Any]],
+) -> dict[str, dict[str, Any]]:
     print("正在构建 dateIndex...")
     rolling_by_date: dict[str, dict[str, Any]] = {}
     for rm in rolling_metrics:
@@ -488,6 +869,13 @@ def build_date_index(history_summary: list[dict[str, Any]], close_by_date: dict[
             return "偏弱"
         return "震荡"
 
+    # 预建 excess_by_date（从 rolling_metrics 里取 excess 字段）
+    excess_by_date: dict[str, dict[str, Any]] = {}
+    for rm in rolling_metrics:
+        d = str(rm.get("date") or "")
+        if d:
+            excess_by_date[d] = rm
+
     date_index: dict[str, dict[str, Any]] = {}
     for row in history_summary:
         date_str = str(row.get("date") or "")
@@ -501,6 +889,13 @@ def build_date_index(history_summary: list[dict[str, Any]], close_by_date: dict[
         state_desc = f"{state_label(state_key)} · {RISK_TEXT.get(risk_level, risk_level)}"
 
         similar_cases, window_stats = compute_similar_cases(history_summary, close_by_date, target_date=date_str)
+
+        # 新增：该日的 4 个「今日看板」动态字段
+        corr_snap = pool_correlations_by_date.get(date_str)
+        excess_entry = excess_by_date.get(date_str)
+        day_alerts = alerts_for_date(excess_entry, corr_snap)
+        day_attribution = attribution_for_date(row)
+        day_t5 = transition_top5_for_state(history_summary, quadrant_dist, state_key)
 
         date_index[date_str] = {
             "currentMapping": {
@@ -519,6 +914,11 @@ def build_date_index(history_summary: list[dict[str, Any]], close_by_date: dict[
             "windowStats": window_stats,
             "pathLabel": infer_path_label(window_stats),
             "cards": _build_date_cards(row, rolling_by_date.get(date_str), strength_label),
+            # 动态字段
+            "todayAttribution": day_attribution,
+            "alerts": day_alerts,
+            "transitionTop5": day_t5,
+            "poolCorrSnapshot": corr_snap,
         }
     print(f"[OK] dateIndex: {len(date_index)} 个日期")
     return date_index
@@ -549,6 +949,10 @@ def build_summary(
     history_summary: list[dict[str, Any]],
     similar_cases: list[dict[str, Any]],
     window_stats: list[dict[str, Any]],
+    today_alerts: list[dict[str, Any]] | None = None,
+    transition_top5: list[dict[str, Any]] | None = None,
+    today_attribution: dict[str, Any] | None = None,
+    quadrant_distributions: dict[str, dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     print("正在构建 summary...")
     latest = latest_row(history_summary)
@@ -571,6 +975,10 @@ def build_summary(
         watch_points = ["观察行业Beta是否延续", "关注个股Alpha能否修复", "监测风险信号是否退潮"]
 
     personality_summary = personality_profile.get("personality_summary", {})
+    # 当前格的操作建议
+    cur_state_key = state_key_from_row(latest)
+    cur_dist = (quadrant_distributions or {}).get(cur_state_key, {})
+    current_guidance = guidance_for_winrate(cur_dist.get("winRate"))
     return {
         "currentMapping": {
             "date": str(latest.get("date") or ""),
@@ -603,6 +1011,11 @@ def build_summary(
             "title": "历史性格档案",
             "description": personality_summary.get("headline", ""),
         },
+        # 「今日看板」专属字段
+        "alerts": today_alerts or [],
+        "transitionTop5": transition_top5 or [],
+        "todayAttribution": today_attribution,
+        "currentQuadrantGuidance": current_guidance,
     }
 
 
@@ -812,6 +1225,16 @@ def build_trends(
             "groups": signal_groups_for_row(row, habit_type_map),
         })
 
+    # 「今日看板」专属：5d/10d 超额的历史百分位
+    e5_pcts = compute_percentiles_inplace([r["excess5d"] for r in excess_return])
+    e10_pcts = compute_percentiles_inplace([r["excess10d"] for r in excess_return])
+    for i, r in enumerate(excess_return):
+        r["excess5dPercentile"] = e5_pcts[i]
+        r["excess10dPercentile"] = e10_pcts[i]
+
+    # 「今日看板」专属：每日 4 池 20d/60d 相关性 + 20d 百分位
+    pool_correlations = build_pool_correlations(history_summary)
+
     return {
         "excessReturn": excess_return,
         "followDeviation": follow_deviation,
@@ -820,6 +1243,7 @@ def build_trends(
             pattern.get("event_label") or pattern.get("eventLabel") or "未知事件": camelize(pattern.get("avg_path") or pattern.get("avgPath") or [])
             for pattern in personality_profile.get("path_patterns", [])
         },
+        "poolCorrelations": pool_correlations,
     }
 
 
@@ -953,9 +1377,13 @@ def build_table_data(
     latest = latest_row(history_summary)
     current_state = state_key_from_row(latest)
 
+    # 「今日看板」专属：每个象限的 P10/P50/P90 分布 + 操作建议
+    quadrant_dist = build_quadrant_distributions(history_summary)
     quadrant_stats_list = []
     for row in quadrant_stats:
         key = normalize_state(row.get("quadrant"))
+        dist = quadrant_dist.get(key, {})
+        guidance = guidance_for_winrate(dist.get("winRate") or row.get("win_rate_1d"))
         quadrant_stats_list.append({
             "quadrant": key,
             "quadrantName": state_label(key),
@@ -966,6 +1394,12 @@ def build_table_data(
             "avgNext1dExcess": row.get("avg_next_1d_excess") or row.get("avg_relative_strength"),
             "winRate1d": row.get("win_rate_1d"),
             "avgRelativeStrength": row.get("avg_relative_strength"),
+            # 「今日看板」专属
+            "t1P10": dist.get("p10"),
+            "t1P50": dist.get("p50"),
+            "t1P90": dist.get("p90"),
+            "guidance": guidance,
+            "reason": QUADRANT_REASONS.get(key, ""),
         })
 
     signal_lifts_list = [
@@ -1308,6 +1742,14 @@ def main() -> None:
     transitions = build_transitions(data["history_summary"], data["state_transitions"])
     similar_cases, window_stats = compute_similar_cases(data["history_summary"], close_by_date)
 
+    # 「今日看板」专属数据预计算
+    print("正在构建 today 数据...")
+    trends_payload = build_trends(data["rolling_metrics"], data["history_summary"], data["personality_profile"], close_by_date)
+    quadrant_distributions = build_quadrant_distributions(data["history_summary"])
+    today_alerts = build_today_alerts(trends_payload["excessReturn"], trends_payload["poolCorrelations"])
+    transition_top5 = build_transition_top5(data["history_summary"], quadrant_distributions)
+    today_attribution = build_today_attribution(data["history_summary"])
+
     dashboard_view = {
         "meta": build_meta(data["personality_profile"], data["config"], data["history_summary"]),
         "filter": build_filter(data["personality_profile"], data["history_summary"]),
@@ -1317,6 +1759,10 @@ def main() -> None:
             data["history_summary"],
             similar_cases,
             window_stats,
+            today_alerts=today_alerts,
+            transition_top5=transition_top5,
+            today_attribution=today_attribution,
+            quadrant_distributions=quadrant_distributions,
         ),
         "cards": build_cards(
             data["personality_profile"],
@@ -1326,7 +1772,7 @@ def main() -> None:
             data["quadrant_stats"],
         ),
         "mapData": build_map_data(transitions, data["history_summary"], data["personality_profile"]),
-        "trends": build_trends(data["rolling_metrics"], data["history_summary"], data["personality_profile"], close_by_date),
+        "trends": trends_payload,
         "tableData": build_table_data(
             transitions,
             data["history_summary"],
@@ -1342,7 +1788,13 @@ def main() -> None:
         "operator": build_operator(data["operator_playbook"]),
         "aiInsight": build_ai_insight(data["operator_playbook"], data["personality_profile"], data["signal_lifts"], data["extreme_divergences"]),
         "predictionEvaluation": build_prediction_evaluation(data["prediction_backtest"]),
-        "dateIndex": build_date_index(data["history_summary"], close_by_date, data["rolling_metrics"]),
+        "dateIndex": build_date_index(
+            data["history_summary"],
+            close_by_date,
+            data["rolling_metrics"],
+            {entry["date"]: entry for entry in trends_payload.get("poolCorrelations", [])},
+            quadrant_distributions,
+        ),
     }
 
     path_label = dashboard_view["summary"].get("pathLabel")

@@ -9,6 +9,7 @@ const navItems = [
   { label: 'Dashboard', href: '/' },
   { label: 'Layers', href: '/layers' },
   { label: 'History', href: '/history' },
+  { label: '今日看板', href: '/today' },
   { label: 'History V2', href: '/history-v2' },
   { label: 'Pools', href: '/pools' },
   { label: 'Reports', href: '/reports' },

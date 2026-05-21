@@ -1,0 +1,757 @@
+/* ============================================
+ * 今日看板 (Today Cockpit) - Styles
+ * 全局类前缀 .today-cockpit 隔离避免污染
+ * ============================================ */
+
+.today-cockpit {
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+  color: #1a1d24;
+  line-height: 1.5;
+  padding: 16px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.today-cockpit * {
+  box-sizing: border-box;
+}
+
+/* ============ Topbar (日期选择) ============ */
+.today-cockpit .tc-topbar {
+  margin-bottom: 20px;
+  padding: 14px 18px;
+  background: #1e2028;
+  border: 1px solid #2a2d36;
+  border-radius: 10px;
+}
+.today-cockpit .tc-topbar-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.today-cockpit .tc-topbar-stock {
+  font-size: 15px;
+  font-weight: 600;
+  color: #e5e7eb;
+}
+.today-cockpit .tc-topbar-update {
+  font-size: 12px;
+  color: #6b7280;
+}
+.today-cockpit .tc-topbar-datebar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.today-cockpit .tc-date-nav {
+  width: 28px;
+  height: 28px;
+  background: #2a2d36;
+  border: 1px solid #3a3d46;
+  border-radius: 6px;
+  color: #9ca3af;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.today-cockpit .tc-date-nav:hover:not(:disabled) {
+  background: #353840;
+  color: #e5e7eb;
+}
+.today-cockpit .tc-date-nav:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+.today-cockpit .tc-date-btn {
+  padding: 4px 10px;
+  height: 28px;
+  background: #2a2d36;
+  border: 1px solid #3a3d46;
+  border-radius: 6px;
+  color: #9ca3af;
+  cursor: pointer;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  transition: all 0.12s;
+}
+.today-cockpit .tc-date-btn:hover {
+  background: #353840;
+  color: #e5e7eb;
+}
+.today-cockpit .tc-date-btn.tc-date-active {
+  background: #3b4fd8;
+  border-color: #4f63f0;
+  color: #fff;
+  font-weight: 600;
+}
+.today-cockpit .tc-date-btn.tc-date-latest {
+  border-color: #4b5563;
+}
+.today-cockpit .tc-date-apply {
+  margin-left: 6px;
+  padding: 4px 14px;
+  height: 28px;
+  background: #2a2d36;
+  border: 1px solid #3a3d46;
+  border-radius: 6px;
+  color: #6b7280;
+  cursor: not-allowed;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.today-cockpit .tc-date-apply.tc-date-apply-active {
+  background: #1d4ed8;
+  border-color: #3b82f6;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 600;
+}
+.today-cockpit .tc-date-apply.tc-date-apply-active:hover {
+  background: #2563eb;
+}
+.today-cockpit .tc-topbar-hint {
+  margin: 8px 0 0;
+  font-size: 11px;
+  color: #4b5563;
+}
+
+/* Header */
+.today-cockpit .tc-header {
+  margin-bottom: 16px;
+  padding: 18px 22px;
+  background: #1a1d24;
+  color: #fff;
+  border-radius: 8px;
+}
+.today-cockpit .tc-header h1 {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.today-cockpit .tc-header .tc-subtitle {
+  font-size: 13px;
+  color: #9ca3af;
+}
+.today-cockpit .tc-header .tc-product-tag {
+  display: inline-block;
+  padding: 3px 10px;
+  background: rgba(59, 130, 246, 0.2);
+  color: #93c5fd;
+  border-radius: 4px;
+  font-size: 11px;
+  margin-top: 8px;
+}
+
+/* Section card */
+.today-cockpit .tc-card {
+  margin-bottom: 14px;
+  background: #fff;
+  padding: 18px 20px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+.today-cockpit .tc-card h2 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f3f4f6;
+}
+.today-cockpit .tc-section-divider {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 20px 0 10px 0;
+  font-weight: 600;
+}
+
+/* Tier 4: Alerts */
+.today-cockpit .tc-alerts {
+  margin-bottom: 14px;
+  background: #fef2f2;
+  padding: 16px 20px;
+  border-radius: 8px;
+  border: 1px solid #fecaca;
+}
+.today-cockpit .tc-alerts h3 {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+.today-cockpit .tc-alert-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: #fff;
+  border-left: 3px solid;
+  margin-bottom: 6px;
+  border-radius: 4px;
+  font-size: 13px;
+}
+.today-cockpit .tc-alert-item:last-child {
+  margin-bottom: 0;
+}
+.today-cockpit .tc-alert-critical {
+  border-left-color: #dc2626;
+}
+.today-cockpit .tc-alert-warning {
+  border-left-color: #f59e0b;
+}
+.today-cockpit .tc-alert-icon {
+  font-size: 18px;
+}
+
+/* Attribution Card */
+.today-cockpit .tc-big-number {
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+.today-cockpit .tc-pool-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.today-cockpit .tc-pool-row {
+  display: grid;
+  grid-template-columns: 220px 80px 1fr;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+}
+.today-cockpit .tc-pool-name {
+  color: #4b5563;
+}
+.today-cockpit .tc-pool-val {
+  font-weight: 600;
+  font-family: "SF Mono", Consolas, monospace;
+  text-align: right;
+}
+.today-cockpit .tc-bar {
+  height: 6px;
+  background: #f3f4f6;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.today-cockpit .tc-bar-fill {
+  height: 100%;
+  max-width: 100%;
+}
+.today-cockpit .tc-bar-fill.tc-pos {
+  background: #16a34a;
+}
+.today-cockpit .tc-bar-fill.tc-neg {
+  background: #dc2626;
+}
+.today-cockpit .tc-alpha-box {
+  background: #f9fafb;
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+}
+.today-cockpit .tc-alpha-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  padding: 4px 0;
+}
+.today-cockpit .tc-alpha-row .tc-label {
+  color: #6b7280;
+}
+.today-cockpit .tc-alpha-row .tc-val {
+  font-family: "SF Mono", Consolas, monospace;
+  font-weight: 600;
+}
+
+/* Excess Cards (3 cells) */
+.today-cockpit .tc-excess-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.today-cockpit .tc-excess-cell {
+  padding: 12px;
+  background: #f9fafb;
+  border-radius: 6px;
+}
+.today-cockpit .tc-excess-title {
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+.today-cockpit .tc-excess-value {
+  font-size: 22px;
+  font-weight: 600;
+  font-family: "SF Mono", Consolas, monospace;
+}
+.today-cockpit .tc-excess-percentile {
+  font-size: 11px;
+  color: #9ca3af;
+  margin-top: 4px;
+}
+.today-cockpit .tc-pct-bar {
+  position: relative;
+  height: 4px;
+  background: linear-gradient(to right, #16a34a, #f59e0b, #dc2626);
+  border-radius: 2px;
+  margin-top: 8px;
+}
+.today-cockpit .tc-pct-marker {
+  position: absolute;
+  top: -3px;
+  width: 2px;
+  height: 10px;
+  background: #1a1d24;
+}
+
+/* Tables */
+.today-cockpit .tc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.today-cockpit .tc-table th,
+.today-cockpit .tc-table td {
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid #f3f4f6;
+}
+.today-cockpit .tc-table th {
+  background: #f9fafb;
+  color: #6b7280;
+  font-weight: 500;
+  font-size: 12px;
+}
+.today-cockpit .tc-table td.tc-val {
+  font-family: "SF Mono", Consolas, monospace;
+  font-weight: 600;
+}
+.today-cockpit .tc-small {
+  font-size: 11px;
+  color: #9ca3af;
+}
+.today-cockpit .tc-current-row {
+  background: #fef3c7;
+}
+.today-cockpit .tc-current-row td:first-child {
+  font-weight: 600;
+}
+
+/* 9-Quadrant Grid */
+.today-cockpit .tc-quad-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.today-cockpit .tc-quad-cell {
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid;
+  position: relative;
+}
+.today-cockpit .tc-quad-good {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+.today-cockpit .tc-quad-neu {
+  background: #f9fafb;
+  border-color: #e5e7eb;
+}
+.today-cockpit .tc-quad-warn {
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+.today-cockpit .tc-quad-bad {
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+.today-cockpit .tc-quad-cell.tc-current {
+  box-shadow: 0 0 0 2px #f59e0b;
+}
+.today-cockpit .tc-current-marker {
+  position: absolute;
+  top: -10px;
+  right: 8px;
+  background: #f59e0b;
+  color: #fff;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+.today-cockpit .tc-quad-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.today-cockpit .tc-quad-name {
+  font-size: 12px;
+  font-weight: 600;
+}
+.today-cockpit .tc-quad-tier-tag {
+  font-size: 10px;
+  padding: 2px 5px;
+  border-radius: 3px;
+  font-weight: 500;
+}
+.today-cockpit .tc-tier-good {
+  background: #dcfce7;
+  color: #15803d;
+}
+.today-cockpit .tc-tier-neu {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+.today-cockpit .tc-tier-warn {
+  background: #fef3c7;
+  color: #b45309;
+}
+.today-cockpit .tc-tier-bad {
+  background: #fee2e2;
+  color: #dc2626;
+}
+.today-cockpit .tc-quad-metrics {
+  font-size: 11px;
+  color: #6b7280;
+  margin-bottom: 6px;
+}
+.today-cockpit .tc-quad-metrics strong {
+  color: #1a1d24;
+  font-family: "SF Mono", Consolas, monospace;
+}
+.today-cockpit .tc-quad-action {
+  font-size: 11px;
+  color: #4b5563;
+  line-height: 1.4;
+  padding-top: 6px;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+.today-cockpit .tc-muted {
+  color: #d1d5db;
+}
+
+/* State Transition Flow */
+.today-cockpit .tc-trans-flow {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
+  margin-bottom: 12px;
+}
+.today-cockpit .tc-trans-from {
+  flex: 0 0 200px;
+  padding: 16px;
+  background: #fef3c7;
+  border-radius: 8px;
+  border: 2px solid #f59e0b;
+  text-align: center;
+}
+.today-cockpit .tc-trans-from .tc-trans-label {
+  font-size: 11px;
+  color: #92400e;
+  margin-bottom: 4px;
+}
+.today-cockpit .tc-trans-from .tc-trans-state {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1d24;
+  margin-bottom: 4px;
+}
+.today-cockpit .tc-trans-from .tc-trans-tag {
+  font-size: 11px;
+  color: #6b7280;
+}
+.today-cockpit .tc-trans-arrow {
+  display: flex;
+  align-items: center;
+  font-size: 24px;
+  color: #9ca3af;
+}
+.today-cockpit .tc-trans-targets {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.today-cockpit .tc-trans-target {
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid;
+  font-size: 12px;
+}
+.today-cockpit .tc-trans-target.tc-trans-good {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+.today-cockpit .tc-trans-target.tc-trans-neu {
+  background: #f9fafb;
+  border-color: #e5e7eb;
+}
+.today-cockpit .tc-trans-target.tc-trans-warn {
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+.today-cockpit .tc-trans-target.tc-trans-bad {
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+.today-cockpit .tc-trans-prob {
+  font-size: 13px;
+  font-family: "SF Mono", Consolas, monospace;
+}
+.today-cockpit .tc-trans-prob strong {
+  color: #1a1d24;
+  font-size: 15px;
+}
+.today-cockpit .tc-trans-target-state {
+  font-weight: 600;
+  margin: 2px 0;
+  font-size: 12px;
+}
+.today-cockpit .tc-trans-target-meta {
+  font-size: 10px;
+  color: #6b7280;
+}
+
+/* Colors */
+.today-cockpit .tc-pos {
+  color: #16a34a;
+}
+.today-cockpit .tc-neg {
+  color: #dc2626;
+}
+.today-cockpit .tc-neu {
+  color: #6b7280;
+}
+
+/* Tags */
+.today-cockpit .tc-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 500;
+}
+.today-cockpit .tc-tag-critical {
+  background: #fee2e2;
+  color: #dc2626;
+}
+.today-cockpit .tc-tag-warn {
+  background: #fef3c7;
+  color: #b45309;
+}
+.today-cockpit .tc-tag-good {
+  background: #dcfce7;
+  color: #15803d;
+}
+.today-cockpit .tc-tag-bad {
+  background: #fee2e2;
+  color: #dc2626;
+}
+.today-cockpit .tc-tag-neu {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+/* Hints */
+.today-cockpit .tc-hint {
+  background: #f0f9ff;
+  border-left: 3px solid #3b82f6;
+  padding: 10px 14px;
+  margin-top: 12px;
+  font-size: 13px;
+  color: #1e40af;
+  border-radius: 0 4px 4px 0;
+}
+.today-cockpit .tc-verdict {
+  background: #fffbeb;
+  border-left: 3px solid #f59e0b;
+  padding: 10px 14px;
+  margin-top: 12px;
+  font-size: 13px;
+  color: #92400e;
+  border-radius: 0 4px 4px 0;
+}
+.today-cockpit .tc-disclaimer {
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 10px;
+  font-style: italic;
+}
+
+/* Tier 3 折叠区 */
+.today-cockpit .tc-research-details {
+  background: #fafafa;
+  padding: 0;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  margin-bottom: 14px;
+}
+.today-cockpit .tc-research-details summary {
+  padding: 14px 20px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  color: #4b5563;
+}
+.today-cockpit .tc-research-details summary:hover {
+  background: #f3f4f6;
+}
+.today-cockpit .tc-research-content {
+  padding: 0 20px 20px 20px;
+  font-size: 13px;
+  color: #4b5563;
+}
+.today-cockpit .tc-research-content ul {
+  margin: 10px 0;
+  padding-left: 20px;
+}
+.today-cockpit .tc-research-content li {
+  margin: 6px 0;
+}
+
+/* Pool correlation row */
+.today-cockpit .tc-corr-row {
+  display: grid;
+  grid-template-columns: 130px 1fr 1fr 1fr 1fr;
+  align-items: center;
+  font-size: 13px;
+}
+.today-cockpit .tc-corr-header {
+  font-size: 12px;
+  color: #6b7280;
+  border-bottom: 1px solid #f3f4f6;
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+}
+
+/* Page header */
+.today-cockpit .tc-page-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.today-cockpit .tc-page-header h1 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: #f0f0f0;
+}
+.today-cockpit .tc-date {
+  font-size: 14px;
+  color: #9ca3af;
+  font-variant-numeric: tabular-nums;
+}
+.today-cockpit .tc-meta {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* Research details */
+.today-cockpit .tc-research {
+  padding: 0;
+}
+.today-cockpit .tc-research-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 20px;
+  background: none;
+  border: none;
+  color: #d1d5db;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  border-radius: 12px;
+}
+.today-cockpit .tc-research-toggle:hover {
+  background: rgba(255,255,255,0.04);
+}
+.today-cockpit .tc-research-sub {
+  font-weight: 400;
+  font-size: 12px;
+  color: #6b7280;
+  flex: 1;
+}
+.today-cockpit .tc-research-chevron {
+  font-size: 11px;
+  color: #6b7280;
+}
+.today-cockpit .tc-research-body {
+  padding: 0 20px 20px;
+}
+.today-cockpit .tc-research-list {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.today-cockpit .tc-research-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 6px;
+  border: 1px solid #2a2a2a;
+}
+.today-cockpit .tc-link {
+  color: #60a5fa;
+  text-decoration: none;
+}
+.today-cockpit .tc-link:hover {
+  text-decoration: underline;
+}
+.today-cockpit .tc-warn {
+  color: #f59e0b;
+}
+
+/* Footer */
+.today-cockpit .tc-footer {
+  margin-top: 30px;
+  padding: 20px;
+  text-align: center;
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+/* 响应式 */
+@media (max-width: 720px) {
+  .today-cockpit .tc-pool-row {
+    grid-template-columns: 1fr 70px;
+  }
+  .today-cockpit .tc-pool-row .tc-bar {
+    display: none;
+  }
+  .today-cockpit .tc-excess-grid {
+    grid-template-columns: 1fr;
+  }
+  .today-cockpit .tc-quad-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .today-cockpit .tc-trans-flow {
+    flex-direction: column;
+  }
+  .today-cockpit .tc-trans-from {
+    flex: 1;
+  }
+  .today-cockpit .tc-trans-arrow {
+    justify-content: center;
+  }
+  .today-cockpit .tc-trans-targets {
+    grid-template-columns: 1fr;
+  }
+}

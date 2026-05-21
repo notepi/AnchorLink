@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>铂力特状态监测仪 · 20260520</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: #f5f6f8;
+  color: #1a1d24;
+  line-height: 1.5;
+  padding: 16px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+header { margin-bottom: 16px; padding: 20px; background: #1a1d24; color: #fff; border-radius: 8px; }
+header h1 { font-size: 22px; font-weight: 600; margin-bottom: 6px; }
+header .subtitle { font-size: 13px; color: #9ca3af; }
+header .product-tag { display: inline-block; padding: 3px 10px; background: rgba(59,130,246,0.2); color: #93c5fd; border-radius: 4px; font-size: 11px; margin-top: 8px; }
+
+section { margin-bottom: 14px; }
+.card { background: #fff; padding: 18px 20px; border-radius: 8px; border: 1px solid #e5e7eb; }
+.card h2 { font-size: 15px; font-weight: 600; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #f3f4f6; }
+.tier-4 h3 { font-size: 13px; font-weight: 600; margin-bottom: 10px; }
+
+/* Tier 4 警报 */
+.tier-4 { background: #fef2f2; padding: 16px 20px; border-radius: 8px; border: 1px solid #fecaca; }
+.alert-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: #fff; border-left: 3px solid; margin-bottom: 6px; border-radius: 4px; font-size: 13px; }
+.alert-critical { border-left-color: #dc2626; }
+.alert-warning { border-left-color: #f59e0b; }
+.alert-icon { font-size: 18px; }
+
+/* 今日归因 */
+.big-number { font-size: 28px; font-weight: 600; margin-bottom: 14px; }
+.pool-bars { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.pool-row { display: grid; grid-template-columns: 220px 80px 1fr; align-items: center; gap: 12px; font-size: 13px; }
+.pool-name { color: #4b5563; }
+.pool-val { font-weight: 600; font-family: "SF Mono", Consolas, monospace; text-align: right; }
+.bar { height: 6px; background: #f3f4f6; border-radius: 3px; overflow: hidden; }
+.bar-fill { height: 100%; max-width: 100%; }
+.bar-fill.pos { background: #16a34a; }
+.bar-fill.neg { background: #dc2626; }
+.alpha-box { background: #f9fafb; padding: 10px 14px; border-radius: 6px; margin-bottom: 12px; }
+.alpha-row { display: flex; justify-content: space-between; font-size: 13px; padding: 4px 0; }
+.alpha-row .label { color: #6b7280; }
+.alpha-row .val { font-family: "SF Mono", Consolas, monospace; font-weight: 600; }
+
+/* 三超额 */
+.excess-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+.excess-cell { padding: 12px; background: #f9fafb; border-radius: 6px; }
+.excess-title { font-size: 12px; color: #6b7280; margin-bottom: 4px; }
+.excess-value { font-size: 22px; font-weight: 600; font-family: "SF Mono", Consolas, monospace; }
+.excess-percentile { font-size: 11px; color: #9ca3af; margin-top: 4px; }
+.pct-bar { position: relative; height: 4px; background: linear-gradient(to right, #16a34a, #f59e0b, #dc2626); border-radius: 2px; margin-top: 8px; }
+.pct-marker { position: absolute; top: -3px; width: 2px; height: 10px; background: #1a1d24; }
+.pct-label { position: absolute; top: 12px; font-size: 10px; color: #6b7280; transform: translateX(-50%); }
+
+/* 表格 */
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+table th, table td { padding: 8px 10px; text-align: left; border-bottom: 1px solid #f3f4f6; }
+table th { background: #f9fafb; color: #6b7280; font-weight: 500; font-size: 12px; }
+table td.val { font-family: "SF Mono", Consolas, monospace; font-weight: 600; }
+.small { font-size: 11px; color: #9ca3af; }
+.current-row { background: #fef3c7; }
+.current-row td:first-child { font-weight: 600; }
+
+/* 9 象限网格 - 升级版 */
+.quad-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+.quad-cell { padding: 10px 12px; border-radius: 6px; border: 1px solid; position: relative; }
+.quad-good { background: #f0fdf4; border-color: #bbf7d0; }
+.quad-neu { background: #f9fafb; border-color: #e5e7eb; }
+.quad-warn { background: #fffbeb; border-color: #fde68a; }
+.quad-bad { background: #fef2f2; border-color: #fecaca; }
+.quad-cell.current { box-shadow: 0 0 0 2px #f59e0b; }
+.current-marker { position: absolute; top: -10px; right: 8px; background: #f59e0b; color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 3px; }
+.quad-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.quad-name { font-size: 12px; font-weight: 600; }
+.quad-tier-tag { font-size: 10px; padding: 2px 5px; border-radius: 3px; font-weight: 500; }
+.tier-good { background: #dcfce7; color: #15803d; }
+.tier-neu { background: #f3f4f6; color: #6b7280; }
+.tier-warn { background: #fef3c7; color: #b45309; }
+.tier-bad { background: #fee2e2; color: #dc2626; }
+.quad-metrics { font-size: 11px; color: #6b7280; margin-bottom: 6px; }
+.quad-metrics strong { color: #1a1d24; font-family: "SF Mono", Consolas, monospace; }
+.quad-action { font-size: 11px; color: #4b5563; line-height: 1.4; padding-top: 6px; border-top: 1px solid rgba(0,0,0,0.05); }
+.muted { color: #d1d5db; }
+
+/* 状态迁移 */
+.trans-flow { display: flex; gap: 12px; align-items: stretch; margin-bottom: 12px; }
+.trans-from { flex: 0 0 200px; padding: 16px; background: #fef3c7; border-radius: 8px; border: 2px solid #f59e0b; text-align: center; }
+.trans-from .trans-label { font-size: 11px; color: #92400e; margin-bottom: 4px; }
+.trans-from .trans-state { font-size: 14px; font-weight: 600; color: #1a1d24; margin-bottom: 4px; }
+.trans-from .trans-tag { font-size: 11px; color: #6b7280; }
+.trans-arrow { display: flex; align-items: center; font-size: 24px; color: #9ca3af; }
+.trans-targets { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.trans-target { padding: 8px 10px; border-radius: 6px; border: 1px solid; font-size: 12px; }
+.trans-target.trans-good { background: #f0fdf4; border-color: #bbf7d0; }
+.trans-target.trans-neu { background: #f9fafb; border-color: #e5e7eb; }
+.trans-target.trans-warn { background: #fffbeb; border-color: #fde68a; }
+.trans-target.trans-bad { background: #fef2f2; border-color: #fecaca; }
+.trans-prob { font-size: 13px; font-family: "SF Mono", Consolas, monospace; }
+.trans-prob strong { color: #1a1d24; font-size: 15px; }
+.trans-target-state { font-weight: 600; margin: 2px 0; font-size: 12px; }
+.trans-target-meta { font-size: 10px; color: #6b7280; }
+
+/* 颜色 */
+.pos { color: #16a34a; }
+.neg { color: #dc2626; }
+.neu { color: #6b7280; }
+
+/* 标签 */
+.tag { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: 500; }
+.tag.critical { background: #fee2e2; color: #dc2626; }
+.tag.warn { background: #fef3c7; color: #b45309; }
+.tag.good { background: #dcfce7; color: #15803d; }
+.tag.bad { background: #fee2e2; color: #dc2626; }
+.tag.neu { background: #f3f4f6; color: #6b7280; }
+
+/* 提示 */
+.hint { background: #f0f9ff; border-left: 3px solid #3b82f6; padding: 10px 14px; margin-top: 12px; font-size: 13px; color: #1e40af; border-radius: 0 4px 4px 0; }
+.verdict { background: #fffbeb; border-left: 3px solid #f59e0b; padding: 10px 14px; margin-top: 12px; font-size: 13px; color: #92400e; border-radius: 0 4px 4px 0; }
+.disclaimer { font-size: 12px; color: #6b7280; margin-bottom: 10px; font-style: italic; }
+
+/* Tier 3 折叠区 */
+.tier-3 { background: #fafafa; padding: 0; border-radius: 8px; border: 1px solid #e5e7eb; }
+.tier-3 summary { padding: 14px 20px; cursor: pointer; font-size: 13px; font-weight: 500; color: #4b5563; }
+.tier-3 summary:hover { background: #f3f4f6; }
+.tier-3-content { padding: 0 20px 20px 20px; font-size: 13px; color: #4b5563; }
+.tier-3-content ul { margin: 10px 0; padding-left: 20px; }
+.tier-3-content li { margin: 6px 0; }
+
+/* 响应式 */
+@media (max-width: 720px) {
+  .pool-row { grid-template-columns: 1fr 70px; }
+  .pool-row .bar { display: none; }
+  .excess-grid { grid-template-columns: 1fr; }
+  .quad-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* 底部 */
+footer { margin-top: 30px; padding: 20px; text-align: center; font-size: 11px; color: #9ca3af; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>铂力特行业联动状态监测仪</h1>
+  <div class="subtitle">20260520 · 价格 ¥91.19 · 688333.SH 铂力特</div>
+  <div class="product-tag">📍 状态监测，不是预测系统</div>
+</header>
+
+<section class="tier-4"><h3>极端位置警报 · 今天有 4 条</h3><div class="alert-item alert-critical"><span class="alert-icon">🚨</span><span>跟主线池 20d 相关性 = 0.20，处于历史 P2（极端脱钩）</span></div><div class="alert-item alert-critical"><span class="alert-icon">🚨</span><span>跟主题池 20d 相关性 = 0.28，处于历史 P6（同样脱钩）</span></div><div class="alert-item alert-critical"><span class="alert-icon">🚨</span><span>跟交易观察池 20d 相关性 = 0.37，处于历史 P8</span></div><div class="alert-item alert-warning"><span class="alert-icon">⚠️</span><span>5d 超额 +6.72%，处于历史 P89（接近过热）</span></div></section>
+
+
+<section class="card">
+  <h2>今日归因 · 谁带的</h2>
+  <div class="big-number">铂力特 <span class="pos">+4.00%</span></div>
+  <div class="pool-bars">
+    <div class="pool-row"><span class="pool-name">direct_peers（华曙、超卓）</span><span class="pool-val pos">+1.87%</span><div class="bar"><div class="bar-fill pos" style="width: 19%"></div></div></div>
+    <div class="pool-row"><span class="pool-name">industry_chain（主线 11 只）</span><span class="pool-val neg">-1.36%</span><div class="bar"><div class="bar-fill neg" style="width: 14%"></div></div></div>
+    <div class="pool-row"><span class="pool-name">theme_pool（商业航天主题）</span><span class="pool-val neg">-0.95%</span><div class="bar"><div class="bar-fill neg" style="width: 10%"></div></div></div>
+    <div class="pool-row"><span class="pool-name">trading_watchlist（高 beta）</span><span class="pool-val neu">-0.22%</span><div class="bar"><div class="bar-fill neg" style="width: 2%"></div></div></div>
+  </div>
+  <div class="alpha-box">
+    <div class="alpha-row"><span class="label">Alpha vs industry_chain</span><span class="val pos">+5.36%</span></div>
+    <div class="alpha-row"><span class="label">Alpha vs direct_peers（同业）</span><span class="val pos">+2.13%</span></div>
+  </div>
+  <p class="verdict">📌 <strong>事实</strong>：4 个池子里只有同业 direct_peers 涨。今天 +4% 的 +5.36% Alpha 大部分来自"同业涨"，<strong>真正的"个股独立"溢价只有 +2.13%</strong>。</p>
+</section>
+
+
+
+<section class="card">
+  <h2>三超额 · 历史位置</h2>
+  <div class="excess-grid">
+    <div class="excess-cell">
+      <div class="excess-title">5d 超额</div>
+      <div class="excess-value pos">+6.72%</div>
+      <div class="excess-percentile">历史 P89 <span class="tag warn">接近过热</span></div>
+      <div class="pct-bar"><div class="pct-marker pct-red" style="left: 89%"></div><span class="pct-label">P89</span></div>
+    </div>
+    <div class="excess-cell">
+      <div class="excess-title">10d 超额</div>
+      <div class="excess-value pos">+6.76%</div>
+      <div class="excess-percentile">历史 P84</div>
+      <div class="pct-bar"><div class="pct-marker pct-amber" style="left: 84%"></div><span class="pct-label">P84</span></div>
+    </div>
+    <div class="excess-cell">
+      <div class="excess-title">今日偏离</div>
+      <div class="excess-value pos">+5.36%</div>
+      <div class="excess-percentile">单日跑赢产业链</div>
+    </div>
+  </div>
+  <p class="hint">💡 <strong>看 5d 和 10d 几乎相等</strong>：意味着这一周的超额几乎都是最近 5 天集中爆发的，前 5 天基本没动。</p>
+</section>
+
+
+
+<section class="card">
+  <h2>联动状态 · 跟谁绑、跟谁脱</h2>
+  <table class="corr-table">
+    <thead><tr><th>池子</th><th>20d 相关性</th><th>历史百分位</th><th>60d 相关性</th><th>全样本</th><th>状态</th></tr></thead>
+    <tbody>
+<tr><td>主线池<br><span class='small'>industry_chain</span></td><td class='val'>0.20</td><td class='val'>P2</td><td class='val'>0.61</td><td class='val small'>0.64</td><td><span class="tag critical">脱钩</span></td></tr><tr><td>同业<br><span class='small'>direct_peers</span></td><td class='val'>0.35</td><td class='val'>P31</td><td class='val'>0.66</td><td class='val small'>0.47</td><td><span class="tag good">紧密</span></td></tr><tr><td>主题池<br><span class='small'>theme_pool</span></td><td class='val'>0.28</td><td class='val'>P6</td><td class='val'>0.65</td><td class='val small'>0.68</td><td><span class="tag critical">脱钩</span></td></tr><tr><td>高beta池<br><span class='small'>trading_watchlist</span></td><td class='val'>0.37</td><td class='val'>P8</td><td class='val'>0.76</td><td class='val small'>0.67</td><td><span class="tag critical">脱钩</span></td></tr>
+    </tbody>
+  </table>
+  <p class="hint">💡 <strong>三池齐脱钩</strong>：跟主线 / 主题 / 高 beta 三个池的 20d 相关性都在 P10 以下，是 242 天里最极端的脱钩状态之一。只有同业（direct_peers）还在保持联系（P31）。</p>
+</section>
+
+
+<section class='card'><h2>当前象限 · 9 格定位</h2><div class='quad-grid'>
+        <div class="quad-cell quad-warn">
+          
+          <div class="quad-header">
+            <span class="quad-name">行业强+个股强</span>
+            <span class="quad-tier-tag tier-warn">⚠️ 偏弱</span>
+          </div>
+          <div class="quad-metrics">
+            <span>胜率 <strong>42%</strong></span>
+            <span class="muted">·</span>
+            <span>P50 <strong>-0.31%</strong></span>
+            <span class="muted">·</span>
+            <span class="muted">n=38</span>
+          </div>
+          <div class="quad-action"><strong>暂不加仓</strong>：双强已透支，trap 格</div>
+        </div>
+        <div class="quad-cell quad-bad">
+          
+          <div class="quad-header">
+            <span class="quad-name">行业强+个股中</span>
+            <span class="quad-tier-tag tier-bad">🔴 回避</span>
+          </div>
+          <div class="quad-metrics">
+            <span>胜率 <strong>38%</strong></span>
+            <span class="muted">·</span>
+            <span>P50 <strong>-0.99%</strong></span>
+            <span class="muted">·</span>
+            <span class="muted">n=13</span>
+          </div>
+          <div class="quad-action"><strong>不追不加</strong>：个股没跟上行业，弱势</div>
+        </div>
+        <div class="quad-cell quad-warn">
+          
+          <div class="quad-header">
+            <span class="quad-name">行业强+个股弱</span>
+            <span class="quad-tier-tag tier-warn">⚠️ 偏弱</span>
+          </div>
+          <div class="quad-metrics">
+            <span>胜率 <strong>42%</strong></span>
+            <span class="muted">·</span>
+            <span>P50 <strong>-0.19%</strong></span>
+            <span class="muted">·</span>
+            <span class="muted">n=45</span>
+          </div>
+          <div class="quad-action"><strong>暂不加仓</strong>：跑输主线，机构或在出货</div>
+        </div>
+        <div class="quad-cell quad-bad">
+          
+          <div class="quad-header">
+            <span class="quad-name">行业中+个股强</span>
+            <span class="quad-tier-tag tier-bad">🔴 回避</span>
+          </div>
+          <div class="quad-metrics">
+            <span>胜率 <strong>38%</strong></span>
+            <span class="muted">·</span>
+            <span>P50 <strong>-1.06%</strong></span>
+            <span class="muted">·</span>
+            <span class="muted">n=13</span>
+          </div>
+          <div class="quad-action"><strong>不追不加</strong>：个股独走无行业支撑</div>
+        </div>
+        <div class="quad-cell quad-neu">
+          
+          <div class="quad-header">
+            <span class="quad-name">行业中+个股中</span>
+            <span class="quad-tier-tag tier-neu">⚪ 中性</span>
+          </div>
+          <div class="quad-metrics">
+            <span>胜率 <strong>50%</strong></span>
+            <span class="muted">·</span>
+            <span>P50 <strong>+0.23%</strong></span>
+            <span class="muted">·</span>
+            <span class="muted">n=8</span>
+          </div>
+          <div class="quad-action"><strong>持仓观望</strong>：典型平淡日，无信号</div>
+        </div>
+        <div class="quad-cell quad-good">
+          
+          <div class="quad-header">
+            <span class="quad-name">行业中+个股弱</span>
+            <span class="quad-tier-tag tier-good">🟢 好买点</span>
+          </div>
+          <div class="quad-metrics">
+            <span>胜率 <strong>64%</strong></span>
+            <span class="muted">·</span>
+            <span>P50 <strong>+0.71%</strong></span>
+            <span class="muted">·</span>
+            <span class="muted">n=28</span>
+          </div>
+          <div class="quad-action"><strong>关注买入</strong>：历史最佳，反弹概率最高</div>
+        </div>
+        <div class="quad-cell quad-neu current">
+          <div class="current-marker">← 今天</div>
+          <div class="quad-header">
+            <span class="quad-name">行业弱+个股强</span>
+            <span class="quad-tier-tag tier-neu">⚪ 中性</span>
+          </div>
+          <div class="quad-metrics">
+            <span>胜率 <strong>48%</strong></span>
+            <span class="muted">·</span>
+            <span>P50 <strong>-0.46%</strong></span>
+            <span class="muted">·</span>
+            <span class="muted">n=40</span>
+          </div>
+          <div class="quad-action"><strong>持仓观望</strong>：没方向优势，等下次迁移</div>
+        </div>
+        <div class="quad-cell quad-bad">
+          
+          <div class="quad-header">
+            <span class="quad-name">行业弱+个股中</span>
+            <span class="quad-tier-tag tier-bad">🔴 回避</span>
+          </div>
+          <div class="quad-metrics">
+            <span>胜率 <strong>30%</strong></span>
+            <span class="muted">·</span>
+            <span>P50 <strong>-0.95%</strong></span>
+            <span class="muted">·</span>
+            <span class="muted">n=20</span>
+          </div>
+          <div class="quad-action"><strong>不追不加</strong>：最差格，无逆势能力</div>
+        </div>
+        <div class="quad-cell quad-good">
+          
+          <div class="quad-header">
+            <span class="quad-name">行业弱+个股弱</span>
+            <span class="quad-tier-tag tier-good">🟢 好买点</span>
+          </div>
+          <div class="quad-metrics">
+            <span>胜率 <strong>56%</strong></span>
+            <span class="muted">·</span>
+            <span>P50 <strong>+0.36%</strong></span>
+            <span class="muted">·</span>
+            <span class="muted">n=36</span>
+          </div>
+          <div class="quad-action"><strong>关注买入</strong>：双跌反弹机会，均值回归型最佳</div>
+        </div></div><p class='hint'>💡 每格的含义：<strong>🟢 好买点</strong>（胜率≥55%，2 格）·  <strong>⚪ 中性</strong>（45-55%）·  <strong>⚠️ 偏弱</strong>（40-45%）·  <strong>🔴 回避</strong>（<40%，3 格）。<br>
+<strong>关键观察</strong>：最高胜率两格都是「个股弱」——铂力特是均值回归型，<strong>真正的买点不在「个股强」格里，而在跌下来之后</strong>。</p></section><section class='card'><h2>状态迁移 · 明天最可能去哪格</h2><p class='disclaimer'>基于历史 40 次「行业弱+个股强」之后的第二天去向</p><div class='trans-flow'>
+<div class='trans-from'>
+  <div class='trans-label'>今天</div>
+  <div class='trans-state'>行业弱+个股强</div>
+  <div class='trans-tag'>⚪ 中性 · 胜率 48%</div>
+</div>
+<div class='trans-arrow'>→</div>
+<div class='trans-targets'>
+
+    <div class='trans-target trans-warn'>
+      <div class='trans-prob'><strong>20%</strong> 概率</div>
+      <div class='trans-target-state'>行业强+个股强</div>
+      <div class='trans-target-meta'>⚠️ 偏弱 · 那一天 T+1 胜率 42%</div>
+    </div>
+    
+    <div class='trans-target trans-neu'>
+      <div class='trans-prob'><strong>18%</strong> 概率</div>
+      <div class='trans-target-state'>行业弱+个股强（留原地）</div>
+      <div class='trans-target-meta'>⚪ 中性 · 那一天 T+1 胜率 48%</div>
+    </div>
+    
+    <div class='trans-target trans-good'>
+      <div class='trans-prob'><strong>12%</strong> 概率</div>
+      <div class='trans-target-state'>行业弱+个股弱</div>
+      <div class='trans-target-meta'>🟢 好买点 · 那一天 T+1 胜率 56%</div>
+    </div>
+    
+    <div class='trans-target trans-warn'>
+      <div class='trans-prob'><strong>12%</strong> 概率</div>
+      <div class='trans-target-state'>行业强+个股弱</div>
+      <div class='trans-target-meta'>⚠️ 偏弱 · 那一天 T+1 胜率 42%</div>
+    </div>
+    
+    <div class='trans-target trans-bad'>
+      <div class='trans-prob'><strong>12%</strong> 概率</div>
+      <div class='trans-target-state'>行业弱+个股中</div>
+      <div class='trans-target-meta'>🔴 回避 · 那一天 T+1 胜率 30%</div>
+    </div>
+    </div></div>
+<p class='hint'>💡 <strong>综合判断</strong>：
+明天有 <strong class='pos'>12%</strong> 概率到「🟢 好买点」格、
+<strong class='neu'>75%</strong> 到中性 / 偏弱格、
+<strong class='neg'>12%</strong> 到「🔴 回避」格。<br>
+<strong>具体策略</strong>：今天观望，<strong>如果明天真的迁移到「行业弱+个股弱」（12%）</strong>，是历史最佳买点之一（T+1 胜率 56%）。其他情况维持观望。</p>
+</section>
+
+<h2 style="font-size: 14px; color: #6b7280; margin: 20px 0 10px 0;">━━ 历史参照（中部）━━</h2>
+
+<section class='card'><h2>历史相似案例 · 12 个</h2><p class='disclaimer'>⚠️ 仅展示个案，<strong>不展示平均值</strong>（模型方向命中率 48%，平均是噪音）</p><table class='similar-table'><thead><tr><th>日期</th><th>状态</th><th>相似度</th><th>T+1</th><th>T+3</th><th>T+5</th></tr></thead><tbody><tr><td>20250918</td><td class='small'>行业弱+个股强 · 高风险</td><td>0.91</td><td><span class='neg'>-3.54%</span></td><td><span class='neg'>-6.89%</span></td><td><span class='neg'>-3.73%</span></td></tr><tr><td>20260401</td><td class='small'>行业弱+个股强 · 高风险</td><td>0.90</td><td><span class='neg'>-2.07%</span></td><td><span class='neg'>-3.79%</span></td><td><span class='pos'>+0.63%</span></td></tr><tr><td>20251217</td><td class='small'>行业弱+个股强 · 高风险</td><td>0.84</td><td><span class='pos'>+13.67%</span></td><td><span class='pos'>+9.14%</span></td><td><span class='pos'>+9.39%</span></td></tr><tr><td>20260327</td><td class='small'>行业弱+个股强 · 高风险</td><td>0.82</td><td><span class='pos'>+2.13%</span></td><td><span class='pos'>+2.00%</span></td><td><span class='neg'>-1.12%</span></td></tr><tr><td>20260514</td><td class='small'>行业弱+个股强 · 高风险</td><td>0.82</td><td><span class='neg'>-4.13%</span></td><td><span class='neg'>-5.21%</span></td><td>-</td></tr><tr><td>20250812</td><td class='small'>行业弱+个股强 · 高风险</td><td>0.80</td><td><span class='neg'>-0.54%</span></td><td><span class='pos'>+5.97%</span></td><td><span class='pos'>+9.38%</span></td></tr><tr><td>20260114</td><td class='small'>行业弱+个股强 · 高风险</td><td>0.80</td><td><span class='neg'>-6.31%</span></td><td><span class='neg'>-1.63%</span></td><td><span class='neg'>-9.25%</span></td></tr><tr><td>20260427</td><td class='small'>行业弱+个股强 · 高风险</td><td>0.80</td><td><span class='neg'>-2.11%</span></td><td><span class='pos'>+2.55%</span></td><td><span class='pos'>+8.02%</span></td></tr><tr><td>20251111</td><td class='small'>行业弱+个股强 · 高风险</td><td>0.78</td><td><span class='neg'>-1.27%</span></td><td><span class='neg'>-1.55%</span></td><td><span class='neg'>-1.69%</span></td></tr><tr><td>20260313</td><td class='small'>行业弱+个股强 · 高风险</td><td>0.78</td><td><span class='neu'>-0.38%</span></td><td><span class='neg'>-1.18%</span></td><td><span class='neg'>-4.98%</span></td></tr><tr><td>20250903</td><td class='small'>行业弱+个股强 · 高风险</td><td>0.78</td><td><span class='neg'>-2.32%</span></td><td><span class='pos'>+3.23%</span></td><td><span class='neu'>+0.01%</span></td></tr><tr><td>20251126</td><td class='small'>行业弱+个股强 · 高风险</td><td>0.78</td><td><span class='pos'>+1.50%</span></td><td><span class='neu'>+0.16%</span></td><td><span class='neg'>-3.12%</span></td></tr></tbody></table><p class='hint'>💡 12 个相似案例里，T+1 上涨 <strong>3/12</strong> = <strong>25%</strong>（少于一半，偏空）。但样本太小，不构成统计依据。</p></section>
+
+<section class='card'><h2>9 象限 T+1 分布 · 看分布不看均值</h2><table class='dist-table'><thead><tr><th>象限</th><th>n</th><th>P10</th><th>P50</th><th>P90</th><th>胜率</th></tr></thead><tbody><tr class=''><td>行业中+个股弱</td><td>28</td><td class='neg'>-2.30%</td><td>+0.71%</td><td class='pos'>+3.65%</td><td><span class='tag good'>64%</span></td></tr><tr class=''><td>行业弱+个股弱</td><td>36</td><td class='neg'>-2.71%</td><td>+0.36%</td><td class='pos'>+6.01%</td><td><span class='tag good'>56%</span></td></tr><tr class=''><td>行业中+个股中</td><td>8</td><td class='neg'>-2.50%</td><td>+0.23%</td><td class='pos'>+5.79%</td><td><span class='tag neu'>50%</span></td></tr><tr class='current-row'><td>行业弱+个股强 ← 今天</td><td>40</td><td class='neg'>-3.77%</td><td>-0.46%</td><td class='pos'>+3.63%</td><td><span class='tag neu'>48%</span></td></tr><tr class=''><td>行业强+个股弱</td><td>45</td><td class='neg'>-5.21%</td><td>-0.19%</td><td class='pos'>+5.42%</td><td><span class='tag neu'>42%</span></td></tr><tr class=''><td>行业强+个股强</td><td>38</td><td class='neg'>-5.34%</td><td>-0.31%</td><td class='pos'>+2.80%</td><td><span class='tag neu'>42%</span></td></tr><tr class=''><td>行业中+个股强</td><td>13</td><td class='neg'>-4.33%</td><td>-1.06%</td><td class='pos'>+4.05%</td><td><span class='tag bad'>38%</span></td></tr><tr class=''><td>行业强+个股中</td><td>13</td><td class='neg'>-3.15%</td><td>-0.99%</td><td class='pos'>+3.06%</td><td><span class='tag bad'>38%</span></td></tr><tr class=''><td>行业弱+个股中</td><td>20</td><td class='neg'>-4.15%</td><td>-0.95%</td><td class='pos'>+3.70%</td><td><span class='tag bad'>30%</span></td></tr></tbody></table></section>
+
+<section class='card'><h2>今日 6 信号 · lift 速查</h2><table class='sig-table'><thead><tr><th>信号</th><th>类别</th><th>T+1 lift</th><th>胜率</th><th>n</th><th>判定</th></tr></thead><tbody><tr><td>行业Beta为负</td><td class='small'>beta</td><td class='neu'>+0.43%</td><td>47%</td><td>97</td><td><span class='tag neu'>中性</span></td></tr><tr><td>个股Alpha为正</td><td class='small'>alpha</td><td class='neu'>-0.03%</td><td>44%</td><td>92</td><td><span class='tag neu'>中性</span></td></tr><tr><td>跑赢主线池</td><td class='small'>alpha</td><td class='neu'>-0.03%</td><td>44%</td><td>92</td><td><span class='tag neu'>中性</span></td></tr><tr><td>处于行业前排</td><td class='small'>alpha</td><td class='neu'>-0.28%</td><td>42%</td><td>54</td><td><span class='tag neu'>中性</span></td></tr><tr><td>情绪池强于产业链</td><td class='small'>rotation</td><td class='neu'>-0.00%</td><td>46%</td><td>36</td><td><span class='tag neu'>中性</span></td></tr><tr><td>行业弱但个股强</td><td class='small'>abnormal</td><td class='neu'>+0.24%</td><td>48%</td><td>41</td><td><span class='tag neu'>中性</span></td></tr></tbody></table><p class='hint'>💡 6 个信号里 <strong>0 个是 trap</strong>，<strong>0 个是机会</strong>，剩下中性偏弱。<strong>今天没有任何统计上看涨的信号组合。</strong></p></section>
+
+<h2 style="font-size: 14px; color: #6b7280; margin: 20px 0 10px 0;">━━ 研究明细（折叠区）━━</h2>
+
+
+<details class="tier-3">
+  <summary>📂 研究明细（不影响日常决策，需要时再展开）</summary>
+  <div class="tier-3-content">
+    <p>以下三个模块来自原系统，但在"状态监测仪"定位下不属于日常决策入口：</p>
+    <ul>
+      <li><strong>状态迁移热力图</strong>：9×9 矩阵，事件驱动期不稳定，仅做参考</li>
+      <li><strong>预测准确度评估</strong>：IC、RMSE 等统计度量。⚠️ 全 242 天回测，方向命中率 48.3%，与基线无显著差异</li>
+      <li><strong>历史性格档案</strong>：累计统计画像，无法转成今日决策</li>
+    </ul>
+    <p class="disclaimer">建议：长期看研究价值，短期看日常决策不依赖这一层。</p>
+  </div>
+</details>
+
+
+<footer>
+  数据范围：2025-05-21 ~ 2026-05-20（242 个交易日）<br>
+  注：本页面不提供买卖建议。模型 T+1 方向命中率 48.3%，低于基线。<br>
+  Generated from data/output/* by AnchorLink
+</footer>
+
+</body>
+</html>
