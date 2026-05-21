@@ -17,6 +17,7 @@ from src.history_analysis.counter_intuitive_analyzer import identify_counter_int
 from src.history_analysis.conditional_signal_analyzer import build_conditional_signal_effects
 from src.history_analysis.operator_playbook import build_operator_playbook
 from src.history_analysis.personality_profile import build_personality_profile
+from src.history_analysis.prediction_backtest import run_prediction_backtest
 from src.output.history_csv_writer import (
     write_history_csv,
     write_rolling_csv,
@@ -29,6 +30,7 @@ from src.output.history_csv_writer import (
     write_conditional_signal_csv,
     write_operator_playbook_json,
     write_personality_profile_json,
+    write_prediction_backtest_json,
 )
 
 
@@ -125,5 +127,10 @@ def build_history_analysis(
     )
     write_personality_profile_json(personality_profile, output_root / "history_personality_profile.json")
     results["history_personality_profile.json"] = 1
+
+    # 11. 预测回测验证
+    backtest_result = run_prediction_backtest(rows, periods=(30, 60, 90))
+    write_prediction_backtest_json(backtest_result, output_root / "history_prediction_backtest.json")
+    results["history_prediction_backtest.json"] = 1
 
     return results

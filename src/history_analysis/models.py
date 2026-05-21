@@ -224,6 +224,8 @@ class PersonalitySummaryMetrics:
     payoff_ratio: float | None
     sharpe_like_ratio: float | None
     signal_coverage_ratio: float | None
+    information_ratio: float | None = None
+    expectancy_1d: float | None = None
 
 
 @dataclass(frozen=True)
@@ -357,3 +359,85 @@ class OperatorHistoryView:
     signal_traps: list[CounterIntuitiveSignal]
     conditional_effects: list[ConditionalSignalEffect]
     confirmation_pairs: list[OperatorConfirmationPair]
+
+
+# ============================================================
+# 预测准确度评估相关模型
+# ============================================================
+
+@dataclass(frozen=True)
+class PredictionAccuracy:
+    """单日预测准确度评估结果"""
+    target_date: str
+    predicted_return_1d: float | None
+    predicted_return_3d: float | None
+    predicted_return_5d: float | None
+    actual_return_1d: float | None
+    actual_return_3d: float | None
+    actual_return_5d: float | None
+    prediction_error_1d: float | None
+    prediction_error_3d: float | None
+    prediction_error_5d: float | None
+    direction_correct_1d: bool | None
+    direction_correct_3d: bool | None
+    direction_correct_5d: bool | None
+    sample_count: int
+    avg_similarity: float
+    confidence_score: float
+
+
+@dataclass(frozen=True)
+class BacktestMetricsWindow:
+    """单窗口回测指标"""
+    ic: float | None
+    direction_accuracy: float | None
+    rmse: float | None
+    mae: float | None
+    mean_error: float | None
+
+
+@dataclass(frozen=True)
+class BacktestMetrics:
+    """回测评估指标汇总"""
+    window_1d: BacktestMetricsWindow
+    window_3d: BacktestMetricsWindow
+    window_5d: BacktestMetricsWindow
+    total_predictions: int
+    valid_predictions_1d: int
+    valid_predictions_3d: int
+    valid_predictions_5d: int
+    quintile_returns: tuple[dict, ...] | None
+
+
+@dataclass(frozen=True)
+class BacktestMetricsByPeriod:
+    """分时段回测指标"""
+    period_days: int
+    metrics: BacktestMetrics
+
+
+@dataclass(frozen=True)
+class StabilityMetrics:
+    """预测稳定性指标"""
+    prediction_volatility_1d: float | None
+    stability_score: float | None
+    similarity_distribution: tuple[tuple[str, int], ...]
+
+
+@dataclass(frozen=True)
+class ConfidenceInterval:
+    """置信区间"""
+    window: str
+    point_estimate: float
+    lower_bound: float
+    upper_bound: float
+    sample_size: int
+
+
+@dataclass(frozen=True)
+class PredictionBacktestResult:
+    """预测回测完整结果"""
+    metrics_by_period: tuple[BacktestMetricsByPeriod, ...]
+    stability_metrics: StabilityMetrics
+    recent_predictions: tuple[PredictionAccuracy, ...]
+    confidence_intervals: tuple[ConfidenceInterval, ...] | None

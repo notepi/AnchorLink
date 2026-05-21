@@ -82,10 +82,11 @@ export function formatPp(
 export function formatNumber(value: number | null | undefined, decimals: number = 0): string {
   if (value === null || value === undefined || isNaN(value)) return '--';
 
-  return value.toLocaleString('zh-CN', {
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals
-  });
+  const fixed = value.toFixed(decimals);
+  const parts = fixed.split('.');
+  // 千分位分隔
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return parts.join('.');
 }
 
 /**

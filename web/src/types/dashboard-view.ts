@@ -12,15 +12,15 @@
 
 /** 四象限状态类型 */
 export type QuadrantState =
-  | 'positive+positive'  // 行业强+个股强
-  | 'positive+neutral'   // 行业强+个股中
-  | 'positive+negative'  // 行业强+个股弱
-  | 'neutral+positive'   // 行业中+个股强
-  | 'neutral+neutral'    // 行业中+个股中
-  | 'neutral+negative'   // 行业中+个股弱
-  | 'negative+positive'  // 行业弱+个股强
-  | 'negative+neutral'   // 行业弱+个股中
-  | 'negative+negative'; // 行业弱+个股弱
+  | 'positive+positive'  // 产业链强+个股强
+  | 'positive+neutral'   // 产业链强+个股中
+  | 'positive+negative'  // 产业链强+个股弱
+  | 'neutral+positive'   // 产业链中+个股强
+  | 'neutral+neutral'    // 产业链中+个股中
+  | 'neutral+negative'   // 产业链中+个股弱
+  | 'negative+positive'  // 产业链弱+个股强
+  | 'negative+neutral'   // 产业链弱+个股中
+  | 'negative+negative'; // 产业链弱+个股弱
 
 /** 行业Beta状态 */
 export type BetaState = 'positive' | 'neutral' | 'negative';
@@ -265,6 +265,8 @@ export interface EventPathPoint {
 export interface RollingMetric {
   /** 日期 */
   date: string;
+  /** 当日收盘价 */
+  price: number | null;
   /** 5日超额 */
   excess5d: number | null;
   /** 10日超额 */
@@ -437,6 +439,26 @@ export interface SimilarCase {
   matchingStates: string[];
   /** 匹配信号标签列表 */
   matchingSignals: string[];
+}
+
+/** 单日映射索引条目 */
+export interface DateEntry {
+  /** 当日映射 */
+  currentMapping: CurrentMapping;
+  /** 相似案例 */
+  similarCases: SimilarCase[];
+  /** 窗口统计 */
+  windowStats: WindowStat[];
+  /** 路径标签 */
+  pathLabel: PathLabelType;
+  /** 按日变化的卡片指标 */
+  cards: Array<{
+    title?: string;
+    label?: string;
+    value: string | number;
+    badge?: string;
+    description: string;
+  }>;
 }
 
 /** 状态转移摘要 */
@@ -677,6 +699,10 @@ export interface PersonalitySummaryMetrics {
   sharpeLikeRatio: number | null;
   /** 信号覆盖率 */
   signalCoverageRatio: number | null;
+  /** 信息比率（相对板块超额收益的稳定性） */
+  informationRatio: number | null;
+  /** 单日期望值（胜率×平均赚 - 败率×平均亏） */
+  expectancy1d: number | null;
 }
 
 /** 性格摘要 */
@@ -1044,4 +1070,87 @@ export interface DashboardView {
     /** 研究明细内容 */
     researchDetails: string;
   };
+
+  /** 预测准确度评估 */
+  predictionEvaluation: {
+    /** 分时段回测指标 */
+    metricsByPeriod: Array<{
+      periodDays: number;
+      metrics: {
+        window1d: BacktestMetricsWindow;
+        window3d: BacktestMetricsWindow;
+        window5d: BacktestMetricsWindow;
+        totalPredictions: number;
+        validPredictions1d: number;
+        validPredictions3d: number;
+        validPredictions5d: number;
+        quintileReturns: QuintileReturn[] | null;
+      };
+    }>;
+    /** 稳定性指标 */
+    stabilityMetrics: {
+      predictionVolatility1d: number | null;
+      stabilityScore: number | null;
+      similarityDistribution: Record<string, number>;
+    } | null;
+    /** 最近预测记录 */
+    recentPredictions: PredictionAccuracy[];
+    /** 置信区间 */
+    confidenceIntervals: ConfidenceInterval[];
+  };
+
+  /** 按日期索引的映射数据 */
+  dateIndex: Record<string, DateEntry>;
+}
+
+/** 回测指标窗口 */
+export interface BacktestMetricsWindow {
+  /** IC (Spearman 相关系数) */
+  ic: number | null;
+  /** 方向准确率 */
+  directionAccuracy: number | null;
+  /** RMSE */
+  rmse: number | null;
+  /** MAE */
+  mae: number | null;
+  /** 平均误差 */
+  meanError: number | null;
+}
+
+/** 分组收益统计 */
+export interface QuintileReturn {
+  quintile: number;
+  count: number;
+  avgPredicted: number | null;
+  avgActual: number | null;
+  directionAccuracy: number | null;
+}
+
+/** 预测准确度记录 */
+export interface PredictionAccuracy {
+  targetDate: string;
+  predictedReturn1d: number | null;
+  predictedReturn3d: number | null;
+  predictedReturn5d: number | null;
+  actualReturn1d: number | null;
+  actualReturn3d: number | null;
+  actualReturn5d: number | null;
+  predictionError1d: number | null;
+  predictionError3d: number | null;
+  predictionError5d: number | null;
+  directionCorrect1d: boolean | null;
+  directionCorrect3d: boolean | null;
+  directionCorrect5d: boolean | null;
+  sampleCount: number;
+  avgSimilarity: number;
+  confidenceScore: number;
+}
+
+/** 置信区间 */
+export interface ConfidenceInterval {
+  window: string;
+  pointEstimate: number;
+  lowerBound: number;
+  upperBound: number;
+  sampleSize: number;
 }

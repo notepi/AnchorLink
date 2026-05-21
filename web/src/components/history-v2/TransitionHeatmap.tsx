@@ -1,7 +1,7 @@
 import React from 'react';
 import type { DashboardView, QuadrantState } from '@/types/dashboard-view';
 import { formatPercent, formatWinRate } from '@/lib/history-v2/formatters';
-import { BETA_LABEL, ALPHA_LABEL } from '@/lib/glossary';
+import { BETA_LABEL, ALPHA_LABEL, POOL } from '@/lib/glossary';
 
 interface TransitionHeatmapProps {
   transitionData: DashboardView['tableData']['stateTransitions'];
@@ -153,7 +153,7 @@ export default function TransitionHeatmap({
               );
             })}
           </div>
-          <div className="matrix-caption">这里的"产业链"是航天主池（商业航天硬科技产业链 benchmark），不是宽泛行业指数；强/中/弱的顺序是「产业链状态 + 个股状态」。例如"弱+中"表示产业链弱、个股中性。</div>
+          <div className="matrix-caption">这里的"产业链"是{POOL.industry_chain.short}（{POOL.industry_chain.full}），不是宽泛行业指数；强/中/弱的顺序是「产业链状态 + 个股状态」。例如"弱+中"表示产业链弱、个股中性。</div>
         </div>
       </div>
     </details>

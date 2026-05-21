@@ -60,10 +60,26 @@ export default function PersonalityProfile({ personalityData, profile }: Persona
       explain: `历史上约 ${formatWinRate(summaryMetrics.baselineWinRate1d, 0)} 的样本日，后续收益为正。`
     },
     {
+      label: '期望值',
+      value: summaryMetrics.expectancy1d != null ? `${(summaryMetrics.expectancy1d > 0 ? '+' : '')}${(summaryMetrics.expectancy1d * 100).toFixed(2)}%` : '--',
+      valueClass: getValueColorClass(summaryMetrics.expectancy1d),
+      explain: summaryMetrics.expectancy1d != null
+        ? `每次交易的数学期望：${(summaryMetrics.expectancy1d * 100).toFixed(2)}%。${summaryMetrics.expectancy1d > 0 ? '正值意味着长期可盈利。' : '负值意味着长期会亏损。'}`
+        : '胜率×平均赚 - 败率×平均亏，>0 才值得做。'
+    },
+    {
+      label: '信息比率',
+      value: formatNumber(summaryMetrics.informationRatio, 2),
+      valueClass: getValueColorClass(summaryMetrics.informationRatio),
+      explain: summaryMetrics.informationRatio != null
+        ? `相对产业链超额收益的稳定性。${summaryMetrics.informationRatio > 0.5 ? '好于一般' : summaryMetrics.informationRatio > 0.2 ? '中等水平' : '跑赢板块不够稳定'}。`
+        : '超额收益均值/标准差×√252，>0.5好，>1.0优。'
+    },
+    {
       label: 'T+3 超额',
       value: `${formatPp(summaryMetrics.medianExcess3d, 2)}`,
       valueClass: getValueColorClass(summaryMetrics.medianExcess3d),
-      explain: `平均三天后比${POOL.industry_chain.short}${summaryMetrics.medianExcess3d && summaryMetrics.medianExcess3d > 0 ? '多' : '少'} ${Math.abs(summaryMetrics.medianExcess3d || 0).toFixed(2)} 个百分点。`
+      explain: `平均三天后比产业链${summaryMetrics.medianExcess3d && summaryMetrics.medianExcess3d > 0 ? '多' : '少'} ${Math.abs(summaryMetrics.medianExcess3d || 0).toFixed(2)} 个百分点。`
     },
     {
       label: 'T+3 不利',
@@ -73,7 +89,8 @@ export default function PersonalityProfile({ personalityData, profile }: Persona
     },
     {
       label: '盈亏比',
-      value: `${formatNumber(summaryMetrics.payoffRatio, 2)}<span style="font-size:12px;color:var(--muted);">x</span>`,
+      value: formatNumber(summaryMetrics.payoffRatio, 2),
+      valueUnit: 'x',
       valueClass: getValueColorClass(summaryMetrics.payoffRatio),
       explain: `赚钱日平均涨幅约为亏损日跌幅的 ${formatNumber(summaryMetrics.payoffRatio, 2)} 倍。`
     },
@@ -81,11 +98,11 @@ export default function PersonalityProfile({ personalityData, profile }: Persona
       label: '夏普',
       value: formatNumber(summaryMetrics.sharpeLikeRatio, 2),
       valueClass: getValueColorClass(summaryMetrics.sharpeLikeRatio),
-      explain: '数值越高越稳定；当前只是一般。'
+      explain: '绝对收益的风险调整指标，未减无风险利率。>1 好，>2 优。'
     },
     {
       label: '信号覆盖',
-      value: formatPercent(summaryMetrics.signalCoverageRatio, 0),
+      value: formatPercent((summaryMetrics.signalCoverageRatio ?? 0) * 100, 0),
       valueClass: getValueColorClass(summaryMetrics.signalCoverageRatio),
       explain: '这批历史样本都能归入当前档案。'
     }
@@ -174,7 +191,9 @@ export default function PersonalityProfile({ personalityData, profile }: Persona
         {metrics.map((metric, index) => (
           <div key={index} className="metric">
             <div className="label">{metric.label}</div>
-            <div className={`value ${metric.valueClass} mono`} dangerouslySetInnerHTML={{ __html: metric.value }}></div>
+            <div className={`value ${metric.valueClass} mono`}>
+              {metric.value}{metric.valueUnit && <span style={{ fontSize: '12px', color: 'var(--muted)' }}>{metric.valueUnit}</span>}
+            </div>
             <div className="explain">{metric.explain}</div>
           </div>
         ))}

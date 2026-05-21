@@ -15,6 +15,7 @@ from src.history_analysis.models import (
     CounterIntuitiveSignal,
     HistoryPersonalityProfile,
     HistoryRow,
+    PredictionBacktestResult,
     RollingMetrics,
     QuadrantStats,
     ExtremeDivergence,
@@ -187,3 +188,12 @@ def write_personality_profile_json(profile: HistoryPersonalityProfile, path: Pat
 
     with open(path, "w", encoding="utf-8") as f:
         json.dump(asdict(profile), f, ensure_ascii=False, indent=2, default=_json_default)
+
+
+def write_prediction_backtest_json(result: PredictionBacktestResult, path: Path) -> None:
+    """写入 history_prediction_backtest.json"""
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(asdict(result), f, ensure_ascii=False, indent=2, default=_json_default)

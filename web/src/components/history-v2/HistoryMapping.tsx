@@ -1,9 +1,16 @@
 "use client";
 
 import { useRef, useEffect, useState } from 'react';
-import { createChart, ColorType, LineSeries } from 'lightweight-charts';
+import { createChart, ColorType, LineSeries, createSeriesMarkers } from 'lightweight-charts';
 import type { DashboardView } from '@/types/dashboard-view';
 import { formatPercent, formatWinRate, formatSimilarity, getValueColorClass, formatPathLabel, formatDate, formatNumber } from '@/lib/history-v2/formatters';
+
+interface DailyMetric {
+  title?: string;
+  label?: string;
+  value: string | number;
+  description: string;
+}
 
 interface HistoryMappingProps {
   currentMapping: DashboardView['summary']['currentMapping'];
@@ -11,6 +18,8 @@ interface HistoryMappingProps {
   similarCases: DashboardView['tableData']['similarCases'];
   windowStats: DashboardView['tableData']['windowStats'];
   priceHistory: DashboardView['trends']['excessReturn'];
+  dailyMetrics: DailyMetric[];
+  confidenceIntervals?: DashboardView['predictionEvaluation']['confidenceIntervals'];
 }
 
 interface HoverState {
@@ -30,7 +39,7 @@ function formatPrice(value: number | null | undefined): string {
   return value == null || Number.isNaN(value) ? '--' : value.toFixed(2);
 }
 
-export default function HistoryMapping({ currentMapping, pathLabel, similarCases, windowStats, priceHistory }: HistoryMappingProps) {
+export default function HistoryMapping({ currentMapping, pathLabel, similarCases, windowStats, priceHistory, dailyMetrics, confidenceIntervals }: HistoryMappingProps) {
   const mappingTags = currentMapping?.tags ?? currentMapping?.signalLabels ?? [];
   const casesToShow = similarCases?.slice?.(0, 5) ?? [];
   const allCases = similarCases ?? [];
@@ -95,25 +104,28 @@ export default function HistoryMapping({ currentMapping, pathLabel, similarCases
       }));
     priceSeries.setData(priceLineData);
 
-    // 相似度散点（右轴）- 每个 case 独立 series，无连线
+    // 相似度散点（右轴）- 使用 markers 实现默认可见的点
     allCases.forEach(c => {
       if (!c?.date) return;
       const radius = (c.similarity ?? 0) >= 0.82 ? 8 : (c.similarity ?? 0) >= 0.68 ? 5 : 3;
       const simSeries = chart.addSeries(LineSeries, {
-        color: '#3b82f6',
+        color: 'transparent',
         lineWidth: 0,
         priceLineVisible: false,
         lastValueVisible: false,
         crosshairMarkerRadius: radius,
-        crosshairMarkerBorderColor: '#3b82f6',
-        crosshairMarkerBackgroundColor: '#3b82f6',
         priceScaleId: 'right',
-        pointMarkersVisible: true,
-        pointMarkersRadius: radius,
       });
-      simSeries.setData([{
-        time: `${c.date.slice(0, 4)}-${c.date.slice(4, 6)}-${c.date.slice(6, 8)}`,
-        value: c.similarity,
+      const timeStr = `${c.date.slice(0, 4)}-${c.date.slice(4, 6)}-${c.date.slice(6, 8)}`;
+      simSeries.setData([{ time: timeStr, value: c.similarity }]);
+      // 使用 markers 让点默认可见
+      createSeriesMarkers(simSeries, [{
+        time: timeStr,
+        position: 'belowBar',
+        color: '#3b82f6',
+        borderColor: '#3b82f6',
+        shape: 'circle',
+        size: radius > 6 ? 3 : radius > 4 ? 2 : 1,
       }]);
     });
 
@@ -194,6 +206,18 @@ export default function HistoryMapping({ currentMapping, pathLabel, similarCases
         </div>
       </div>
 
+      {dailyMetrics?.length > 0 && (
+        <div className="daily-metrics">
+          {dailyMetrics.map((metric, index) => (
+            <div key={index} className="daily-metric">
+              <div className="daily-metric-label">{metric.title ?? metric.label ?? ''}</div>
+              <div className={`daily-metric-value ${typeof metric.value === 'string' && (metric.value.includes('弱') || metric.value === '弱') ? 'red' : typeof metric.value === 'string' && (metric.value.includes('强') || metric.value === '强') ? 'green' : ''}`}>{metric.value}</div>
+              <div className="daily-metric-desc">{metric.description}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
       {(() => {
         const pathInfo = formatPathLabel(pathLabel);
         return (
@@ -203,27 +227,33 @@ export default function HistoryMapping({ currentMapping, pathLabel, similarCases
 
       <table className="mini-table" aria-label="历史路径统计">
         <thead>
-          <tr><th>窗口</th><th>平均收益</th><th>胜率</th><th>平均超额</th></tr>
+          <tr><th>窗口</th><th>平均收益</th><th>置信区间</th><th>胜率</th><th>平均超额</th></tr>
         </thead>
         <tbody>
           {windowStats?.length > 0 ? (
-            windowStats.map((stat) => (
-              <tr key={stat.window}>
-                <td>T+{stat?.window === '1d' ? '1' : stat?.window === '3d' ? '3' : '5'}</td>
-                <td className={getValueColorClass(stat?.avgReturn)}>
-                  {formatPercent(stat?.avgReturn)}
-                  {stat?.avgReturn != null && (stat.avgReturn > 0 ? ' ↑' : stat.avgReturn < 0 ? ' ↓' : '')}
-                </td>
-                <td>{formatWinRate(stat?.winRate)}</td>
-                <td className={getValueColorClass(stat?.avgExcess)}>
-                  {formatPercent(stat?.avgExcess)}
-                  {stat?.avgExcess != null && (stat.avgExcess > 0 ? ' ↑' : stat.avgExcess < 0 ? ' ↓' : '')}
-                </td>
-              </tr>
-            ))
+            windowStats.map((stat) => {
+              const ci = confidenceIntervals?.find(c => c.window === stat.window);
+              return (
+                <tr key={stat.window}>
+                  <td>T+{stat?.window === '1d' ? '1' : stat?.window === '3d' ? '3' : '5'}</td>
+                  <td className={getValueColorClass(stat?.avgReturn)}>
+                    {formatPercent(stat?.avgReturn)}
+                    {stat?.avgReturn != null && (stat.avgReturn > 0 ? ' ↑' : stat.avgReturn < 0 ? ' ↓' : '')}
+                  </td>
+                  <td style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
+                    {ci ? `[${formatPct(ci.lowerBound)}, ${formatPct(ci.upperBound)}]` : '--'}
+                  </td>
+                  <td>{formatWinRate(stat?.winRate)}</td>
+                  <td className={getValueColorClass(stat?.avgExcess)}>
+                    {formatPercent(stat?.avgExcess)}
+                    {stat?.avgExcess != null && (stat.avgExcess > 0 ? ' ↑' : stat.avgExcess < 0 ? ' ↓' : '')}
+                  </td>
+                </tr>
+              );
+            })
           ) : (
             <tr>
-              <td colSpan={4} style={{ textAlign: 'center', color: 'var(--muted)', padding: '20px' }}>
+              <td colSpan={5} style={{ textAlign: 'center', color: 'var(--muted)', padding: '20px' }}>
                 暂无统计数据
               </td>
             </tr>

@@ -80,6 +80,72 @@
   white-space: nowrap;
 }
 
+.history-v2 .filter-toggle {
+  padding: 5px 10px;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--muted);
+  font-size: 11px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.history-v2 .filter-toggle:hover {
+  color: var(--text-2);
+  border-color: var(--text-2);
+}
+
+.history-v2 .date-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.history-v2 .date-bar button {
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--text-2);
+  font-size: 11px;
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.history-v2 .date-bar button.active {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
+.history-v2 .date-bar button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.history-v2 .date-bar button:hover:not(:disabled):not(.active) {
+  border-color: var(--text-2);
+}
+
+.history-v2 .filter-apply {
+  padding: 4px 12px;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--muted);
+  font-size: 11px;
+  cursor: pointer;
+  margin-left: 4px;
+}
+
+.history-v2 .filter-apply.has-change {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
+.history-v2 .filter-apply:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
 .history-v2 .select {
   min-width: 132px;
   padding: 7px 10px;

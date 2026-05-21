@@ -80,6 +80,72 @@
   white-space: nowrap;
 }
 
+.history-v2-page .filter-toggle {
+  padding: 5px 10px;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--muted);
+  font-size: 11px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.history-v2-page .filter-toggle:hover {
+  color: var(--text-2);
+  border-color: var(--text-2);
+}
+
+.history-v2-page .date-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.history-v2-page .date-bar button {
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--text-2);
+  font-size: 11px;
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.history-v2-page .date-bar button.active {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
+.history-v2-page .date-bar button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.history-v2-page .date-bar button:hover:not(:disabled):not(.active) {
+  border-color: var(--text-2);
+}
+
+.history-v2-page .filter-apply {
+  padding: 4px 12px;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--muted);
+  font-size: 11px;
+  cursor: pointer;
+  margin-left: 4px;
+}
+
+.history-v2-page .filter-apply.has-change {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
+.history-v2-page .filter-apply:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
 .history-v2-page .select {
   min-width: 132px;
   padding: 7px 10px;
@@ -326,6 +392,43 @@
   display: flex;
   gap: 7px;
   flex-wrap: wrap;
+}
+
+.history-v2-page .daily-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--border-soft);
+  border: 1px solid var(--border);
+  border-top: 0;
+}
+
+.history-v2-page .daily-metric {
+  background: var(--panel);
+  padding: 10px 12px;
+  border-left: 2px solid var(--blue);
+}
+
+.history-v2-page .daily-metric-label {
+  color: var(--muted);
+  font-size: 10px;
+  margin-bottom: 2px;
+}
+
+.history-v2-page .daily-metric-value {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.history-v2-page .daily-metric-value.red { color: var(--red); }
+.history-v2-page .daily-metric-value.green { color: var(--green); }
+
+.history-v2-page .daily-metric-desc {
+  color: var(--muted);
+  font-size: 10px;
+  margin-top: 2px;
 }
 
 .history-v2-page .mapping-tag {
@@ -1141,7 +1244,7 @@
 
 .history-v2-page .metric-strip {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   border: 1px solid var(--border);
   background: var(--panel);
   margin-top: 14px;
@@ -1378,11 +1481,175 @@
   color: var(--muted);
 }
 
+/* ── Status Cards (StabilityPanel) ── */
+.history-v2-page .status-cards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.history-v2-page .status-card {
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  padding: 12px;
+  text-align: center;
+}
+
+.history-v2-page .status-card.green {
+  border-color: rgba(32, 212, 119, 0.45);
+  background: var(--green-soft);
+}
+
+.history-v2-page .status-card.red {
+  border-color: rgba(255, 77, 79, 0.45);
+  background: var(--red-soft);
+}
+
+.history-v2-page .status-card.amber {
+  border-color: rgba(245, 158, 11, 0.45);
+  background: var(--amber-soft);
+}
+
+.history-v2-page .status-card-label {
+  color: var(--muted);
+  font-size: 11px;
+  margin-bottom: 4px;
+}
+
+.history-v2-page .status-card-value {
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.history-v2-page .status-card.green .status-card-value { color: var(--green); }
+.history-v2-page .status-card.red .status-card-value { color: var(--red); }
+.history-v2-page .status-card.amber .status-card-value { color: var(--amber); }
+
+.history-v2-page .status-card-detail {
+  color: var(--muted);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── History Patterns (StabilityPanel) ── */
+.history-v2-page .history-patterns {
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  padding: 14px;
+  margin-bottom: 14px;
+}
+
+.history-v2-page .history-patterns h3 {
+  margin: 0 0 12px;
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.history-v2-page .probability-section {
+  display: grid;
+  gap: 10px;
+}
+
+.history-v2-page .probability-item {
+  display: grid;
+  grid-template-columns: 140px 1fr auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.history-v2-page .probability-label {
+  color: var(--text-2);
+  font-size: 12px;
+}
+
+.history-v2-page .probability-bar-wrap {
+  height: 8px;
+  background: var(--panel);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.history-v2-page .probability-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--blue), #7fb0ff);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.history-v2-page .probability-value {
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  min-width: 48px;
+  text-align: right;
+}
+
+.history-v2-page .patterns-note {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+  padding-left: 16px;
+  border-left: 2px solid var(--blue);
+}
+
+/* ── Action Tips (StabilityPanel) ── */
+.history-v2-page .action-tips {
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  background: var(--amber-soft);
+  padding: 14px;
+  margin-bottom: 14px;
+}
+
+.history-v2-page .action-tips h3 {
+  margin: 0 0 10px;
+  color: var(--amber);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.history-v2-page .action-tips ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.history-v2-page .action-tips li {
+  color: var(--text-2);
+  font-size: 12px;
+  line-height: 1.6;
+  padding-left: 16px;
+  position: relative;
+}
+
+.history-v2-page .action-tips li::before {
+  content: "→";
+  position: absolute;
+  left: 0;
+  color: var(--amber);
+}
+
+.history-v2-page .excess-tag {
+  display: inline-block;
+  padding: 1px 5px;
+  margin-left: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  border-radius: 2px;
+}
+
 @media (max-width: 1100px) {
   .history-v2-page .page { width: min(100vw - 24px, 960px); }
   .history-v2-page .topbar, .history-v2-page .filters { align-items: stretch; flex-direction: column; min-width: 0; }
   .history-v2-page .grid-3, .history-v2-page .grid-2, .history-v2-page .mapping-layout, .history-v2-page .path-layout, .history-v2-page .profile-grid { grid-template-columns: 1fr; }
   .history-v2-page .stability-summary { grid-template-columns: 1fr; }
+  .history-v2-page .status-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .history-v2-page .probability-item { grid-template-columns: 1fr; gap: 4px; }
+  .history-v2-page .probability-value { text-align: left; }
   .history-v2-page .advice { grid-template-columns: 1fr 1fr; }
   .history-v2-page .profile-top { grid-template-columns: 1fr; }
   .history-v2-page .donut-area, .history-v2-page .profile-side { border: 0; border-bottom: 1px solid var(--border); }
@@ -1475,6 +1742,14 @@
   }
 
   .history-v2-page .advice {
+    grid-template-columns: 1fr;
+  }
+
+  .history-v2-page .status-cards {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .history-v2-page .probability-item {
     grid-template-columns: 1fr;
   }
 

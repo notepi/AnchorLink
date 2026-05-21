@@ -223,6 +223,8 @@ def _build_summary_metrics(rows: list[HistoryRow]) -> PersonalitySummaryMetrics:
             payoff_ratio=None,
             sharpe_like_ratio=None,
             signal_coverage_ratio=None,
+            information_ratio=None,
+            expectancy_1d=None,
         )
 
     # baseline_win_rate_1d: valid rows 中 next_1d_return > 0 的比例
@@ -264,6 +266,30 @@ def _build_summary_metrics(rows: list[HistoryRow]) -> PersonalitySummaryMetrics:
     )
     signal_coverage = signal_days / len(valid) if valid else None
 
+    # information_ratio: mean(active_return) / stdev(active_return) × √252
+    # active_return = anchor_return - industry_chain_median
+    active_returns = [
+        r.anchor_return - r.industry_chain_median
+        for r in valid
+        if r.anchor_return is not None and r.industry_chain_median is not None
+    ]
+    information_ratio = None
+    if len(active_returns) >= 2:
+        avg_active = sum(active_returns) / len(active_returns)
+        try:
+            std_active = statistics.stdev(active_returns)
+            if std_active > 0:
+                information_ratio = round((avg_active / std_active) * (252 ** 0.5), 2)
+        except statistics.StatisticsError:
+            pass
+
+    # expectancy_1d: win_rate × avg_win - (1 - win_rate) × |avg_loss|
+    expectancy = None
+    if baseline_win_rate is not None and pos_returns and neg_returns:
+        avg_win = sum(pos_returns) / len(pos_returns)
+        avg_loss = abs(sum(neg_returns) / len(neg_returns))
+        expectancy = round(baseline_win_rate * avg_win - (1 - baseline_win_rate) * avg_loss, 4)
+
     return PersonalitySummaryMetrics(
         baseline_win_rate_1d=round(baseline_win_rate, 4) if baseline_win_rate is not None else None,
         median_excess_3d=round(median_excess_3d, 2) if median_excess_3d is not None else None,
@@ -271,6 +297,8 @@ def _build_summary_metrics(rows: list[HistoryRow]) -> PersonalitySummaryMetrics:
         payoff_ratio=payoff,
         sharpe_like_ratio=sharpe,
         signal_coverage_ratio=round(signal_coverage, 4) if signal_coverage is not None else None,
+        information_ratio=information_ratio,
+        expectancy_1d=expectancy,
     )
 
 

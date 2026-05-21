@@ -291,6 +291,7 @@ def load_all_data() -> dict[str, Any]:
         "event_study": read_csv("history_event_study.csv"),
         "operator_playbook": read_json("history_operator_playbook.json"),
         "personality_profile": read_json("history_personality_profile.json"),
+        "prediction_backtest": read_json("history_prediction_backtest.json"),
         "config": read_yaml(CONFIG_PATH),
     }
     print(f"加载完成：共 {len(data['history_summary'])} 条 history_summary")
@@ -322,9 +323,12 @@ def build_filter(personality_profile: dict[str, Any], history_summary: list[dict
     }
 
 
-def compute_similar_cases(history_summary: list[dict[str, Any]], close_by_date: dict[str, float]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
-    latest = latest_row(history_summary)
-    if not latest:
+def compute_similar_cases(history_summary: list[dict[str, Any]], close_by_date: dict[str, float], target_date: str | None = None) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    if target_date:
+        target = next((r for r in history_summary if str(r.get("date")) == target_date), None)
+    else:
+        target = latest_row(history_summary)
+    if not target:
         return [], []
 
     weights = {
@@ -371,17 +375,19 @@ def compute_similar_cases(history_summary: list[dict[str, Any]], close_by_date: 
 
     def state_score(candidate: dict[str, Any]) -> float:
         return (
-            ordinal_score(latest.get("industry_beta"), candidate.get("industry_beta"), BETA_ORDER) * weights["industry_beta"]
-            + ordinal_score(latest.get("anchor_alpha"), candidate.get("anchor_alpha"), BETA_ORDER) * weights["anchor_alpha"]
-            + ordinal_score(latest.get("risk_level"), candidate.get("risk_level"), RISK_ORDER) * weights["risk_level"]
-            + exact_score(latest.get("strongest_group"), candidate.get("strongest_group")) * weights["strongest_group"]
-            + exact_score(latest.get("weakest_group"), candidate.get("weakest_group")) * weights["weakest_group"]
+            ordinal_score(target.get("industry_beta"), candidate.get("industry_beta"), BETA_ORDER) * weights["industry_beta"]
+            + ordinal_score(target.get("anchor_alpha"), candidate.get("anchor_alpha"), BETA_ORDER) * weights["anchor_alpha"]
+            + ordinal_score(target.get("risk_level"), candidate.get("risk_level"), RISK_ORDER) * weights["risk_level"]
+            + exact_score(target.get("strongest_group"), candidate.get("strongest_group")) * weights["strongest_group"]
+            + exact_score(target.get("weakest_group"), candidate.get("weakest_group")) * weights["weakest_group"]
         )
 
-    target_signals = signal_set(latest)
+    target_signals = signal_set(target)
+    # 只取目标日期之前的数据作为候选
+    target_idx = next((i for i, r in enumerate(history_summary) if str(r.get("date")) == str(target.get("date"))), len(history_summary))
     candidates = [
         row
-        for row in history_summary[:-1]
+        for row in history_summary[:target_idx]
         if row.get("next_1d_return") is not None
         or row.get("next_3d_return") is not None
         or row.get("next_5d_return") is not None
@@ -394,19 +400,19 @@ def compute_similar_cases(history_summary: list[dict[str, Any]], close_by_date: 
     top_n = min(12, max(5, round(len(scored) * 0.15))) if scored else 0
     top_candidates = scored[:top_n]
 
-    target_labels = set(split_signals(latest.get("signal_labels")))
+    target_labels = set(split_signals(target.get("signal_labels")))
     similar_cases: list[dict[str, Any]] = []
     for similarity, row in top_candidates:
         matching_states = []
-        if row.get("industry_beta") == latest.get("industry_beta"):
+        if row.get("industry_beta") == target.get("industry_beta"):
             matching_states.append(f"行业Beta:{BETA_TEXT.get(str(row.get('industry_beta')), row.get('industry_beta'))}")
-        if row.get("anchor_alpha") == latest.get("anchor_alpha"):
+        if row.get("anchor_alpha") == target.get("anchor_alpha"):
             matching_states.append(f"个股Alpha:{BETA_TEXT.get(str(row.get('anchor_alpha')), row.get('anchor_alpha'))}")
-        if row.get("risk_level") == latest.get("risk_level"):
+        if row.get("risk_level") == target.get("risk_level"):
             matching_states.append(f"风险:{RISK_TEXT.get(str(row.get('risk_level')), row.get('risk_level'))}")
-        if row.get("strongest_group") == latest.get("strongest_group"):
+        if row.get("strongest_group") == target.get("strongest_group"):
             matching_states.append(f"最强组:{row.get('strongest_group')}")
-        if row.get("weakest_group") == latest.get("weakest_group"):
+        if row.get("weakest_group") == target.get("weakest_group"):
             matching_states.append(f"最弱组:{row.get('weakest_group')}")
 
         row_labels = set(split_signals(row.get("signal_labels")))
@@ -445,6 +451,77 @@ def compute_similar_cases(history_summary: list[dict[str, Any]], close_by_date: 
         },
     ]
     return similar_cases, window_stats
+
+
+def _build_date_cards(summary_row: dict[str, Any], rolling_row: dict[str, Any] | None, strength_label: Any) -> list[dict[str, Any]]:
+    excess_5d = rolling_row.get("excess_5d") if rolling_row else None
+    excess_10d = rolling_row.get("excess_10d") if rolling_row else None
+    deviation = summary_row.get("relative_strength_vs_industry_chain")
+    if deviation is None:
+        deviation = (summary_row.get("anchor_return") or 0) - (summary_row.get("industry_chain_median") or 0)
+    return [
+        {"title": "5日超额", "value": strength_label(excess_5d), "description": f"{excess_5d:+.2f}%" if excess_5d is not None else "--"},
+        {"title": "10日超额", "value": strength_label(excess_10d), "description": f"{excess_10d:+.2f}%" if excess_10d is not None else "--"},
+        {"title": "今日偏离", "value": strength_label(deviation), "description": f"{deviation:+.2f}%" if deviation is not None else "--"},
+    ]
+
+
+def build_date_index(history_summary: list[dict[str, Any]], close_by_date: dict[str, float], rolling_metrics: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    print("正在构建 dateIndex...")
+    rolling_by_date: dict[str, dict[str, Any]] = {}
+    for rm in rolling_metrics:
+        d = str(rm.get("date") or "")
+        if d:
+            rolling_by_date[d] = rm
+
+    def strength_label(value: Any) -> str:
+        if value is None:
+            return "无数据"
+        value = float(value)
+        if value > 5:
+            return "强"
+        if value > 2:
+            return "偏强"
+        if value < -5:
+            return "弱"
+        if value < -2:
+            return "偏弱"
+        return "震荡"
+
+    date_index: dict[str, dict[str, Any]] = {}
+    for row in history_summary:
+        date_str = str(row.get("date") or "")
+        if not date_str:
+            continue
+        industry_beta = str(row.get("industry_beta") or "").strip().lower()
+        anchor_alpha = str(row.get("anchor_alpha") or "").strip().lower()
+        risk_level = str(row.get("risk_level") or "").strip().lower()
+        signals = split_signals(row.get("signal_labels"))
+        state_key = state_key_from_row(row)
+        state_desc = f"{state_label(state_key)} · {RISK_TEXT.get(risk_level, risk_level)}"
+
+        similar_cases, window_stats = compute_similar_cases(history_summary, close_by_date, target_date=date_str)
+
+        date_index[date_str] = {
+            "currentMapping": {
+                "date": date_str,
+                "state": state_desc,
+                "tags": signals,
+                "similarSampleCount": len(similar_cases),
+                "industryBeta": industry_beta,
+                "anchorAlpha": anchor_alpha,
+                "riskLevel": risk_level,
+                "strongestGroup": row.get("strongest_group") or "",
+                "weakestGroup": row.get("weakest_group") or "",
+                "signalLabels": signals,
+            },
+            "similarCases": similar_cases,
+            "windowStats": window_stats,
+            "pathLabel": infer_path_label(window_stats),
+            "cards": _build_date_cards(row, rolling_by_date.get(date_str), strength_label),
+        }
+    print(f"[OK] dateIndex: {len(date_index)} 个日期")
+    return date_index
 
 
 def infer_path_label(window_stats: list[dict[str, Any]]) -> str:
@@ -1107,6 +1184,88 @@ def build_operator(operator_playbook: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def build_prediction_evaluation(prediction_backtest: dict[str, Any]) -> dict[str, Any]:
+    """构建预测评估数据"""
+    print("正在构建 predictionEvaluation...")
+
+    if not prediction_backtest:
+        return {
+            "metricsByPeriod": [],
+            "stabilityMetrics": None,
+            "recentPredictions": [],
+            "confidenceIntervals": [],
+        }
+
+    # 分时段指标
+    metrics_by_period = []
+    for period in prediction_backtest.get("metrics_by_period", []):
+        period_data = {
+            "periodDays": period.get("period_days"),
+            "metrics": _transform_backtest_metrics(period.get("metrics", {})),
+        }
+        metrics_by_period.append(period_data)
+
+    # 稳定性指标
+    stability = prediction_backtest.get("stability_metrics", {})
+    stability_metrics = None
+    if stability:
+        sim_dist = stability.get("similarity_distribution", [])
+        stability_metrics = {
+            "predictionVolatility1d": stability.get("prediction_volatility_1d"),
+            "stabilityScore": stability.get("stability_score"),
+            "similarityDistribution": dict(sim_dist) if sim_dist else {},
+        }
+
+    # 最近预测
+    recent_predictions = prediction_backtest.get("recent_predictions", [])
+
+    # 置信区间
+    confidence_intervals = prediction_backtest.get("confidence_intervals", [])
+
+    return {
+        "metricsByPeriod": metrics_by_period,
+        "stabilityMetrics": stability_metrics,
+        "recentPredictions": camelize(recent_predictions),
+        "confidenceIntervals": camelize(confidence_intervals) if confidence_intervals else [],
+    }
+
+
+def _transform_backtest_metrics(metrics: dict[str, Any]) -> dict[str, Any]:
+    """转换回测指标为前端格式"""
+    window_1d = metrics.get("window_1d", {})
+    window_3d = metrics.get("window_3d", {})
+    window_5d = metrics.get("window_5d", {})
+
+    return {
+        "window1d": {
+            "ic": window_1d.get("ic"),
+            "directionAccuracy": window_1d.get("direction_accuracy"),
+            "rmse": window_1d.get("rmse"),
+            "mae": window_1d.get("mae"),
+            "meanError": window_1d.get("mean_error"),
+        },
+        "window3d": {
+            "ic": window_3d.get("ic"),
+            "directionAccuracy": window_3d.get("direction_accuracy"),
+            "rmse": window_3d.get("rmse"),
+            "mae": window_3d.get("mae"),
+            "meanError": window_3d.get("mean_error"),
+        },
+        "window5d": {
+            "ic": window_5d.get("ic"),
+            "directionAccuracy": window_5d.get("direction_accuracy"),
+            "rmse": window_5d.get("rmse"),
+            "mae": window_5d.get("mae"),
+            "meanError": window_5d.get("mean_error"),
+        },
+        "totalPredictions": metrics.get("total_predictions"),
+        "validPredictions1d": metrics.get("valid_predictions_1d"),
+        "validPredictions3d": metrics.get("valid_predictions_3d"),
+        "validPredictions5d": metrics.get("valid_predictions_5d"),
+        "quintileReturns": metrics.get("quintile_returns"),
+    }
+
+
 def build_ai_insight(operator_playbook: dict[str, Any], personality_profile: dict[str, Any], signal_lifts: list[dict[str, Any]], extreme_divergences: list[dict[str, Any]]) -> dict[str, Any]:
     print("正在构建 aiInsight...")
     playbook = operator_playbook.get("playbook", {})
@@ -1182,6 +1341,8 @@ def main() -> None:
         "personality": build_personality(data["personality_profile"], data["operator_playbook"]),
         "operator": build_operator(data["operator_playbook"]),
         "aiInsight": build_ai_insight(data["operator_playbook"], data["personality_profile"], data["signal_lifts"], data["extreme_divergences"]),
+        "predictionEvaluation": build_prediction_evaluation(data["prediction_backtest"]),
+        "dateIndex": build_date_index(data["history_summary"], close_by_date, data["rolling_metrics"]),
     }
 
     path_label = dashboard_view["summary"].get("pathLabel")
