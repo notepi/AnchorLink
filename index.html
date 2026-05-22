@@ -1,0 +1,1365 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI 时代的 HTML 汇报材料 Demo</title>
+  <style>
+    :root {
+      --canvas-w: 1280px;
+      --canvas-h: 720px;
+      --bg: #eef2f7;
+      --ink: #102033;
+      --muted: #64748b;
+      --line: #d8e0ea;
+      --card: #ffffff;
+      --navy: #0d1b2e;
+      --navy-2: #142842;
+      --blue: #2563eb;
+      --cyan: #14b8c6;
+      --green: #10b981;
+      --amber: #f59e0b;
+      --red: #ef4444;
+      --shadow: 0 22px 60px rgba(15, 23, 42, 0.14);
+      --soft-shadow: 0 10px 28px rgba(15, 23, 42, 0.09);
+      --radius: 8px;
+      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+        "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow-x: hidden;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font);
+    }
+
+    body {
+      min-height: 100dvh;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .app {
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      background:
+        radial-gradient(circle at 12% 16%, rgba(37, 99, 235, 0.16), transparent 26rem),
+        linear-gradient(135deg, #f8fafc 0%, #e8edf4 48%, #dfe8f5 100%);
+    }
+
+    .stage {
+      position: relative;
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      place-items: center;
+      padding: 28px 28px 96px;
+      overflow: hidden;
+    }
+
+    .deck {
+      position: relative;
+      width: var(--canvas-w);
+      height: var(--canvas-h);
+      --deck-scale: 1;
+      transform-origin: center center;
+      filter: drop-shadow(0 28px 40px rgba(15, 23, 42, 0.16));
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      width: var(--canvas-w);
+      height: var(--canvas-h);
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      padding: 54px 70px;
+      background: #f8fafc;
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      isolation: isolate;
+      font-size: 16px;
+      transform-origin: top left;
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+    }
+
+    .deck:not(.is-overview) .slide {
+      transform: scale(var(--deck-scale));
+    }
+
+    .slide.is-active {
+      display: flex;
+    }
+
+    .slide::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -2;
+      background:
+        linear-gradient(90deg, rgba(15, 23, 42, 0.045) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(15, 23, 42, 0.045) 1px, transparent 1px);
+      background-size: 44px 44px;
+      mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.48), transparent 70%);
+    }
+
+    .slide::after {
+      content: "";
+      position: absolute;
+      right: -160px;
+      top: -180px;
+      width: 430px;
+      height: 430px;
+      z-index: -1;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(20, 184, 198, 0.26), transparent 68%);
+    }
+
+    .slide.dark {
+      color: #f8fafc;
+      background:
+        linear-gradient(135deg, rgba(20, 184, 198, 0.16), transparent 38%),
+        linear-gradient(150deg, #0a1322 0%, #10233d 58%, #06111f 100%);
+      border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    .slide.dark::before {
+      background:
+        linear-gradient(90deg, rgba(255, 255, 255, 0.055) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(255, 255, 255, 0.055) 1px, transparent 1px);
+      background-size: 42px 42px;
+      mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.82), transparent 76%);
+    }
+
+    .slide-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 28px;
+      margin-bottom: 34px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 5px 11px;
+      border: 1px solid rgba(37, 99, 235, 0.18);
+      border-radius: 999px;
+      color: var(--blue);
+      background: rgba(37, 99, 235, 0.08);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    .dark .eyebrow {
+      color: #9ee8ef;
+      border-color: rgba(158, 232, 239, 0.28);
+      background: rgba(20, 184, 198, 0.14);
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      max-width: 850px;
+      font-size: 68px;
+      line-height: 1.02;
+      letter-spacing: 0;
+      font-weight: 850;
+    }
+
+    h2 {
+      font-size: 40px;
+      line-height: 1.12;
+      letter-spacing: 0;
+      font-weight: 820;
+    }
+
+    h3 {
+      font-size: 24px;
+      line-height: 1.2;
+      font-weight: 780;
+    }
+
+    .subtitle {
+      margin-top: 24px;
+      max-width: 770px;
+      color: rgba(248, 250, 252, 0.78);
+      font-size: 28px;
+      line-height: 1.38;
+      font-weight: 520;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .dark .muted {
+      color: rgba(226, 232, 240, 0.7);
+    }
+
+    .title-slide {
+      justify-content: space-between;
+      padding: 74px 82px 62px;
+    }
+
+    .title-mark {
+      width: 86px;
+      height: 86px;
+      border-radius: 20px;
+      background:
+        linear-gradient(135deg, rgba(20, 184, 198, 0.95), rgba(37, 99, 235, 0.78)),
+        #123;
+      box-shadow: 0 22px 46px rgba(20, 184, 198, 0.23);
+      position: relative;
+    }
+
+    .title-mark::after {
+      content: "";
+      position: absolute;
+      inset: 18px;
+      border: 2px solid rgba(255, 255, 255, 0.72);
+      border-radius: 10px;
+    }
+
+    .cover-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .cover-main {
+      padding-top: 58px;
+    }
+
+    .cover-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: rgba(248, 250, 252, 0.74);
+      font-size: 18px;
+      font-weight: 650;
+    }
+
+    .content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .conclusion-strip {
+      margin-bottom: 34px;
+      padding: 22px 28px;
+      border-left: 5px solid var(--cyan);
+      border-radius: var(--radius);
+      background: linear-gradient(90deg, #ffffff 0%, #eff8fb 100%);
+      box-shadow: var(--soft-shadow);
+      font-size: 31px;
+      line-height: 1.26;
+      font-weight: 830;
+    }
+
+    .card-grid {
+      display: grid;
+      gap: 20px;
+      min-height: 0;
+    }
+
+    .three-cards {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .six-cards {
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(2, minmax(0, 1fr));
+    }
+
+    .card {
+      min-height: 0;
+      padding: 26px;
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      border-radius: var(--radius);
+      background: var(--card);
+      box-shadow: var(--soft-shadow);
+    }
+
+    .card.big {
+      min-height: 250px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .card-number {
+      color: var(--blue);
+      font-size: 14px;
+      font-weight: 850;
+      text-transform: uppercase;
+    }
+
+    .card.big h3 {
+      font-size: 29px;
+    }
+
+    .card.big p,
+    .feature-card p {
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    .feature-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 18px;
+      min-height: 170px;
+    }
+
+    .feature-icon {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 12px;
+      color: #ffffff;
+      background: linear-gradient(135deg, var(--blue), var(--cyan));
+      font-size: 18px;
+      font-weight: 900;
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: 0.92fr 1.08fr;
+      gap: 34px;
+      align-items: stretch;
+      min-height: 0;
+      flex: 1;
+    }
+
+    .problem-list {
+      display: grid;
+      gap: 14px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .problem-list li {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-height: 58px;
+      padding: 15px 18px;
+      border-radius: var(--radius);
+      background: #ffffff;
+      box-shadow: var(--soft-shadow);
+      color: #243245;
+      font-size: 20px;
+      font-weight: 650;
+    }
+
+    .problem-list li::before {
+      content: "";
+      width: 10px;
+      height: 10px;
+      flex: 0 0 auto;
+      border-radius: 50%;
+      background: var(--red);
+      box-shadow: 0 0 0 5px rgba(239, 68, 68, 0.1);
+    }
+
+    .flow-panel {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 34px;
+      border-radius: var(--radius);
+      background: linear-gradient(145deg, #ffffff 0%, #eef6ff 100%);
+      border: 1px solid rgba(37, 99, 235, 0.12);
+      box-shadow: var(--shadow);
+    }
+
+    .flow-title {
+      margin-bottom: 28px;
+      font-size: 19px;
+      font-weight: 820;
+      color: var(--muted);
+    }
+
+    .classic-flow {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .flow-node {
+      display: grid;
+      place-items: center;
+      width: 110px;
+      height: 86px;
+      border-radius: var(--radius);
+      background: #ffffff;
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      box-shadow: var(--soft-shadow);
+      font-size: 21px;
+      font-weight: 820;
+      text-align: center;
+    }
+
+    .flow-arrow {
+      color: var(--blue);
+      font-size: 30px;
+      font-weight: 900;
+    }
+
+    .table-card {
+      flex: 1;
+      overflow: hidden;
+      padding: 0;
+      border-radius: var(--radius);
+      background: #ffffff;
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      box-shadow: var(--shadow);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      padding: 17px 22px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      font-size: 17px;
+      line-height: 1.25;
+    }
+
+    th {
+      color: #ffffff;
+      background: var(--navy);
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    td:first-child {
+      color: #1e293b;
+      font-weight: 760;
+    }
+
+    .score {
+      display: inline-flex;
+      min-width: 78px;
+      justify-content: center;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: rgba(16, 185, 129, 0.1);
+      color: #047857;
+      font-size: 14px;
+      font-weight: 820;
+    }
+
+    .weak {
+      background: rgba(245, 158, 11, 0.12);
+      color: #b45309;
+    }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto 1fr;
+      gap: 18px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .metric-grid {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .metric {
+      padding: 20px 20px 18px;
+      border-radius: var(--radius);
+      background: #ffffff;
+      box-shadow: var(--soft-shadow);
+      border: 1px solid rgba(15, 23, 42, 0.08);
+    }
+
+    .metric-label {
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 740;
+    }
+
+    .metric-value {
+      margin-top: 13px;
+      color: var(--navy);
+      font-size: 35px;
+      line-height: 1;
+      font-weight: 860;
+    }
+
+    .metric-note {
+      margin-top: 12px;
+      color: #059669;
+      font-size: 13px;
+      font-weight: 780;
+    }
+
+    .chart-card,
+    .mini-table {
+      min-height: 0;
+      padding: 22px;
+      border-radius: var(--radius);
+      background: #ffffff;
+      box-shadow: var(--soft-shadow);
+      border: 1px solid rgba(15, 23, 42, 0.08);
+    }
+
+    .bar-chart {
+      height: 260px;
+      display: flex;
+      align-items: end;
+      gap: 20px;
+      padding: 20px 8px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .bar {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: end;
+      gap: 10px;
+      height: 100%;
+    }
+
+    .bar-fill {
+      width: 100%;
+      max-width: 58px;
+      border-radius: 7px 7px 0 0;
+      background: linear-gradient(180deg, var(--cyan), var(--blue));
+      box-shadow: 0 10px 24px rgba(37, 99, 235, 0.22);
+    }
+
+    .bar span {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 720;
+    }
+
+    .mini-table table td,
+    .mini-table table th {
+      padding: 13px 12px;
+      font-size: 14px;
+    }
+
+    .architecture {
+      flex: 1;
+      display: grid;
+      place-items: center;
+      min-height: 0;
+    }
+
+    .arch-stack {
+      width: 760px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .source-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      width: 100%;
+    }
+
+    .arch-node {
+      display: grid;
+      place-items: center;
+      min-height: 72px;
+      padding: 16px 22px;
+      border-radius: var(--radius);
+      background: #ffffff;
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      box-shadow: var(--soft-shadow);
+      font-size: 20px;
+      font-weight: 820;
+      text-align: center;
+    }
+
+    .arch-node.main {
+      width: 100%;
+      min-height: 82px;
+      color: #ffffff;
+      background: linear-gradient(135deg, var(--navy), var(--blue));
+      border-color: transparent;
+      box-shadow: 0 18px 42px rgba(37, 99, 235, 0.22);
+    }
+
+    .arch-arrow {
+      color: var(--blue);
+      font-size: 30px;
+      line-height: 1;
+      font-weight: 900;
+    }
+
+    .closing {
+      justify-content: center;
+    }
+
+    .closing h2 {
+      max-width: 900px;
+      font-size: 56px;
+      line-height: 1.12;
+    }
+
+    .closing-list {
+      display: grid;
+      gap: 18px;
+      margin: 42px 0 0;
+      padding: 0;
+      list-style: none;
+      max-width: 760px;
+    }
+
+    .closing-list li {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      color: rgba(248, 250, 252, 0.84);
+      font-size: 24px;
+      font-weight: 660;
+    }
+
+    .closing-list li::before {
+      content: "";
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: var(--cyan);
+      box-shadow: 0 0 0 7px rgba(20, 184, 198, 0.12);
+    }
+
+    .end {
+      position: absolute;
+      left: 82px;
+      bottom: 58px;
+      color: rgba(248, 250, 252, 0.72);
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .controls {
+      position: fixed;
+      z-index: 20;
+      left: 50%;
+      bottom: 22px;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      border: 1px solid rgba(15, 23, 42, 0.12);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.82);
+      box-shadow: 0 16px 34px rgba(15, 23, 42, 0.14);
+      backdrop-filter: blur(16px);
+    }
+
+    .control-btn {
+      min-width: 82px;
+      min-height: 38px;
+      border: 0;
+      border-radius: 999px;
+      color: #f8fafc;
+      background: var(--navy);
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 780;
+    }
+
+    .control-btn.secondary {
+      color: var(--navy);
+      background: #e8eef7;
+    }
+
+    .control-btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.45;
+    }
+
+    .page-indicator {
+      min-width: 70px;
+      color: var(--navy);
+      text-align: center;
+      font-size: 14px;
+      font-weight: 840;
+    }
+
+    .deck.is-overview {
+      width: min(100%, 1120px);
+      height: auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 22px;
+      padding: 8px;
+      filter: none;
+    }
+
+    .stage.is-overview {
+      display: block;
+      padding: 34px 30px 110px;
+      overflow: auto;
+    }
+
+    .deck.is-overview .slide {
+      position: relative;
+      inset: auto;
+      display: flex;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 16 / 9;
+      padding: 20px 24px;
+      font-size: 5px;
+      cursor: pointer;
+      box-shadow: var(--soft-shadow);
+      transform: translateZ(0);
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .deck.is-overview .slide:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 18px 38px rgba(15, 23, 42, 0.16);
+    }
+
+    .deck.is-overview .slide.is-active {
+      outline: 3px solid var(--blue);
+      outline-offset: 4px;
+    }
+
+    .deck.is-overview h1 {
+      font-size: 22px;
+    }
+
+    .deck.is-overview h2 {
+      font-size: 15px;
+    }
+
+    .deck.is-overview h3 {
+      font-size: 9px;
+    }
+
+    .deck.is-overview .slide-header {
+      margin-bottom: 10px;
+      gap: 8px;
+    }
+
+    .deck.is-overview .subtitle,
+    .deck.is-overview .conclusion-strip,
+    .deck.is-overview .problem-list li,
+    .deck.is-overview .closing-list li {
+      font-size: 9px;
+    }
+
+    .deck.is-overview .card,
+    .deck.is-overview .metric,
+    .deck.is-overview .chart-card,
+    .deck.is-overview .mini-table,
+    .deck.is-overview .flow-panel {
+      padding: 8px;
+    }
+
+    .deck.is-overview .bar-chart {
+      height: 82px;
+      gap: 5px;
+    }
+
+    .deck.is-overview th,
+    .deck.is-overview td {
+      padding: 4px 5px;
+      font-size: 5px;
+    }
+
+    @media (max-width: 720px) {
+      .stage {
+        padding: 14px 14px 88px;
+      }
+
+      .controls {
+        width: calc(100% - 20px);
+        justify-content: center;
+        gap: 6px;
+        padding: 8px;
+      }
+
+      .control-btn {
+        min-width: 0;
+        padding: 0 12px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+
+    @page {
+      size: 1280px 720px;
+      margin: 0;
+    }
+
+    @media print {
+      html,
+      body {
+        width: 1280px;
+        height: auto;
+        overflow: visible;
+        background: #ffffff;
+      }
+
+      .app,
+      .stage,
+      .deck {
+        display: block;
+        width: 1280px !important;
+        height: auto !important;
+        min-height: 0;
+        padding: 0;
+        overflow: visible;
+        background: transparent;
+        filter: none;
+        transform: none !important;
+      }
+
+      .slide {
+        position: relative;
+        inset: auto;
+        display: flex !important;
+        width: 1280px;
+        height: 720px;
+        page-break-after: always;
+        break-after: page;
+        border: 0;
+        box-shadow: none;
+        transform: none !important;
+      }
+
+      .slide:last-child {
+        page-break-after: auto;
+        break-after: auto;
+      }
+
+      .controls {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app" aria-label="HTML 汇报材料演示">
+    <div class="stage" id="stage">
+      <div class="deck" id="deck">
+        <section class="slide dark title-slide is-active" aria-label="第 1 页：封面">
+          <div class="cover-top">
+            <div class="eyebrow">HTML Slide Demo</div>
+            <div class="title-mark" aria-hidden="true"></div>
+          </div>
+          <div class="cover-main">
+            <h1>AI 时代的 HTML 汇报材料 Demo</h1>
+            <p class="subtitle">HTML 负责展示与交互，PDF 负责定稿与流转</p>
+          </div>
+          <div class="cover-footer">
+            <span>Demo / 2026</span>
+            <span>HTML + CSS + JavaScript</span>
+          </div>
+        </section>
+
+        <section class="slide" aria-label="第 2 页：核心判断">
+          <header class="slide-header">
+            <div>
+              <span class="eyebrow">Core Thesis</span>
+              <h2>核心判断</h2>
+            </div>
+          </header>
+          <div class="content">
+            <div class="conclusion-strip">一页 PPT，本质上可以看成一个固定尺寸的 HTML 视口。</div>
+            <div class="card-grid three-cards">
+              <article class="card big">
+                <span class="card-number">01</span>
+                <h3>HTML = 动态展示容器</h3>
+                <p>承载结构、样式、交互和数据连接，适合演示时保持活态。</p>
+              </article>
+              <article class="card big">
+                <span class="card-number">02</span>
+                <h3>PDF = 正式交付格式</h3>
+                <p>锁定版式和内容，适合归档、审批、邮件流转和跨设备阅读。</p>
+              </article>
+              <article class="card big">
+                <span class="card-number">03</span>
+                <h3>PPT = 传统会议兼容格式</h3>
+                <p>在必要场景保留兼容，但不再作为唯一生产源文件。</p>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <section class="slide" aria-label="第 3 页：传统 PPT 的问题">
+          <header class="slide-header">
+            <div>
+              <span class="eyebrow">Pain Points</span>
+              <h2>传统 PPT 的问题</h2>
+            </div>
+            <p class="muted">当内容进入高频更新和 AI 协作阶段，截图式工作流会迅速变重。</p>
+          </header>
+          <div class="split">
+            <ul class="problem-list">
+              <li>数据更新麻烦</li>
+              <li>图表经常靠截图</li>
+              <li>样式难统一</li>
+              <li>AI 修改容易乱版</li>
+              <li>版本管理困难</li>
+            </ul>
+            <div class="flow-panel">
+              <div class="flow-title">传统流程</div>
+              <div class="classic-flow" aria-label="数据到 PDF 的传统流程">
+                <div class="flow-node">数据</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-node">Excel</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-node">截图</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-node">PPT</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-node">PDF</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="slide" aria-label="第 4 页：HTML Slide 的优势">
+          <header class="slide-header">
+            <div>
+              <span class="eyebrow">Advantages</span>
+              <h2>HTML Slide 的优势</h2>
+            </div>
+            <p class="muted">更像一个轻量数据产品，而不是一组静态页面。</p>
+          </header>
+          <div class="card-grid six-cards">
+            <article class="card feature-card">
+              <div class="feature-icon">S</div>
+              <h3>结构化</h3>
+              <p>标题、图表、表格和流程图都能被清晰描述。</p>
+            </article>
+            <article class="card feature-card">
+              <div class="feature-icon">I</div>
+              <h3>可交互</h3>
+              <p>翻页、总览、筛选、展开和动效都可以原生实现。</p>
+            </article>
+            <article class="card feature-card">
+              <div class="feature-icon">A</div>
+              <h3>可自动化生成</h3>
+              <p>从 Markdown、JSON 或模型输出直接生成页面。</p>
+            </article>
+            <article class="card feature-card">
+              <div class="feature-icon">D</div>
+              <h3>可接入数据</h3>
+              <p>指标卡、图表和表格可以连接实时或本地数据。</p>
+            </article>
+            <article class="card feature-card">
+              <div class="feature-icon">P</div>
+              <h3>可导出 PDF</h3>
+              <p>浏览器打印即可定稿，保留背景、卡片和图表层级。</p>
+            </article>
+            <article class="card feature-card">
+              <div class="feature-icon">AI</div>
+              <h3>适合 AI 迭代</h3>
+              <p>代码化版式更容易复用、审查、差异比较和批量修改。</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="slide" aria-label="第 5 页：工作流对比">
+          <header class="slide-header">
+            <div>
+              <span class="eyebrow">Workflow Matrix</span>
+              <h2>工作流对比</h2>
+            </div>
+          </header>
+          <div class="table-card">
+            <table>
+              <thead>
+                <tr>
+                  <th>维度</th>
+                  <th>PPT</th>
+                  <th>HTML Slide</th>
+                  <th>PDF</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>内容生成</td>
+                  <td>手工排版为主</td>
+                  <td><span class="score">结构化生成</span></td>
+                  <td>不适合作为源文件</td>
+                </tr>
+                <tr>
+                  <td>数据更新</td>
+                  <td>截图和复制较多</td>
+                  <td><span class="score">可自动刷新</span></td>
+                  <td>更新成本高</td>
+                </tr>
+                <tr>
+                  <td>交互能力</td>
+                  <td>有限</td>
+                  <td><span class="score">强</span></td>
+                  <td><span class="score weak">静态</span></td>
+                </tr>
+                <tr>
+                  <td>正式流转</td>
+                  <td>依赖环境</td>
+                  <td>适合演示预览</td>
+                  <td><span class="score">最佳</span></td>
+                </tr>
+                <tr>
+                  <td>版本管理</td>
+                  <td>二进制差异难读</td>
+                  <td><span class="score">Git 友好</span></td>
+                  <td>适合归档</td>
+                </tr>
+                <tr>
+                  <td>AI 友好度</td>
+                  <td>容易乱版</td>
+                  <td><span class="score">高</span></td>
+                  <td>适合校对和审阅</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="slide" aria-label="第 6 页：示例数据看板页">
+          <header class="slide-header">
+            <div>
+              <span class="eyebrow">Dashboard Sample</span>
+              <h2>示例数据看板页</h2>
+            </div>
+            <p class="muted">虚构数据，用于展示 HTML Slide 可以承载产品级图表与表格。</p>
+          </header>
+          <div class="dashboard">
+            <div class="metric-grid">
+              <div class="metric">
+                <div class="metric-label">生成效率提升</div>
+                <div class="metric-value">65%</div>
+                <div class="metric-note">较手工 PPT 流程</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">修改成本降低</div>
+                <div class="metric-value">40%</div>
+                <div class="metric-note">样式统一复用</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">复用率提升</div>
+                <div class="metric-value">3.2x</div>
+                <div class="metric-note">组件和模板沉淀</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">定稿时间压缩</div>
+                <div class="metric-value">28h</div>
+                <div class="metric-note">从周级到天级</div>
+              </div>
+            </div>
+            <div class="chart-card">
+              <h3>交付链路效率指数</h3>
+              <div class="bar-chart" aria-label="交付链路效率柱状图">
+                <div class="bar">
+                  <div class="bar-fill" style="height: 42%"></div>
+                  <span>手工</span>
+                </div>
+                <div class="bar">
+                  <div class="bar-fill" style="height: 58%"></div>
+                  <span>模板化</span>
+                </div>
+                <div class="bar">
+                  <div class="bar-fill" style="height: 76%"></div>
+                  <span>HTML</span>
+                </div>
+                <div class="bar">
+                  <div class="bar-fill" style="height: 88%"></div>
+                  <span>AI+HTML</span>
+                </div>
+              </div>
+            </div>
+            <div class="mini-table">
+              <h3>试点任务表现</h3>
+              <table>
+                <thead>
+                  <tr>
+                    <th>场景</th>
+                    <th>产出物</th>
+                    <th>状态</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>周度经营会</td>
+                    <td>12 页 HTML+PDF</td>
+                    <td><span class="score">稳定</span></td>
+                  </tr>
+                  <tr>
+                    <td>投研复盘</td>
+                    <td>数据看板页</td>
+                    <td><span class="score">可复用</span></td>
+                  </tr>
+                  <tr>
+                    <td>客户汇报</td>
+                    <td>定制 PDF</td>
+                    <td><span class="score weak">试运行</span></td>
+                  </tr>
+                  <tr>
+                    <td>内部培训</td>
+                    <td>互动演示稿</td>
+                    <td><span class="score">推荐</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section class="slide" aria-label="第 7 页：推荐架构">
+          <header class="slide-header">
+            <div>
+              <span class="eyebrow">Recommended Architecture</span>
+              <h2>推荐架构</h2>
+            </div>
+            <p class="muted">生产源文件前移到结构化内容，展示、定稿和兼容格式各司其职。</p>
+          </header>
+          <div class="architecture">
+            <div class="arch-stack" aria-label="推荐架构流程图">
+              <div class="source-row">
+                <div class="arch-node">Markdown</div>
+                <div class="arch-node">数据</div>
+                <div class="arch-node">AI 分析</div>
+              </div>
+              <div class="arch-arrow">↓</div>
+              <div class="arch-node main">HTML Slides</div>
+              <div class="arch-arrow">↓</div>
+              <div class="arch-node">浏览器演示</div>
+              <div class="arch-arrow">↓</div>
+              <div class="arch-node main">PDF 定稿</div>
+              <div class="arch-arrow">↓</div>
+              <div class="arch-node">必要时转 PPT</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="slide dark closing" aria-label="第 8 页：结论页">
+          <span class="eyebrow">Conclusion</span>
+          <h2>HTML 不是网页，而是下一代汇报容器</h2>
+          <ul class="closing-list">
+            <li>用 HTML 承载动态内容</li>
+            <li>用 PDF 完成正式交付</li>
+            <li>用 AI 驱动快速生成和持续迭代</li>
+          </ul>
+          <div class="end">End.</div>
+        </section>
+      </div>
+    </div>
+
+    <nav class="controls" aria-label="演示控制">
+      <button class="control-btn secondary" id="prevBtn" type="button">上一页</button>
+      <span class="page-indicator" id="pageIndicator" aria-live="polite">1 / 8</span>
+      <button class="control-btn secondary" id="nextBtn" type="button">下一页</button>
+      <button class="control-btn" id="overviewBtn" type="button">总览</button>
+      <button class="control-btn" id="printBtn" type="button">导出 PDF</button>
+    </nav>
+  </main>
+
+  <script>
+    (() => {
+      const stage = document.getElementById("stage");
+      const deck = document.getElementById("deck");
+      const slides = Array.from(document.querySelectorAll(".slide"));
+      const prevBtn = document.getElementById("prevBtn");
+      const nextBtn = document.getElementById("nextBtn");
+      const overviewBtn = document.getElementById("overviewBtn");
+      const printBtn = document.getElementById("printBtn");
+      const pageIndicator = document.getElementById("pageIndicator");
+
+      let currentIndex = 0;
+      let overview = false;
+      let touchStartX = 0;
+
+      const clampIndex = (index) => Math.max(0, Math.min(slides.length - 1, index));
+
+      function fitDeck() {
+        if (overview) {
+          deck.style.width = "";
+          deck.style.height = "";
+          deck.style.setProperty("--deck-scale", "1");
+          return;
+        }
+
+        const horizontalPadding = window.innerWidth <= 720 ? 28 : 56;
+        const verticalPadding = window.innerWidth <= 720 ? 110 : 128;
+        const scale = Math.min(
+          (window.innerWidth - horizontalPadding) / 1280,
+          (window.innerHeight - verticalPadding) / 720,
+          1
+        );
+
+        const safeScale = Math.max(scale, 0.2);
+        deck.style.width = `${1280 * safeScale}px`;
+        deck.style.height = `${720 * safeScale}px`;
+        deck.style.setProperty("--deck-scale", safeScale.toString());
+      }
+
+      function render() {
+        slides.forEach((slide, index) => {
+          slide.classList.toggle("is-active", overview || index === currentIndex);
+          slide.setAttribute("aria-hidden", (!overview && index !== currentIndex).toString());
+        });
+
+        pageIndicator.textContent = `${currentIndex + 1} / ${slides.length}`;
+        prevBtn.disabled = currentIndex === 0 && !overview;
+        nextBtn.disabled = currentIndex === slides.length - 1 && !overview;
+        overviewBtn.textContent = overview ? "退出总览" : "总览";
+        stage.classList.toggle("is-overview", overview);
+        deck.classList.toggle("is-overview", overview);
+        fitDeck();
+      }
+
+      function goTo(index) {
+        currentIndex = clampIndex(index);
+        overview = false;
+        render();
+      }
+
+      function next() {
+        goTo(currentIndex + 1);
+      }
+
+      function prev() {
+        goTo(currentIndex - 1);
+      }
+
+      prevBtn.addEventListener("click", prev);
+      nextBtn.addEventListener("click", next);
+      printBtn.addEventListener("click", () => window.print());
+      overviewBtn.addEventListener("click", () => {
+        overview = !overview;
+        render();
+        if (overview) {
+          slides[currentIndex].scrollIntoView({ block: "center", inline: "center" });
+        }
+      });
+
+      slides.forEach((slide, index) => {
+        slide.addEventListener("click", () => {
+          if (overview) {
+            goTo(index);
+          }
+        });
+      });
+
+      window.addEventListener("keydown", (event) => {
+        if (event.key === "ArrowRight" || event.key === "PageDown" || event.key === " ") {
+          event.preventDefault();
+          next();
+        }
+
+        if (event.key === "ArrowLeft" || event.key === "PageUp") {
+          event.preventDefault();
+          prev();
+        }
+
+        if (event.key === "Home") {
+          event.preventDefault();
+          goTo(0);
+        }
+
+        if (event.key === "End") {
+          event.preventDefault();
+          goTo(slides.length - 1);
+        }
+
+        if (event.key === "Escape" && overview) {
+          event.preventDefault();
+          overview = false;
+          render();
+        }
+      });
+
+      window.addEventListener("resize", fitDeck);
+
+      deck.addEventListener("touchstart", (event) => {
+        touchStartX = event.touches[0].clientX;
+      }, { passive: true });
+
+      deck.addEventListener("touchend", (event) => {
+        const deltaX = event.changedTouches[0].clientX - touchStartX;
+        if (Math.abs(deltaX) < 48 || overview) {
+          return;
+        }
+
+        if (deltaX < 0) {
+          next();
+        } else {
+          prev();
+        }
+      }, { passive: true });
+
+      window.addEventListener("beforeprint", () => {
+        deck.style.width = "";
+        deck.style.height = "";
+        deck.style.setProperty("--deck-scale", "1");
+      });
+
+      window.addEventListener("afterprint", fitDeck);
+
+      render();
+    })();
+  </script>
+</body>
+</html>

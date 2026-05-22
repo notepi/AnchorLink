@@ -1,0 +1,419 @@
+/**
+ * 量化实验室样式（前缀 .ql- 避免污染）
+ * 整体风格：数据密集型、暗色背景、等宽数字、表格紧凑
+ */
+
+.quant-lab {
+  --ql-bg: #0c1118;
+  --ql-bg2: #161d28;
+  --ql-bg3: #1f2937;
+  --ql-border: #2a3441;
+  --ql-text: #e5e7eb;
+  --ql-text-mid: #9ca3af;
+  --ql-text-muted: #6b7280;
+  --ql-accent: #60a5fa;
+  --ql-green: #10b981;
+  --ql-red: #ef4444;
+  --ql-yellow: #f59e0b;
+  --ql-purple: #a78bfa;
+  --ql-cyan: #06b6d4;
+
+  background: var(--ql-bg);
+  color: var(--ql-text);
+  min-height: 100vh;
+  padding: 16px 20px 40px;
+  font-size: 13px;
+  line-height: 1.55;
+  font-family: -apple-system, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+}
+
+.quant-lab * {
+  box-sizing: border-box;
+}
+
+/* ───────── TopBar ───────── */
+.ql-topbar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 18px;
+  background: var(--ql-bg2);
+  border: 1px solid var(--ql-border);
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+.ql-topbar h1 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ql-text);
+}
+.ql-topbar .ql-subtitle {
+  font-size: 12px;
+  color: var(--ql-text-mid);
+}
+.ql-topbar .ql-anchors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+.ql-topbar .ql-anchors a {
+  font-size: 11px;
+  color: var(--ql-accent);
+  background: var(--ql-bg3);
+  padding: 3px 8px;
+  border-radius: 4px;
+  text-decoration: none;
+  border: 1px solid var(--ql-border);
+}
+.ql-topbar .ql-anchors a:hover { background: var(--ql-border); }
+
+/* ───────── 通用 Section ───────── */
+.ql-section {
+  background: var(--ql-bg2);
+  border: 1px solid var(--ql-border);
+  border-radius: 8px;
+  padding: 16px 18px;
+  margin-bottom: 14px;
+  scroll-margin-top: 16px;
+}
+.ql-section h2 {
+  margin: 0 0 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ql-text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ql-section h2 .ql-section-tag {
+  font-size: 10px;
+  background: var(--ql-bg3);
+  color: var(--ql-text-mid);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: 400;
+  letter-spacing: 0.5px;
+}
+.ql-section h3 {
+  margin: 12px 0 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ql-text-mid);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.ql-section .ql-hint {
+  font-size: 11px;
+  color: var(--ql-text-muted);
+  margin-top: 8px;
+}
+
+/* ───────── Hero Section ───────── */
+.ql-hero-main {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.ql-hero-main .ql-big {
+  font-size: 48px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -1px;
+}
+.ql-hero-main .ql-big.pos { color: var(--ql-green); }
+.ql-hero-main .ql-big.neg { color: var(--ql-red); }
+.ql-hero-main .ql-vs {
+  font-size: 13px;
+  color: var(--ql-text-mid);
+}
+.ql-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+.ql-kpi-card {
+  background: var(--ql-bg3);
+  border: 1px solid var(--ql-border);
+  border-radius: 6px;
+  padding: 12px 14px;
+}
+.ql-kpi-card .ql-kpi-label {
+  font-size: 11px;
+  color: var(--ql-text-muted);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.ql-kpi-card .ql-kpi-value {
+  font-size: 22px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  margin-top: 4px;
+  color: var(--ql-text);
+}
+.ql-kpi-card .ql-kpi-sub {
+  font-size: 11px;
+  color: var(--ql-text-mid);
+  margin-top: 4px;
+  font-variant-numeric: tabular-nums;
+}
+.ql-pos { color: var(--ql-green); }
+.ql-neg { color: var(--ql-red); }
+.ql-neu { color: var(--ql-text-mid); }
+.ql-warn { color: var(--ql-yellow); }
+
+/* ───────── CompositeScoreEngine ───────── */
+.ql-threshold-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.ql-threshold-tab {
+  background: var(--ql-bg3);
+  border: 1px solid var(--ql-border);
+  color: var(--ql-text-mid);
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  font-family: inherit;
+  font-variant-numeric: tabular-nums;
+}
+.ql-threshold-tab:hover { background: var(--ql-border); color: var(--ql-text); }
+.ql-threshold-tab.active {
+  background: var(--ql-accent);
+  color: #0c1118;
+  border-color: var(--ql-accent);
+  font-weight: 600;
+}
+.ql-strategy-cols {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.ql-strategy-col {
+  background: var(--ql-bg3);
+  border: 1px solid var(--ql-border);
+  border-radius: 6px;
+  padding: 12px 14px;
+}
+.ql-strategy-col.long  { border-left: 3px solid var(--ql-green); }
+.ql-strategy-col.short { border-left: 3px solid var(--ql-red); }
+.ql-strategy-col.bah   { border-left: 3px solid var(--ql-text-muted); }
+.ql-strategy-col h4 {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.ql-stat-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 3px 0;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.ql-stat-row .ql-stat-label { color: var(--ql-text-muted); }
+.ql-stat-row .ql-stat-val   { color: var(--ql-text); font-weight: 500; }
+
+/* ───────── Strategy Curve ───────── */
+.ql-curve-svg {
+  width: 100%;
+  height: 280px;
+  background: var(--ql-bg3);
+  border-radius: 6px;
+  border: 1px solid var(--ql-border);
+}
+.ql-curve-legend {
+  display: flex;
+  gap: 16px;
+  margin-top: 8px;
+  font-size: 11px;
+}
+.ql-curve-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.ql-curve-legend .ql-swatch {
+  width: 12px; height: 2px; display: inline-block;
+}
+
+/* ───────── 表格 ───────── */
+.ql-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.ql-table th, .ql-table td {
+  padding: 6px 8px;
+  text-align: right;
+  border-bottom: 1px solid var(--ql-border);
+}
+.ql-table th:first-child, .ql-table td:first-child {
+  text-align: left;
+}
+.ql-table th {
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--ql-text-muted);
+  background: var(--ql-bg3);
+}
+.ql-table tbody tr:hover { background: rgba(96, 165, 250, 0.05); }
+.ql-table .ql-highlight {
+  background: rgba(16, 185, 129, 0.08);
+}
+.ql-table .ql-highlight-neg {
+  background: rgba(239, 68, 68, 0.08);
+}
+
+/* ───────── 自相关 bar 图 ───────── */
+.ql-autocorr-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.ql-autocorr-row .ql-lag { width: 40px; color: var(--ql-text-muted); }
+.ql-autocorr-row .ql-val { width: 56px; text-align: right; }
+.ql-autocorr-bar {
+  flex: 1; height: 12px; position: relative; background: var(--ql-bg3); border-radius: 2px;
+}
+.ql-autocorr-bar .ql-fill {
+  position: absolute; top: 0; bottom: 0; left: 50%; transform-origin: left; width: 50%;
+  background: var(--ql-cyan); border-radius: 2px;
+}
+.ql-autocorr-bar.neg .ql-fill { right: 50%; left: auto; background: var(--ql-red); }
+
+/* ───────── Scatter ───────── */
+.ql-scatter-wrap {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 14px;
+}
+@media (max-width: 900px) {
+  .ql-scatter-wrap { grid-template-columns: 1fr; }
+}
+.ql-scatter-svg {
+  width: 100%;
+  height: 420px;
+  background: var(--ql-bg3);
+  border: 1px solid var(--ql-border);
+  border-radius: 6px;
+}
+.ql-scatter-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 11px;
+}
+.ql-scatter-legend .ql-dot {
+  width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 4px;
+}
+
+/* ───────── 日历 ───────── */
+.ql-calendar {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.ql-calendar-row {
+  display: grid;
+  grid-template-columns: 60px repeat(35, 1fr);
+  gap: 2px;
+  align-items: center;
+}
+.ql-calendar-row .ql-cal-month {
+  font-size: 10px;
+  color: var(--ql-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.ql-cal-cell {
+  aspect-ratio: 1;
+  border-radius: 2px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: transform 0.1s;
+}
+.ql-cal-cell:hover {
+  transform: scale(1.4);
+  border-color: var(--ql-accent);
+  z-index: 2;
+  position: relative;
+}
+.ql-cal-cell.empty { background: var(--ql-bg3); cursor: default; }
+
+/* ───────── Tooltip ───────── */
+.ql-tooltip {
+  position: fixed;
+  background: var(--ql-bg2);
+  color: var(--ql-text);
+  border: 1px solid var(--ql-accent);
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 11px;
+  pointer-events: none;
+  z-index: 100;
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  max-width: 320px;
+}
+
+/* ───────── 折叠 ───────── */
+.ql-collapsible summary {
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--ql-text-mid);
+  padding: 6px 0;
+  list-style: none;
+  user-select: none;
+}
+.ql-collapsible summary::-webkit-details-marker { display: none; }
+.ql-collapsible summary::before {
+  content: '▶ ';
+  color: var(--ql-text-muted);
+  font-size: 10px;
+}
+.ql-collapsible[open] summary::before { content: '▼ '; }
+
+/* ───────── 信号权重表 ───────── */
+.ql-weight-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+@media (max-width: 700px) {
+  .ql-weight-grid { grid-template-columns: 1fr; }
+}
+
+/* ───────── 工具类 ───────── */
+.ql-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.ql-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.ql-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+@media (max-width: 900px) {
+  .ql-grid-2, .ql-grid-3, .ql-grid-4 { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 500px) {
+  .ql-grid-2, .ql-grid-3, .ql-grid-4 { grid-template-columns: 1fr; }
+}
+
+.ql-disclaimer {
+  background: var(--ql-bg3);
+  border-left: 3px solid var(--ql-yellow);
+  padding: 10px 14px;
+  font-size: 11px;
+  color: var(--ql-text-mid);
+  margin-top: 14px;
+  border-radius: 4px;
+}
+
+.ql-error {
+  padding: 40px;
+  text-align: center;
+  color: var(--ql-text-mid);
+}
