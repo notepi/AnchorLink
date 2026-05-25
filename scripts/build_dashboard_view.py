@@ -1732,6 +1732,325 @@ def build_ai_insight(operator_playbook: dict[str, Any], personality_profile: dic
     }
 
 
+def _classify_bucket(value: float | None, thresholds: dict[str, Any]) -> str:
+    """根据超额值和 M 维阈值判断所属档位。"""
+    if value is None:
+        return ""
+    p15 = thresholds.get("P15-")
+    p30 = thresholds.get("P15-P30") or thresholds.get("P30")
+    p70 = thresholds.get("P70-P85") or thresholds.get("P70")
+    p85 = thresholds.get("P85+")
+    # thresholds 存的是阈值数值，从 bucket key 提取
+    # 实际用 thresholds dict 的 values 来判断
+    if p85 is not None and value >= float(p85):
+        return "P85+(过热)"
+    if p70 is not None and value >= float(p70):
+        return "P70-P85"
+    if p30 is not None and value >= float(p30):
+        return "P30-P70(中性)"
+    if p15 is not None and value >= float(p15):
+        return "P15-P30"
+    return "P15-(过冷)"
+
+
+def build_decision(
+    history_summary: list[dict[str, Any]],
+    rolling_metrics: list[dict[str, Any]],
+    quadrant_distributions: dict[str, dict[str, Any]],
+    similar_cases: list[dict[str, Any]],
+    window_stats: list[dict[str, Any]],
+    operator_playbook: dict[str, Any],
+    excess_return_data: list[dict[str, Any]] | None = None,
+    target_date: str | None = None,
+) -> dict[str, Any]:
+    """构建决策模块：今日判定 + 明日操作。"""
+    # 加载量化实验室数据
+    composite_bt = read_json("composite_signal_backtest.json")
+    second_order = read_json("history_2nd_order_analysis.json")
+    deep_quant = read_json("history_deep_quant_analysis.json")
+
+    # 确定目标日期
+    if target_date:
+        target_row = next((r for r in history_summary if str(r.get("date")) == target_date), None)
+    else:
+        target_row = latest_row(history_summary)
+    if not target_row:
+        return {}
+    date_str = str(target_row.get("date") or "")
+
+    # 获取昨日信号列表（判断新出现 vs 持续）
+    target_idx = next((i for i, r in enumerate(history_summary) if str(r.get("date")) == date_str), -1)
+    prev_signals: set[str] = set()
+    if target_idx > 0:
+        prev_signals = set(split_signals(history_summary[target_idx - 1].get("signal_labels")))
+    today_signals = split_signals(target_row.get("signal_labels"))
+
+    # ── 1. 综合分 + 否决 ──
+    daily_results = composite_bt.get("daily_results", [])
+    day_result = next((r for r in daily_results if str(r.get("date")) == date_str), {})
+    score = day_result.get("score", 0)
+    veto = day_result.get("veto", False)
+    active_composite = day_result.get("signals", [])
+    signal_weights = composite_bt.get("signal_weights", {})
+    buy_weights = signal_weights.get("buy", {})
+    sell_weights = signal_weights.get("sell", {})
+
+    score_breakdown = []
+    for sig in active_composite:
+        w = buy_weights.get(sig, sell_weights.get(sig, 0))
+        score_breakdown.append({"signal": sig, "weight": w})
+
+    # ── 2. 超额回归档位 ──
+    rolling_by_date = {str(r.get("date")): r for r in rolling_metrics}
+    rolling_row = rolling_by_date.get(date_str, {})
+    excess_5d = rolling_row.get("excess_5d")
+    excess_10d = rolling_row.get("excess_10d")
+
+    m_reversal = deep_quant.get("M_excessMeanReversion", {}).get("extremeReversal", {})
+    e5_buckets = m_reversal.get("by_excess_5d", {}).get("buckets", {})
+    e10_buckets = m_reversal.get("by_excess_10d", {}).get("buckets", {})
+
+    def _bucket_info(value: float | None, buckets: dict[str, Any]) -> dict[str, Any]:
+        if value is None or not buckets:
+            return {"value": value, "bucket": "", "bucketAvgExc1d": None, "bucketWr1d": None}
+        # 找到对应 bucket
+        bucket_name = ""
+        for name, bdata in buckets.items():
+            exc1d = bdata.get("exc_1d", {})
+            bucket_name = name
+            break  # 先设默认
+        # 按阈值判断
+        if value >= 5.73:
+            bucket_name = "P85+(过热)"
+        elif value >= 2.74:
+            bucket_name = "P70-P85"
+        elif value >= -2.12:
+            bucket_name = "P30-P70(中性)"
+        elif value >= -4.91:
+            bucket_name = "P15-P30"
+        else:
+            bucket_name = "P15-(过冷)"
+        bdata = buckets.get(bucket_name, {})
+        exc1d = bdata.get("exc_1d", {})
+        return {
+            "value": round(value, 2),
+            "bucket": bucket_name,
+            "bucketAvgExc1d": exc1d.get("avg"),
+            "bucketWr1d": exc1d.get("wr"),
+        }
+
+    # 更精确的阈值判断：从 trends.excessReturn 的百分位
+    excess_by_date = {str(e.get("date")): e for e in (excess_return_data or [])}
+    excess_entry = excess_by_date.get(date_str, {})
+    e5_pct = excess_entry.get("excess5dPercentile")
+    e10_pct = excess_entry.get("excess10dPercentile")
+    e10_pct = excess_entry.get("excess10dPercentile")
+
+    def _bucket_by_pct(pct: int | None, buckets: dict[str, Any]) -> str:
+        if pct is None:
+            return ""
+        if pct >= 85:
+            return "P85+(过热)"
+        if pct >= 70:
+            return "P70-P85"
+        if pct >= 30:
+            return "P30-P70(中性)"
+        if pct >= 15:
+            return "P15-P30"
+        return "P15-(过冷)"
+
+    e5_bucket_name = _bucket_by_pct(e5_pct, e5_buckets)
+    e10_bucket_name = _bucket_by_pct(e10_pct, e10_buckets)
+    e5_bdata = e5_buckets.get(e5_bucket_name, {}).get("exc_1d", {})
+    e10_bdata = e10_buckets.get(e10_bucket_name, {}).get("exc_1d", {})
+
+    excess_reversion = {
+        "excess5d": {
+            "value": round(excess_5d, 2) if excess_5d is not None else None,
+            "bucket": e5_bucket_name,
+            "bucketAvgExc1d": e5_bdata.get("avg"),
+            "bucketWr1d": e5_bdata.get("wr"),
+        },
+        "excess10d": {
+            "value": round(excess_10d, 2) if excess_10d is not None else None,
+            "bucket": e10_bucket_name,
+            "bucketAvgExc1d": e10_bdata.get("avg"),
+            "bucketWr1d": e10_bdata.get("wr"),
+        },
+    }
+
+    # ── 3. 象限胜率 ──
+    cur_state = state_key_from_row(target_row)
+    cur_dist = quadrant_distributions.get(cur_state, {})
+    quadrant_wr = cur_dist.get("winRate")
+
+    # ── 4. 信号 Alpha 分类 + 方向一致性 ──
+    alpha_rank = {s["signal"]: s for s in second_order.get("alphaSignalRank", [])}
+    consistency_map = {s["signal"]: s for s in second_order.get("multiPeriodConsistency", [])}
+    delta_map = {s["signal"]: s for s in second_order.get("signalDelta", [])}
+
+    signal_evidence: dict[str, dict[str, Any]] = {}
+    bullish: list[dict[str, Any]] = []
+    bearish: list[dict[str, Any]] = []
+
+    for sig in today_signals:
+        alpha = alpha_rank.get(sig, {})
+        cons = consistency_map.get(sig, {})
+        delta = delta_map.get(sig, {})
+
+        alpha_type_raw = alpha.get("signalType", "中性")
+        # 简化分类名
+        if "纯Alpha" in alpha_type_raw:
+            alpha_type = "纯Alpha"
+        elif "隐藏Alpha" in alpha_type_raw:
+            alpha_type = "隐藏Alpha"
+        elif "负向" in alpha_type_raw:
+            alpha_type = "负向"
+        else:
+            alpha_type = "中性"
+
+        is_new = sig not in prev_signals
+        new_data = delta.get("new", {}).get("1d", {})
+        cont_data = delta.get("continued", {}).get("1d", {})
+        new_vs_cont_delta = delta.get("newVsContinued1d")
+
+        entry = {
+            "alphaType": alpha_type,
+            "excLift": alpha.get("excLift"),
+            "wrExc1d": alpha.get("wrExc1d"),
+            "directionPattern": cons.get("pattern", ""),
+            "isConsistent": cons.get("consistent"),
+            "flipPeriod": cons.get("flip"),
+            "isNew": is_new,
+            "newVsContinuedDelta": new_vs_cont_delta,
+        }
+        signal_evidence[sig] = entry
+
+        verdict_entry = {
+            "signal": sig,
+            "alphaType": alpha_type,
+            "excLift": alpha.get("excLift"),
+            "directionPattern": cons.get("pattern", ""),
+            "isNew": is_new,
+        }
+        if alpha_type in ("纯Alpha", "隐藏Alpha"):
+            bullish.append(verdict_entry)
+        elif alpha_type == "负向":
+            bearish.append(verdict_entry)
+
+    # ── 5. 今日判定结论 ──
+    if veto or score <= -3:
+        today_conclusion = "偏空，不做多"
+    elif score >= 3:
+        today_conclusion = "偏多，可做多"
+    else:
+        today_conclusion = "中性，观望"
+
+    # ── 6. 明日操作结论 ──
+    if veto:
+        action = "不操作"
+        confidence = "high"
+    elif score >= 3:
+        action = "做多"
+        confidence = "high" if score >= 5 else "medium"
+    elif score <= -3:
+        action = "减仓"
+        confidence = "high" if score <= -5 else "medium"
+    else:
+        action = "观望"
+        confidence = "medium"
+
+    # ── 7. 关键风险点 ──
+    key_risks = []
+    if veto:
+        veto_sigs = [s for s in active_composite if sell_weights.get(s, 0) <= -3]
+        for vs in veto_sigs:
+            key_risks.append(f"一票否决({vs})")
+    for sig, ev in signal_evidence.items():
+        if ev.get("directionPattern") == "方向不稳定":
+            key_risks.append(f"「{sig}」方向不稳定")
+        if ev.get("alphaType") == "负向" and ev.get("isNew"):
+            key_risks.append(f"「{sig}」新出现且为负向")
+
+    # ── 8. 翻转条件 ──
+    flip_conditions = []
+    # 从象限转移概率推导
+    t5 = transition_top5_for_state(history_summary, quadrant_distributions, cur_state)
+    for t in t5:
+        to_label = t.get("toStateLabel", "")
+        to_wr = t.get("targetWinRate")
+        prob = t.get("probability", 0)
+        if to_wr is not None and to_wr >= 0.55 and prob >= 0.10:
+            flip_conditions.append(f"若转入「{to_label}」(概率{prob*100:.0f}%)，历史胜率{to_wr*100:.0f}%")
+    # 从超额回归推导
+    if e5_bucket_name in ("P15-(过冷)", "P15-P30"):
+        flip_conditions.append(f"5d超额过冷({e5_bucket_name})，均值回归概率高")
+    if e10_bucket_name == "P15-(过冷)":
+        flip_conditions.append(f"10d超额过冷，历史同档T+1超额+{e10_bdata.get('avg', 0):.2f}%")
+
+    # ── 9. 历史类比 ──
+    by_window = {item.get("window"): item for item in window_stats}
+    historical_analogy = {
+        "similarCount": len(similar_cases),
+        "avgT1": by_window.get("1d", {}).get("avgReturn"),
+        "avgT3": by_window.get("3d", {}).get("avgReturn"),
+        "winRate1d": by_window.get("1d", {}).get("winRate"),
+    }
+
+    return {
+        "todayVerdict": {
+            "conclusion": today_conclusion,
+            "score": score,
+            "veto": veto,
+            "scoreBreakdown": score_breakdown,
+            "excessReversion": excess_reversion,
+            "quadrantWinRate": quadrant_wr,
+        },
+        "tomorrowAction": {
+            "action": action,
+            "confidence": confidence,
+            "bullishSignals": bullish,
+            "bearishSignals": bearish,
+            "keyRisks": key_risks[:5],
+            "historicalAnalogy": historical_analogy,
+            "flipConditions": flip_conditions[:3],
+        },
+        "signals": signal_evidence,
+    }
+
+
+
+    print("正在构建 aiInsight...")
+    playbook = operator_playbook.get("playbook", {})
+
+    top_signals = sorted(
+        [s for s in signal_lifts if (s.get("avg_next_1d_delta_pp") or 0) != 0],
+        key=lambda s: abs(s.get("avg_next_1d_delta_pp") or 0),
+        reverse=True,
+    )[:3]
+    top_signal_names = [s.get("display_label") or s.get("label", "") for s in top_signals]
+
+    parts = []
+    if top_signal_names:
+        parts.append(f"最强信号：{'、'.join(top_signal_names)}")
+    parts.append(f"极端背离事件 {len(extreme_divergences)} 次")
+    combos = operator_playbook.get("combination_synergies", [])
+    if combos:
+        parts.append(f"信号组合效应 {len(combos)} 条")
+    research_details = "；".join(parts)
+
+    return {
+        "advice": {
+            "watch": (playbook.get("watch_for") or [""])[0],
+            "confirm": (playbook.get("confirmations") or [""])[0],
+            "failure": (playbook.get("invalidations") or [""])[0],
+            "constraint": playbook.get("sample_note") or (personality_profile.get("sample_warnings") or [""])[0],
+        },
+        "watchPoints": operator_playbook.get("regime", {}).get("reasons", []),
+        "researchDetails": research_details,
+    }
+
+
 def main() -> None:
     print("=" * 60)
     print("开始生成 dashboard_view.json")
@@ -1749,6 +2068,18 @@ def main() -> None:
     today_alerts = build_today_alerts(trends_payload["excessReturn"], trends_payload["poolCorrelations"])
     transition_top5 = build_transition_top5(data["history_summary"], quadrant_distributions)
     today_attribution = build_today_attribution(data["history_summary"])
+
+    # 决策模块
+    print("正在构建 decision...")
+    today_decision = build_decision(
+        data["history_summary"],
+        data["rolling_metrics"],
+        quadrant_distributions,
+        similar_cases,
+        window_stats,
+        data["operator_playbook"],
+        excess_return_data=trends_payload.get("excessReturn"),
+    )
 
     dashboard_view = {
         "meta": build_meta(data["personality_profile"], data["config"], data["history_summary"]),
@@ -1788,6 +2119,7 @@ def main() -> None:
         "operator": build_operator(data["operator_playbook"]),
         "aiInsight": build_ai_insight(data["operator_playbook"], data["personality_profile"], data["signal_lifts"], data["extreme_divergences"]),
         "predictionEvaluation": build_prediction_evaluation(data["prediction_backtest"]),
+        "decision": today_decision,
         "dateIndex": build_date_index(
             data["history_summary"],
             close_by_date,

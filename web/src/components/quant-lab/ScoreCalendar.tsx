@@ -11,15 +11,15 @@ function fmtPct(v: number | null | undefined): string {
 
 function scoreColor(score: number, veto: boolean): string {
   if (veto) return '#4b5563';
-  if (score >= 8) return '#047857';
-  if (score >= 5) return '#10b981';
-  if (score >= 3) return '#6ee7b7';
-  if (score >= 1) return '#a7f3d0';
+  if (score >= 8) return '#991b1b';
+  if (score >= 5) return '#ef4444';
+  if (score >= 3) return '#f87171';
+  if (score >= 1) return '#fca5a5';
   if (score === 0) return '#374151';
-  if (score >= -2) return '#fca5a5';
-  if (score >= -4) return '#f87171';
-  if (score >= -7) return '#ef4444';
-  return '#991b1b';
+  if (score >= -2) return '#a7f3d0';
+  if (score >= -4) return '#6ee7b7';
+  if (score >= -7) return '#10b981';
+  return '#047857';
 }
 
 interface Tip {
@@ -89,22 +89,22 @@ export default function ScoreCalendar({ daily }: { daily: DailyResult[] }) {
 
       <div className="ql-curve-legend" style={{ marginTop: 12 }}>
         <span style={{ fontSize: 11 }}>评分颜色：</span>
-        <span><span className="ql-swatch" style={{ background: '#991b1b', height: 12, width: 12 }} /> ≤-8</span>
-        <span><span className="ql-swatch" style={{ background: '#ef4444', height: 12, width: 12 }} /> -7~-5</span>
-        <span><span className="ql-swatch" style={{ background: '#f87171', height: 12, width: 12 }} /> -4~-3</span>
-        <span><span className="ql-swatch" style={{ background: '#fca5a5', height: 12, width: 12 }} /> -2~-1</span>
+        <span><span className="ql-swatch" style={{ background: '#047857', height: 12, width: 12 }} /> ≤-8</span>
+        <span><span className="ql-swatch" style={{ background: '#10b981', height: 12, width: 12 }} /> -7~-5</span>
+        <span><span className="ql-swatch" style={{ background: '#6ee7b7', height: 12, width: 12 }} /> -4~-3</span>
+        <span><span className="ql-swatch" style={{ background: '#a7f3d0', height: 12, width: 12 }} /> -2~-1</span>
         <span><span className="ql-swatch" style={{ background: '#374151', height: 12, width: 12 }} /> 0</span>
-        <span><span className="ql-swatch" style={{ background: '#a7f3d0', height: 12, width: 12 }} /> +1~+2</span>
-        <span><span className="ql-swatch" style={{ background: '#6ee7b7', height: 12, width: 12 }} /> +3~+4</span>
-        <span><span className="ql-swatch" style={{ background: '#10b981', height: 12, width: 12 }} /> +5~+7</span>
-        <span><span className="ql-swatch" style={{ background: '#047857', height: 12, width: 12 }} /> ≥+8</span>
+        <span><span className="ql-swatch" style={{ background: '#fca5a5', height: 12, width: 12 }} /> +1~+2</span>
+        <span><span className="ql-swatch" style={{ background: '#f87171', height: 12, width: 12 }} /> +3~+4</span>
+        <span><span className="ql-swatch" style={{ background: '#ef4444', height: 12, width: 12 }} /> +5~+7</span>
+        <span><span className="ql-swatch" style={{ background: '#991b1b', height: 12, width: 12 }} /> ≥+8</span>
       </div>
 
       {tip && (
         <div className="ql-tooltip" style={{ left: tip.x, top: tip.y }}>
           <div style={{ fontWeight: 600, marginBottom: 4 }}>{tip.date}</div>
           {tip.veto && <div style={{ color: '#ef4444' }}>⛔ 一票否决</div>}
-          <div>综合分: <strong style={{ color: tip.score >= 0 ? '#10b981' : '#ef4444' }}>{tip.score >= 0 ? '+' : ''}{tip.score}</strong></div>
+          <div>综合分: <strong style={{ color: tip.score >= 0 ? '#ef4444' : '#10b981' }}>{tip.score >= 0 ? '+' : ''}{tip.score}</strong></div>
           <div>激活信号: {tip.signalsCount} 个</div>
           {tip.next_1d != null && <div>实际 T+1: {fmtPct(tip.next_1d)}</div>}
           {tip.next_1d_exc != null && <div>T+1 超额: {fmtPct(tip.next_1d_exc)}</div>}

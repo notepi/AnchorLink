@@ -949,6 +949,65 @@ export interface RankedPath {
 }
 
 // ==============================
+// 决策模块类型
+// ==============================
+
+export interface ExcessReversionItem {
+  value: number | null;
+  bucket: string;
+  bucketAvgExc1d: number | null;
+  bucketWr1d: number | null;
+}
+
+export interface SignalVerdict {
+  signal: string;
+  alphaType: string;
+  excLift: number | null;
+  directionPattern: string;
+  isNew: boolean;
+}
+
+export interface SignalEvidence {
+  alphaType: string;
+  excLift: number | null;
+  wrExc1d: number | null;
+  directionPattern: string;
+  isConsistent: boolean | null;
+  flipPeriod: string | null;
+  isNew: boolean;
+  newVsContinuedDelta: number | null;
+}
+
+export interface DecisionView {
+  todayVerdict: {
+    conclusion: string;
+    score: number;
+    veto: boolean;
+    scoreBreakdown: Array<{ signal: string; weight: number }>;
+    excessReversion: {
+      excess5d: ExcessReversionItem;
+      excess10d: ExcessReversionItem;
+    };
+    quadrantWinRate: number | null;
+  };
+  tomorrowAction: {
+    action: string;
+    confidence: string;
+    bullishSignals: SignalVerdict[];
+    bearishSignals: SignalVerdict[];
+    keyRisks: string[];
+    historicalAnalogy: {
+      similarCount: number;
+      avgT1: number | null;
+      avgT3: number | null;
+      winRate1d: number | null;
+    };
+    flipConditions: string[];
+  };
+  signals: Record<string, SignalEvidence>;
+}
+
+// ==============================
 // 顶层契约定义
 // ==============================
 
@@ -1199,6 +1258,9 @@ export interface DashboardView {
     /** 研究明细内容 */
     researchDetails: string;
   };
+
+  /** 决策模块：今日判定 + 明日操作 */
+  decision: DecisionView;
 
   /** 预测准确度评估 */
   predictionEvaluation: {

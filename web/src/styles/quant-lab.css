@@ -123,8 +123,8 @@
   font-variant-numeric: tabular-nums;
   letter-spacing: -1px;
 }
-.ql-hero-main .ql-big.pos { color: var(--ql-green); }
-.ql-hero-main .ql-big.neg { color: var(--ql-red); }
+.ql-hero-main .ql-big.pos { color: var(--ql-red); }
+.ql-hero-main .ql-big.neg { color: var(--ql-green); }
 .ql-hero-main .ql-vs {
   font-size: 13px;
   color: var(--ql-text-mid);
@@ -160,8 +160,8 @@
   margin-top: 4px;
   font-variant-numeric: tabular-nums;
 }
-.ql-pos { color: var(--ql-green); }
-.ql-neg { color: var(--ql-red); }
+.ql-pos { color: var(--ql-red); }
+.ql-neg { color: var(--ql-green); }
 .ql-neu { color: var(--ql-text-mid); }
 .ql-warn { color: var(--ql-yellow); }
 
@@ -201,8 +201,8 @@
   border-radius: 6px;
   padding: 12px 14px;
 }
-.ql-strategy-col.long  { border-left: 3px solid var(--ql-green); }
-.ql-strategy-col.short { border-left: 3px solid var(--ql-red); }
+.ql-strategy-col.long  { border-left: 3px solid var(--ql-red); }
+.ql-strategy-col.short { border-left: 3px solid var(--ql-green); }
 .ql-strategy-col.bah   { border-left: 3px solid var(--ql-text-muted); }
 .ql-strategy-col h4 {
   margin: 0 0 8px;
@@ -263,10 +263,10 @@
 }
 .ql-table tbody tr:hover { background: rgba(96, 165, 250, 0.05); }
 .ql-table .ql-highlight {
-  background: rgba(16, 185, 129, 0.08);
+  background: rgba(239, 68, 68, 0.08);
 }
 .ql-table .ql-highlight-neg {
-  background: rgba(239, 68, 68, 0.08);
+  background: rgba(16, 185, 129, 0.08);
 }
 
 /* ───────── 自相关 bar 图 ───────── */
@@ -287,7 +287,7 @@
   position: absolute; top: 0; bottom: 0; left: 50%; transform-origin: left; width: 50%;
   background: var(--ql-cyan); border-radius: 2px;
 }
-.ql-autocorr-bar.neg .ql-fill { right: 50%; left: auto; background: var(--ql-red); }
+.ql-autocorr-bar.neg .ql-fill { right: 50%; left: auto; background: var(--ql-green); }
 
 /* ───────── Scatter ───────── */
 .ql-scatter-wrap {

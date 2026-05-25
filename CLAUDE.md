@@ -2,7 +2,7 @@
 
 锚定联动分析系统。锚定一家公司，与板块联动对比分析。当前标的：铂力特 (688333.SH)。
 
-当前阶段：数据管道健壮性已修复（补缺逻辑、normalized 同步、超时重试），历史数据已扩展到 365 天。下一步是 history-v2 前端 P1 区块填充真实数据。
+当前阶段：V2 评分系统已固化（src/technical_indicators + src/regime_detector + src/v2_scorer → build_v2_scoring.py → /v2 页面）。历史数据已扩展到 365 天。
 
 ## 协作流程
 
@@ -16,11 +16,13 @@
 
 ## 数据管道
 
-四步必须按顺序执行，不可跳步：
+五步必须按顺序执行，不可跳步：
 
 ```
-src.price.run → src.dailyreport.run → build_history_analysis.py → build_dashboard_view.py
+src.price.run → src.dailyreport.run → build_history_analysis.py → build_v2_scoring.py → build_dashboard_view.py
 ```
+
+V2 评分脚本需用 `-m` 运行：`uv run python -m scripts.build_v2_scoring`
 
 统一入口：`uv run python scripts/run_all.py`
 

@@ -10,6 +10,7 @@ import TransitionFlow from '@/components/today/TransitionFlow';
 import SimilarCases from '@/components/today/SimilarCases';
 import QuadrantDistribution from '@/components/today/QuadrantDistribution';
 import SignalLiftQuickRef from '@/components/today/SignalLiftQuickRef';
+import DecisionCard from '@/components/today/DecisionCard';
 import ResearchDetails from '@/components/today/ResearchDetails';
 import type { DateEntry } from '@/types/dashboard-view';
 import '../../../styles/today.css';
@@ -114,6 +115,7 @@ export default async function TodayPage({ searchParams }: PageProps) {
 
       {/* Tier 1: 首屏核心信息 */}
       <AttributionCard attribution={attribution} />
+      {dashboard.decision && <DecisionCard decision={dashboard.decision} />}
       <ExcessCards
         excessReturn={excessReturn}
         selectedDate={selectedDate}

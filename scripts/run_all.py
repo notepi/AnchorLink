@@ -68,6 +68,12 @@ def main():
                 print("[ERROR] 历史分析失败")
                 success = False
 
+        # 3.5. V2 评分计算（依赖 history CSVs，需用 -m 运行以支持 src 导入）
+        if success:
+            if not run_module("scripts.build_v2_scoring", "V2 评分计算"):
+                print("[ERROR] V2 评分计算失败")
+                success = False
+
         # 4. 前端数据构建
         if success:
             result = subprocess.run(

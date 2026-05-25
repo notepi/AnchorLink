@@ -155,7 +155,7 @@ export default function StrategyCurve({ daily, defaultThreshold = 3 }: Props) {
         {/* BAH 曲线 */}
         <path d={pathBah} fill="none" stroke="#9ca3af" strokeWidth="1.5" />
         {/* 策略曲线 */}
-        <path d={pathStrategy} fill="none" stroke="#10b981" strokeWidth="2" />
+        <path d={pathStrategy} fill="none" stroke="#ef4444" strokeWidth="2" />
 
         {/* 极端买入日（绿点） */}
         {extremeBuy.map((p) => {
@@ -166,13 +166,13 @@ export default function StrategyCurve({ daily, defaultThreshold = 3 }: Props) {
               cx={xScale(i)}
               cy={yScale(p.strategy_cum)}
               r="3"
-              fill="#10b981"
+              fill="#ef4444"
               stroke="#fff"
               strokeWidth="0.5"
             />
           );
         })}
-        {/* 极端卖出日（红点） */}
+        {/* 极端卖出日（绿点） */}
         {extremeSell.map((p) => {
           const i = points.indexOf(p);
           return (
@@ -181,7 +181,7 @@ export default function StrategyCurve({ daily, defaultThreshold = 3 }: Props) {
               cx={xScale(i)}
               cy={yScale(p.bah_cum)}
               r="3"
-              fill="#ef4444"
+              fill="#10b981"
               stroke="#fff"
               strokeWidth="0.5"
             />
@@ -234,20 +234,20 @@ export default function StrategyCurve({ daily, defaultThreshold = 3 }: Props) {
       </svg>
 
       <div className="ql-curve-legend">
-        <span><span className="ql-swatch" style={{ background: '#10b981' }} /> 策略累计 (±{threshold})</span>
+        <span><span className="ql-swatch" style={{ background: '#ef4444' }} /> 策略累计 (±{threshold})</span>
         <span><span className="ql-swatch" style={{ background: '#9ca3af' }} /> Buy-and-Hold 累计</span>
-        <span><span className="ql-swatch" style={{ background: '#10b981', borderRadius: '50%', width: 8, height: 8 }} /> score ≥ +12</span>
-        <span><span className="ql-swatch" style={{ background: '#ef4444', borderRadius: '50%', width: 8, height: 8 }} /> score ≤ -12</span>
+        <span><span className="ql-swatch" style={{ background: '#ef4444', borderRadius: '50%', width: 8, height: 8 }} /> score ≥ +12</span>
+        <span><span className="ql-swatch" style={{ background: '#10b981', borderRadius: '50%', width: 8, height: 8 }} /> score ≤ -12</span>
       </div>
 
       {tip && (
         <div className="ql-tooltip" style={{ left: tip.x, top: tip.y }}>
           <div style={{ fontWeight: 600, marginBottom: 4 }}>{tip.date}</div>
-          <div>综合分: <strong style={{ color: tip.score >= 0 ? '#10b981' : '#ef4444' }}>{tip.score >= 0 ? '+' : ''}{tip.score}</strong></div>
+          <div>综合分: <strong style={{ color: tip.score >= 0 ? '#ef4444' : '#10b981' }}>{tip.score >= 0 ? '+' : ''}{tip.score}</strong></div>
           <div>激活信号: {tip.signalsCount}</div>
           <div>实际 T+1: {fmtPct(tip.next_1d)} (超额 {fmtPct(tip.next_1d_exc)})</div>
           <div style={{ marginTop: 4, paddingTop: 4, borderTop: '1px solid #2a3441' }}>
-            策略累计: <strong style={{ color: '#10b981' }}>{fmtPct(tip.strategy_cum)}</strong>
+            策略累计: <strong style={{ color: '#ef4444' }}>{fmtPct(tip.strategy_cum)}</strong>
           </div>
           <div>BAH 累计: <span style={{ color: '#9ca3af' }}>{fmtPct(tip.bah_cum)}</span></div>
         </div>

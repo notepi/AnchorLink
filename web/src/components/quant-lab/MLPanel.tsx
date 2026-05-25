@@ -66,7 +66,7 @@ function QuintileBars({ model, name }: { model: MLModelResult; name: string }) {
                         left: val < 0 ? `${50 - pct / 2}%` : '50%',
                         width: `${pct / 2}%`,
                         height: '100%',
-                        background: val >= 0 ? 'var(--ql-green)' : 'var(--ql-red)',
+                        background: val >= 0 ? 'var(--ql-red)' : 'var(--ql-green)',
                         borderRadius: 2,
                       }}
                     />

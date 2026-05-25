@@ -82,3 +82,17 @@ export const SIGNAL_CATEGORY: Record<string, string> = {
   counter_intuitive:  '反直觉机会',
   trap:               '信号陷阱',
 } as const;
+
+// ── 市场状态（Regime）──
+
+export const REGIME_LABEL: Record<string, string> = {
+  mean_reverting: '均值回归',
+  trending:       '趋势市',
+  transition:     '过渡期',
+} as const;
+
+export const REGIME_DESCRIPTION: Record<string, string> = {
+  mean_reverting: 'ADX≤20，均值回归信号增强，买入阈值=3',
+  trending:       'ADX≥25，趋势主导，买入阈值=4',
+  transition:     '20<ADX<25，信号效力混合，买入阈值=4',
+} as const;

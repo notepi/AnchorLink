@@ -4,9 +4,9 @@ import { useMemo, useState } from 'react';
 import type { AlphaSignalRow } from '@/types/quant-lab-view';
 
 function typeColor(t: string): string {
-  if (t.includes('纯Alpha')) return '#10b981';
+  if (t.includes('纯Alpha')) return '#ef4444';
   if (t.includes('隐藏Alpha')) return '#06b6d4';
-  if (t.includes('负向')) return '#ef4444';
+  if (t.includes('负向')) return '#10b981';
   return '#6b7280';
 }
 function typeLabel(t: string): string {
@@ -67,8 +67,8 @@ export default function SignalAlphaScatter({ signals }: Props) {
           <svg className="ql-scatter-svg" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet">
             {/* 四象限背景着色 */}
             <rect x={PAD.left} y={PAD.top} width={plotW / 2} height={plotH / 2} fill="rgba(6, 182, 212, 0.05)" />
-            <rect x={PAD.left + plotW / 2} y={PAD.top} width={plotW / 2} height={plotH / 2} fill="rgba(16, 185, 129, 0.05)" />
-            <rect x={PAD.left} y={PAD.top + plotH / 2} width={plotW / 2} height={plotH / 2} fill="rgba(239, 68, 68, 0.05)" />
+            <rect x={PAD.left + plotW / 2} y={PAD.top} width={plotW / 2} height={plotH / 2} fill="rgba(239, 68, 68, 0.05)" />
+            <rect x={PAD.left} y={PAD.top + plotH / 2} width={plotW / 2} height={plotH / 2} fill="rgba(16, 185, 129, 0.05)" />
             <rect x={PAD.left + plotW / 2} y={PAD.top + plotH / 2} width={plotW / 2} height={plotH / 2} fill="rgba(245, 158, 11, 0.05)" />
 
             {/* 0 轴 */}
@@ -106,8 +106,8 @@ export default function SignalAlphaScatter({ signals }: Props) {
 
             {/* 象限标签 */}
             <text x={xScale(-xRange * 0.6)} y={yScale(yRange * 0.85)} fill="#06b6d4" fontSize="10" fontWeight="600">💡 隐藏Alpha</text>
-            <text x={xScale(xRange * 0.4)} y={yScale(yRange * 0.85)} fill="#10b981" fontSize="10" fontWeight="600">🟢 纯Alpha</text>
-            <text x={xScale(-xRange * 0.6)} y={yScale(-yRange * 0.85)} fill="#ef4444" fontSize="10" fontWeight="600">🔴 负向</text>
+            <text x={xScale(xRange * 0.4)} y={yScale(yRange * 0.85)} fill="#ef4444" fontSize="10" fontWeight="600">🟢 纯Alpha</text>
+            <text x={xScale(-xRange * 0.6)} y={yScale(-yRange * 0.85)} fill="#10b981" fontSize="10" fontWeight="600">🔴 负向</text>
             <text x={xScale(xRange * 0.4)} y={yScale(-yRange * 0.85)} fill="#f59e0b" fontSize="10" fontWeight="600">⚠️ Beta骑乘</text>
 
             {/* 数据点 */}
@@ -142,10 +142,10 @@ export default function SignalAlphaScatter({ signals }: Props) {
             ))}
           </svg>
           <div className="ql-scatter-legend">
-            <span><span className="ql-dot" style={{ background: '#10b981' }} /> 纯 Alpha</span>
+            <span><span className="ql-dot" style={{ background: '#ef4444' }} /> 纯 Alpha</span>
             <span><span className="ql-dot" style={{ background: '#06b6d4' }} /> 隐藏 Alpha</span>
             <span><span className="ql-dot" style={{ background: '#f59e0b' }} /> Beta 骑乘</span>
-            <span><span className="ql-dot" style={{ background: '#ef4444' }} /> 负向</span>
+            <span><span className="ql-dot" style={{ background: '#10b981' }} /> 负向</span>
             <span><span className="ql-dot" style={{ background: '#6b7280' }} /> 中性</span>
             <span style={{ marginLeft: 'auto', color: 'var(--ql-text-muted)' }}>圆圈大小 = 样本量 n</span>
           </div>
