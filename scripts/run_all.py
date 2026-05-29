@@ -74,6 +74,42 @@ def main():
                 print("[ERROR] V2 评分计算失败")
                 success = False
 
+        # 3.6. 每日分析报告生成
+        if success:
+            if not run_module("scripts.build_daily_report", "每日分析报告生成"):
+                print("[ERROR] 报告生成失败")
+                success = False
+
+        # 3.7. 二阶信号分析（依赖 history CSVs）
+        if success:
+            result = subprocess.run(
+                [sys.executable, str(PROJECT_ROOT / "scripts" / "analyze_2nd_order_signals.py")],
+                cwd=PROJECT_ROOT,
+            )
+            if result.returncode != 0:
+                print("[ERROR] 二阶信号分析失败")
+                success = False
+
+        # 3.8. 复合信号回测（依赖 history CSVs）
+        if success:
+            result = subprocess.run(
+                [sys.executable, str(PROJECT_ROOT / "scripts" / "composite_signal_backtest.py")],
+                cwd=PROJECT_ROOT,
+            )
+            if result.returncode != 0:
+                print("[ERROR] 复合信号回测失败")
+                success = False
+
+        # 3.9. 深度量化分析（依赖 history CSVs + 二阶信号）
+        if success:
+            result = subprocess.run(
+                [sys.executable, str(PROJECT_ROOT / "scripts" / "deep_quant_analysis.py")],
+                cwd=PROJECT_ROOT,
+            )
+            if result.returncode != 0:
+                print("[ERROR] 深度量化分析失败")
+                success = False
+
         # 4. 前端数据构建
         if success:
             result = subprocess.run(
