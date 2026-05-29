@@ -20,6 +20,8 @@
   --positive: #22c55e;
   --negative: #ef4444;
   --neutral: #71717a;
+  --amber: #f59e0b;
+  --amber-soft: rgba(245, 158, 11, 0.08);
 }
 
 /* 全局样式 */

@@ -198,6 +198,37 @@ def win_rate(values: list[Any]) -> float | None:
     return len([value for value in clean if value > 0]) / len(clean) if clean else None
 
 
+def _weighted_avg(values: list[float], weights: list[float]) -> float | None:
+    if not values or not weights or len(values) != len(weights):
+        return None
+    total_w = sum(weights)
+    return sum(v * w for v, w in zip(values, weights)) / total_w if total_w > 0 else None
+
+
+def _weighted_win_rate(values: list[float], weights: list[float]) -> float | None:
+    if not values or not weights or len(values) != len(weights):
+        return None
+    total_w = sum(weights)
+    return sum(w for v, w in zip(values, weights) if v > 0) / total_w if total_w > 0 else None
+
+
+def _ordinal_score(a: Any, b: Any, order: list[str]) -> float:
+    if not a or not b:
+        return 0.0
+    aa = str(a).strip().lower()
+    bb = str(b).strip().lower()
+    if aa not in order or bb not in order:
+        return 1.0 if aa == bb else 0.0
+    distance = abs(order.index(aa) - order.index(bb))
+    return 1.0 if distance == 0 else 0.5 if distance == 1 else 0.0
+
+
+def _exact_score(a: Any, b: Any) -> float:
+    if not a or not b:
+        return 0.0
+    return 1.0 if str(a).strip().lower() == str(b).strip().lower() else 0.0
+
+
 # ==============================
 # 今日看板 - 辅助函数
 # ==============================
@@ -290,10 +321,17 @@ def build_pool_correlations(history_summary: list[dict[str, Any]]) -> list[dict[
     return result
 
 
-def build_quadrant_distributions(history_summary: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
-    """每个象限的 T+1 分布：P10/P50/P90 + 胜率 + count。"""
+def build_quadrant_distributions(history_summary: list[dict[str, Any]], target_date: str | None = None) -> dict[str, dict[str, Any]]:
+    """每个象限的 T+1 分布：P10/P50/P90 + 胜率 + count。
+    target_date: Walk-Forward，只用该日之前的数据。None 表示用全量。"""
+    if target_date:
+        cutoff_idx = next((i for i, r in enumerate(history_summary) if str(r.get("date")) == target_date), len(history_summary))
+        rows = history_summary[:cutoff_idx]
+    else:
+        rows = history_summary
+
     quad_groups: dict[str, list[float]] = defaultdict(list)
-    for row in history_summary:
+    for row in rows:
         t1 = row.get("next_1d_return")
         if t1 is None:
             continue
@@ -562,6 +600,7 @@ def load_all_data() -> dict[str, Any]:
         "operator_playbook": read_json("history_operator_playbook.json"),
         "personality_profile": read_json("history_personality_profile.json"),
         "prediction_backtest": read_json("history_prediction_backtest.json"),
+        "v2_scoring": read_json("v2_scoring.json"),
         "config": read_yaml(CONFIG_PATH),
     }
     print(f"加载完成：共 {len(data['history_summary'])} 条 history_summary")
@@ -593,6 +632,150 @@ def build_filter(personality_profile: dict[str, Any], history_summary: list[dict
     }
 
 
+def compute_score_bucket_stats(v2_data: dict[str, Any], history_summary: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """按 V2 评分分档计算历史 T+1/T+3/T+5 统计，Walk-Forward，含状态加权"""
+    daily = v2_data.get("dailyResults", [])
+    if not daily:
+        return []
+
+    # history_summary 按 date 索引，用于 T+3/T+5 数据及状态
+    summary_by_date: dict[str, dict[str, Any]] = {str(r.get("date")): r for r in history_summary}
+
+    BUCKETS = [
+        (-99, -8, "≤-8"),
+        (-8, -5, "-7~-5"),
+        (-5, -2, "-4~-2"),
+        (-2, 0, "-1~0"),
+        (0, 2, "+1~+2"),
+        (2, 5, "+3~+5"),
+        (5, 8, "+6~+7"),
+        (8, 99, "≥+8"),
+    ]
+
+    def safe_float(v):
+        try:
+            return float(v) if v else None
+        except (ValueError, TypeError):
+            return None
+
+    def _bucket_stat(exc_vals: list[float], abs_vals: list[float]) -> dict[str, Any]:
+        return {
+            "avgExcess": round(mean(exc_vals), 4) if exc_vals else None,
+            "excessPosRate": round(sum(1 for v in exc_vals if v > 0) / len(exc_vals), 4) if exc_vals else None,
+            "avgAbsReturn": round(mean(abs_vals), 4) if abs_vals else None,
+            "absPosRate": round(sum(1 for v in abs_vals if v > 0) / len(abs_vals), 4) if abs_vals else None,
+        }
+
+    def _weighted_bucket_stat(exc_vals: list[float], exc_ws: list[float],
+                               abs_vals: list[float], abs_ws: list[float]) -> dict[str, Any] | None:
+        total_w = sum(exc_ws)
+        if total_w < 2.0:
+            return None
+        return {
+            "avgExcess": round(_weighted_avg(exc_vals, exc_ws) or 0, 4) if exc_vals else None,
+            "excessPosRate": round(_weighted_win_rate(exc_vals, exc_ws) or 0, 4) if exc_vals else None,
+            "avgAbsReturn": round(_weighted_avg(abs_vals, abs_ws) or 0, 4) if abs_vals else None,
+            "absPosRate": round(_weighted_win_rate(abs_vals, abs_ws) or 0, 4) if abs_vals else None,
+        }
+
+    # Walk-Forward：只用 target 日之前的数据
+    results = []
+    for i, day in enumerate(daily):
+        score = day["score"]
+        bucket = None
+        for lo, hi, label in BUCKETS:
+            if lo <= score < hi:
+                bucket = (lo, hi, label)
+                break
+        if bucket is None:
+            continue
+
+        lo, hi, label = bucket
+        peers = [d for d in daily[:i] if lo <= d["score"] < hi and d.get("next1dExcess") is not None]
+        if len(peers) < 3:
+            continue
+
+        target_state = summary_by_date.get(str(day["date"]))
+
+        # 单次遍历收集加权数据
+        exc_1d, abs_1d = [], []
+        exc_3d, abs_3d, exc_5d, abs_5d = [], [], [], []
+        exc_1d_w, abs_1d_w = [], []
+        exc_3d_w, abs_3d_w, exc_5d_w, abs_5d_w = [], [], [], []
+        peer_state_keys = []
+
+        for p in peers:
+            peer_state = summary_by_date.get(str(p["date"]))
+
+            # 状态相似度权重
+            if target_state and peer_state:
+                w = (
+                    _ordinal_score(target_state.get("industry_beta"), peer_state.get("industry_beta"), BETA_ORDER) * 0.35
+                    + _ordinal_score(target_state.get("anchor_alpha"), peer_state.get("anchor_alpha"), BETA_ORDER) * 0.35
+                    + _ordinal_score(target_state.get("risk_level"), peer_state.get("risk_level"), RISK_ORDER) * 0.30
+                )
+                peer_state_keys.append(state_key_from_row(peer_state))
+            else:
+                w = 1.0
+
+            # T+1 从 v2_scoring
+            e1 = p["next1dExcess"]
+            a1 = p.get("next1dAbs")
+            exc_1d.append(e1)
+            exc_1d_w.append(w)
+            if a1 is not None:
+                abs_1d.append(a1)
+                abs_1d_w.append(w)
+
+            # T+3/T+5 从 history_summary
+            if peer_state:
+                v = safe_float(peer_state.get("next_3d_excess_vs_chain"))
+                if v is not None:
+                    exc_3d.append(v)
+                    exc_3d_w.append(w)
+                v = safe_float(peer_state.get("next_3d_return"))
+                if v is not None:
+                    abs_3d.append(v)
+                    abs_3d_w.append(w)
+                v = safe_float(peer_state.get("next_5d_excess_vs_chain"))
+                if v is not None:
+                    exc_5d.append(v)
+                    exc_5d_w.append(w)
+                v = safe_float(peer_state.get("next_5d_return"))
+                if v is not None:
+                    abs_5d.append(v)
+                    abs_5d_w.append(w)
+
+        # 状态偏离元数据
+        effective_sample = round(sum(exc_1d_w), 2)
+        state_divergence = round(1.0 - (sum(exc_1d_w) / len(peers)), 4) if peers else None
+        dominant_state = Counter(peer_state_keys).most_common(1)[0][0] if peer_state_keys else None
+        current_state = state_key_from_row(target_state) if target_state else None
+        state_mismatch = (current_state != dominant_state) if (current_state and dominant_state) else None
+
+        results.append({
+            "date": day["date"],
+            "score": score,
+            "bucketLabel": label,
+            "bucketLo": lo,
+            "bucketHi": hi,
+            "sampleSize": len(peers),
+            "effectiveSampleSize": effective_sample,
+            "stateDivergence": state_divergence,
+            "dominantState": dominant_state,
+            "currentState": current_state,
+            "stateMismatch": state_mismatch,
+            "t1": _bucket_stat(exc_1d, abs_1d),
+            "t3": _bucket_stat(exc_3d, abs_3d),
+            "t5": _bucket_stat(exc_5d, abs_5d),
+            "stateWeightedT1": _weighted_bucket_stat(exc_1d, exc_1d_w, abs_1d, abs_1d_w),
+            "stateWeightedT3": _weighted_bucket_stat(exc_3d, exc_3d_w, abs_3d, abs_3d_w),
+            "stateWeightedT5": _weighted_bucket_stat(exc_5d, exc_5d_w, abs_5d, abs_5d_w),
+        })
+
+    return results
+
+
 def compute_similar_cases(history_summary: list[dict[str, Any]], close_by_date: dict[str, float], target_date: str | None = None) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     if target_date:
         target = next((r for r in history_summary if str(r.get("date")) == target_date), None)
@@ -608,21 +791,6 @@ def compute_similar_cases(history_summary: list[dict[str, Any]], close_by_date: 
         "strongest_group": 0.15,
         "weakest_group": 0.15,
     }
-
-    def ordinal_score(a: Any, b: Any, order: list[str]) -> float:
-        if not a or not b:
-            return 0.0
-        aa = str(a).strip().lower()
-        bb = str(b).strip().lower()
-        if aa not in order or bb not in order:
-            return 1.0 if aa == bb else 0.0
-        distance = abs(order.index(aa) - order.index(bb))
-        return 1.0 if distance == 0 else 0.5 if distance == 1 else 0.0
-
-    def exact_score(a: Any, b: Any) -> float:
-        if not a or not b:
-            return 0.0
-        return 1.0 if str(a).strip().lower() == str(b).strip().lower() else 0.0
 
     def signal_set(row: dict[str, Any]) -> set[str]:
         raw_pairs = row.get("signal_pairs")
@@ -645,11 +813,11 @@ def compute_similar_cases(history_summary: list[dict[str, Any]], close_by_date: 
 
     def state_score(candidate: dict[str, Any]) -> float:
         return (
-            ordinal_score(target.get("industry_beta"), candidate.get("industry_beta"), BETA_ORDER) * weights["industry_beta"]
-            + ordinal_score(target.get("anchor_alpha"), candidate.get("anchor_alpha"), BETA_ORDER) * weights["anchor_alpha"]
-            + ordinal_score(target.get("risk_level"), candidate.get("risk_level"), RISK_ORDER) * weights["risk_level"]
-            + exact_score(target.get("strongest_group"), candidate.get("strongest_group")) * weights["strongest_group"]
-            + exact_score(target.get("weakest_group"), candidate.get("weakest_group")) * weights["weakest_group"]
+            _ordinal_score(target.get("industry_beta"), candidate.get("industry_beta"), BETA_ORDER) * weights["industry_beta"]
+            + _ordinal_score(target.get("anchor_alpha"), candidate.get("anchor_alpha"), BETA_ORDER) * weights["anchor_alpha"]
+            + _ordinal_score(target.get("risk_level"), candidate.get("risk_level"), RISK_ORDER) * weights["risk_level"]
+            + _exact_score(target.get("strongest_group"), candidate.get("strongest_group")) * weights["strongest_group"]
+            + _exact_score(target.get("weakest_group"), candidate.get("weakest_group")) * weights["weakest_group"]
         )
 
     target_signals = signal_set(target)
@@ -700,24 +868,34 @@ def compute_similar_cases(history_summary: list[dict[str, Any]], close_by_date: 
         })
 
     rows = [row for _, row in top_candidates]
+    sims = [sim for sim, _ in top_candidates]
+
+    def _wavg(field: str) -> float | None:
+        vals = [float(row.get(field, 0) or 0) for row in rows]
+        return _weighted_avg(vals, sims)
+
+    def _wwr(field: str) -> float | None:
+        vals = [float(row.get(field, 0) or 0) for row in rows]
+        return _weighted_win_rate(vals, sims)
+
     window_stats = [
         {
             "window": "1d",
-            "avgReturn": avg([row.get("next_1d_return") for row in rows]),
-            "winRate": win_rate([row.get("next_1d_return") for row in rows]),
-            "avgExcess": avg([row.get("next_1d_excess_vs_chain") for row in rows]),
+            "avgReturn": _wavg("next_1d_return"),
+            "winRate": _wwr("next_1d_return"),
+            "avgExcess": _wavg("next_1d_excess_vs_chain"),
         },
         {
             "window": "3d",
-            "avgReturn": avg([row.get("next_3d_return") for row in rows]),
-            "winRate": win_rate([row.get("next_3d_return") for row in rows]),
-            "avgExcess": avg([row.get("next_3d_excess_vs_chain") for row in rows]),
+            "avgReturn": _wavg("next_3d_return"),
+            "winRate": _wwr("next_3d_return"),
+            "avgExcess": _wavg("next_3d_excess_vs_chain"),
         },
         {
             "window": "5d",
-            "avgReturn": avg([row.get("next_5d_return") for row in rows]),
-            "winRate": win_rate([row.get("next_5d_return") for row in rows]),
-            "avgExcess": avg([row.get("next_5d_excess_vs_chain") for row in rows]),
+            "avgReturn": _wavg("next_5d_return"),
+            "winRate": _wwr("next_5d_return"),
+            "avgExcess": _wavg("next_5d_excess_vs_chain"),
         },
     ]
     return similar_cases, window_stats
@@ -847,6 +1025,8 @@ def build_date_index(
     rolling_metrics: list[dict[str, Any]],
     pool_correlations_by_date: dict[str, dict[str, Any]],
     quadrant_dist: dict[str, dict[str, Any]],
+    v2_data: dict[str, Any],
+    score_bucket_stats: list[dict[str, Any]],
 ) -> dict[str, dict[str, Any]]:
     print("正在构建 dateIndex...")
     rolling_by_date: dict[str, dict[str, Any]] = {}
@@ -876,6 +1056,13 @@ def build_date_index(
         if d:
             excess_by_date[d] = rm
 
+    # 预建 Walk-Forward 象限分布（每天用之前的数据，避免前瞻偏差）
+    quadrant_dist_by_date: dict[str, dict[str, dict[str, Any]]] = {}
+    for i, row in enumerate(history_summary):
+        d = str(row.get("date") or "")
+        if d and i > 0:
+            quadrant_dist_by_date[d] = build_quadrant_distributions(history_summary, target_date=d)
+
     date_index: dict[str, dict[str, Any]] = {}
     for row in history_summary:
         date_str = str(row.get("date") or "")
@@ -889,13 +1076,22 @@ def build_date_index(
         state_desc = f"{state_label(state_key)} · {RISK_TEXT.get(risk_level, risk_level)}"
 
         similar_cases, window_stats = compute_similar_cases(history_summary, close_by_date, target_date=date_str)
+        state_cockpit = build_state_cockpit(
+            history_summary,
+            v2_data,
+            score_bucket_stats,
+            similar_cases,
+            window_stats,
+            target_date=date_str,
+        )
 
         # 新增：该日的 4 个「今日看板」动态字段
         corr_snap = pool_correlations_by_date.get(date_str)
         excess_entry = excess_by_date.get(date_str)
         day_alerts = alerts_for_date(excess_entry, corr_snap)
         day_attribution = attribution_for_date(row)
-        day_t5 = transition_top5_for_state(history_summary, quadrant_dist, state_key)
+        day_dist = quadrant_dist_by_date.get(date_str, quadrant_dist)
+        day_t5 = transition_top5_for_state(history_summary, day_dist, state_key)
 
         date_index[date_str] = {
             "currentMapping": {
@@ -919,6 +1115,7 @@ def build_date_index(
             "alerts": day_alerts,
             "transitionTop5": day_t5,
             "poolCorrSnapshot": corr_snap,
+            "stateCockpit": state_cockpit,
         }
     print(f"[OK] dateIndex: {len(date_index)} 个日期")
     return date_index
@@ -1753,6 +1950,478 @@ def _classify_bucket(value: float | None, thresholds: dict[str, Any]) -> str:
     return "P15-(过冷)"
 
 
+def _safe_float(value: Any) -> float | None:
+    try:
+        if value is None or value == "":
+            return None
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _safe_bool(value: Any) -> bool:
+    if isinstance(value, bool):
+        return value
+    if value is None:
+        return False
+    return str(value).strip().lower() in {"1", "true", "yes", "y"}
+
+
+def _fmt_pct(value: Any, digits: int = 1) -> str:
+    number = _safe_float(value)
+    if number is None:
+        return "无数据"
+    return f"{number:+.{digits}f}%"
+
+
+def _metric_level(score: int, low: int, high: int) -> str:
+    if score >= high:
+        return "high"
+    if score >= low:
+        return "medium"
+    return "low"
+
+
+def build_state_cockpit(
+    history_summary: list[dict[str, Any]],
+    v2_data: dict[str, Any],
+    score_bucket_stats: list[dict[str, Any]],
+    similar_cases: list[dict[str, Any]],
+    window_stats: list[dict[str, Any]],
+    target_date: str | None = None,
+) -> dict[str, Any]:
+    """构建态势感知驾驶舱：状态、决策链、证据、可信度、回溯校准。"""
+    if target_date:
+        target_row = next((r for r in history_summary if str(r.get("date")) == target_date), None)
+    else:
+        target_row = latest_row(history_summary)
+    if not target_row:
+        return {}
+
+    date_str = str(target_row.get("date") or "")
+    v2_daily = v2_data.get("dailyResults", [])
+    v2_by_date = {str(item.get("date")): item for item in v2_daily}
+    v2_day = v2_by_date.get(date_str, {})
+    score = int(v2_day.get("score") or 0)
+    veto = _safe_bool(v2_day.get("veto"))
+    regime = v2_day.get("regime") or "unknown"
+    signals = v2_day.get("signals") or []
+    signal_breakdown = v2_day.get("signalBreakdown") or []
+    technical = v2_day.get("technicalIndicators") or {}
+
+    bucket_by_date = {str(item.get("date")): item for item in score_bucket_stats}
+    bucket = bucket_by_date.get(date_str, {})
+    by_window = {item.get("window"): item for item in window_stats}
+    t1 = by_window.get("1d", {})
+    t3 = by_window.get("3d", {})
+    t5 = by_window.get("5d", {})
+    path_label = infer_path_label(window_stats)
+
+    t1_avg = _safe_float(t1.get("avgReturn"))
+    t3_avg = _safe_float(t3.get("avgReturn"))
+    t5_avg = _safe_float(t5.get("avgReturn"))
+    micro_positive = sum(1 for value in [t1_avg, t3_avg, t5_avg] if value is not None and value > 0)
+    micro_negative = sum(1 for value in [t1_avg, t3_avg, t5_avg] if value is not None and value < 0)
+    micro_flat = all(value is not None and abs(value) <= 0.35 for value in [t1_avg, t3_avg])
+    macro_bearish = veto or score <= -3
+    macro_extreme_bearish = veto or score <= -8
+    macro_bullish = score >= 3
+    conflict = (macro_bearish and micro_positive >= 2) or (macro_bullish and micro_negative >= 2)
+
+    if macro_extreme_bearish and (micro_positive >= 2 or micro_flat):
+        state_label_text = "过热但惯性未坏"
+        state_summary = "宏观风险分数已经很重，但相似路径没有同步转成单边下跌，更像高位惯性与回撤风险并存。"
+        posture = {"code": "avoid_chase", "label": "不追高，等确认", "tone": "warning"}
+    elif macro_extreme_bearish:
+        state_label_text = "过热风险确认区"
+        state_summary = "V2 分数进入强风险档，同档历史偏弱，优先控制回撤和仓位暴露。"
+        posture = {"code": "reduce_risk", "label": "减仓优先", "tone": "danger"}
+    elif macro_bearish and conflict:
+        state_label_text = "风险偏空但路径冲突"
+        state_summary = "主模型偏空，但微观相似路径仍有惯性，适合等转弱信号而不是抢先下结论。"
+        posture = {"code": "wait_confirm", "label": "等转弱确认", "tone": "warning"}
+    elif macro_bearish:
+        state_label_text = "偏空观察区"
+        state_summary = "风险证据多于修复证据，操作上应降低进攻性。"
+        posture = {"code": "cautious_watch", "label": "谨慎观察", "tone": "warning"}
+    elif macro_bullish and micro_negative >= 2:
+        state_label_text = "模型偏多但路径转弱"
+        state_summary = "分数偏多但相似路径短期不配合，先看确认，不把分数当成直接买点。"
+        posture = {"code": "wait_confirm", "label": "等确认", "tone": "neutral"}
+    elif macro_bullish:
+        state_label_text = "修复延续区"
+        state_summary = "主模型和路径没有明显冲突，可以作为积极观察状态。"
+        posture = {"code": "active_watch", "label": "积极观察", "tone": "positive"}
+    else:
+        state_label_text = "震荡观察区"
+        state_summary = "主模型没有给出强方向，更多是路径和状态的观察价值。"
+        posture = {"code": "watch", "label": "观望", "tone": "neutral"}
+
+    bucket_t1 = bucket.get("stateWeightedT1") or bucket.get("t1") or {}
+    bucket_t3 = bucket.get("stateWeightedT3") or bucket.get("t3") or {}
+    bucket_sample = bucket.get("effectiveSampleSize") or bucket.get("sampleSize")
+    similar_count = len(similar_cases)
+
+    evidence_items = [
+        {
+            "id": "v2-score",
+            "title": "V2 Walk-Forward 主线",
+            "stance": "risk" if macro_bearish else ("positive" if macro_bullish else "neutral"),
+            "strength": "high" if abs(score) >= 8 or veto else ("medium" if abs(score) >= 3 else "low"),
+            "sourceTag": "Walk-Forward",
+            "detail": f"score={score}，regime={regime}，信号 {len(signals)} 个",
+            "metrics": [
+                {"label": "score", "value": score},
+                {"label": "veto", "value": veto},
+            ],
+        },
+        {
+            "id": "score-bucket",
+            "title": "同档历史统计",
+            "stance": "risk" if (_safe_float(bucket_t1.get("avgAbsReturn")) or 0) < 0 else "neutral",
+            "strength": "medium" if (bucket_sample or 0) >= 6 else "low",
+            "sourceTag": "Walk-Forward 小样本",
+            "detail": f"当前评分档 {bucket.get('bucketLabel', '未知')}，有效样本 {bucket_sample or 0}",
+            "metrics": [
+                {"label": "T+1 个股均值", "value": bucket_t1.get("avgAbsReturn")},
+                {"label": "T+3 个股均值", "value": bucket_t3.get("avgAbsReturn")},
+            ],
+        },
+        {
+            "id": "micro-path",
+            "title": "微观相似路径",
+            "stance": "positive" if micro_positive >= 2 else ("risk" if micro_negative >= 2 else "neutral"),
+            "strength": "medium" if similar_count >= 8 else "low",
+            "sourceTag": "相似案例",
+            "detail": f"相似案例 {similar_count} 个，路径={path_label}",
+            "metrics": [
+                {"label": "T+1 均值", "value": t1.get("avgReturn")},
+                {"label": "T+3 均值", "value": t3.get("avgReturn")},
+                {"label": "T+5 均值", "value": t5.get("avgReturn")},
+            ],
+        },
+        {
+            "id": "technical-temperature",
+            "title": "技术温度",
+            "stance": "risk" if (technical.get("stochK") or 0) >= 80 or (technical.get("bbPctb") or 0) >= 1 else "neutral",
+            "strength": "medium",
+            "sourceTag": "描述性指标",
+            "detail": f"StochK={technical.get('stochK', '无')}，BB%b={technical.get('bbPctb', '无')}，ADX={technical.get('adx14', '无')}",
+            "metrics": [
+                {"label": "RSI14", "value": technical.get("rsi14")},
+                {"label": "StochK", "value": technical.get("stochK")},
+            ],
+        },
+    ]
+
+    supporting_evidence = [
+        {
+            "title": "V2 主模型进入风险档",
+            "summary": f"score={score}，卖出阈值={v2_day.get('thresholdSell', '无')}，当前信号数 {len(signals)}。",
+            "sourceTag": "Walk-Forward",
+            "weight": "high" if abs(score) >= 8 or veto else "medium",
+            "stance": "risk",
+        },
+        {
+            "title": "同档历史偏弱",
+            "summary": f"评分档 {bucket.get('bucketLabel', '未知')}，T+1 个股均值 {_fmt_pct(bucket_t1.get('avgAbsReturn'))}，T+3 个股均值 {_fmt_pct(bucket_t3.get('avgAbsReturn'))}。",
+            "sourceTag": "Walk-Forward 小样本",
+            "weight": "medium" if (bucket_sample or 0) >= 6 else "low",
+            "stance": "risk",
+        },
+    ]
+    if (technical.get("stochK") or 0) >= 80 or (technical.get("bbPctb") or 0) >= 1:
+        supporting_evidence.append({
+            "title": "技术温度处在高位",
+            "summary": f"StochK={technical.get('stochK', '无')}，BB%b={technical.get('bbPctb', '无')}，提示短线过热。",
+            "sourceTag": "描述性指标",
+            "weight": "medium",
+            "stance": "risk",
+        })
+
+    opposing_evidence = [
+        {
+            "title": "微观相似路径未同步转弱",
+            "summary": f"相似样本 {similar_count}，T+1 {_fmt_pct(t1_avg)}，T+3 {_fmt_pct(t3_avg)}，T+5 {_fmt_pct(t5_avg)}。",
+            "sourceTag": "相似案例",
+            "weight": "medium" if similar_count >= 8 else "low",
+            "stance": "positive" if micro_positive >= 2 or micro_flat else "neutral",
+        },
+        {
+            "title": "行业和个股状态仍强",
+            "summary": f"当前象限 {state_label(state_key_from_row(target_row))}，风险等级 {RISK_TEXT.get(str(target_row.get('risk_level')), target_row.get('risk_level'))}。",
+            "sourceTag": "状态识别",
+            "weight": "medium",
+            "stance": "positive" if state_key_from_row(target_row) == "positive+positive" else "neutral",
+        },
+    ]
+    if signals:
+        opposing_evidence.append({
+            "title": "风险信号不等于立即下跌",
+            "summary": "当前负分更多描述过热与位置风险，仍需微观路径或价格行为确认。",
+            "sourceTag": "模型解释",
+            "weight": "medium",
+            "stance": "neutral",
+        })
+
+    conflict_title = "宏观风险强，微观惯性未断" if conflict or (macro_extreme_bearish and (micro_positive >= 2 or micro_flat)) else "证据冲突可控"
+    conflict_summary = (
+        "主模型和同档历史提示高风险，但相似案例短线仍偏震荡/惯性，所以当前不是单向看跌，而是等待转弱确认。"
+        if conflict or (macro_extreme_bearish and (micro_positive >= 2 or micro_flat))
+        else "主模型、路径和状态没有形成强烈反向拉扯，按当前主判断处理。"
+    )
+    evidence_matrix = {
+        "supporting": supporting_evidence[:4],
+        "opposing": opposing_evidence[:4],
+        "conflicts": [
+            {
+                "title": conflict_title,
+                "summary": conflict_summary,
+                "leftLabel": "宏观风险",
+                "leftValue": "强" if macro_extreme_bearish else ("中" if macro_bearish else "弱"),
+                "rightLabel": "微观惯性",
+                "rightValue": "强" if micro_positive >= 2 else ("中" if micro_flat else "弱"),
+                "severity": "high" if conflict or macro_extreme_bearish else "medium",
+            }
+        ],
+    }
+
+    consistency_score = 1
+    if conflict:
+        consistency_score = 0
+    elif (macro_bearish and micro_negative >= 2) or (macro_bullish and micro_positive >= 2):
+        consistency_score = 2
+
+    stat_score = 0
+    if similar_count >= 8:
+        stat_score += 1
+    if (bucket_sample or 0) >= 6:
+        stat_score += 1
+
+    recent_rows = [d for d in v2_daily if str(d.get("date")) < date_str and d.get("next1dAbs") is not None]
+
+    def recent_window(n: int) -> dict[str, Any]:
+        rows = recent_rows[-n:]
+        if not rows:
+            return {"windowDays": n, "sampleSize": 0, "directionAccuracy": None, "avgAbsReturn": None, "avgExcess": None}
+        direction_hits = 0
+        directional = 0
+        abs_values = []
+        exc_values = []
+        soft_hits = 0
+        for item in rows:
+            s = int(item.get("score") or 0)
+            abs_ret = _safe_float(item.get("next1dAbs"))
+            exc_ret = _safe_float(item.get("next1dExcess"))
+            if abs_ret is not None:
+                abs_values.append(abs_ret)
+                if abs(s) >= 3:
+                    directional += 1
+                    if (s > 0 and abs_ret > 0) or (s < 0 and abs_ret < 0):
+                        direction_hits += 1
+                if (abs(s) < 3 and abs(abs_ret) <= 1.0) or (s >= 3 and abs_ret > -1.0) or (s <= -3 and abs_ret < 1.0):
+                    soft_hits += 1
+            if exc_ret is not None:
+                exc_values.append(exc_ret)
+        return {
+            "windowDays": n,
+            "sampleSize": len(rows),
+            "directionAccuracy": round(direction_hits / directional, 4) if directional else None,
+            "softAccuracy": round(soft_hits / len(rows), 4) if rows else None,
+            "avgAbsReturn": round(mean(abs_values), 4) if abs_values else None,
+            "avgExcess": round(mean(exc_values), 4) if exc_values else None,
+        }
+
+    calibration = {
+        "recentWindows": [recent_window(n) for n in [10, 20, 30, 60]],
+        "currentState": {
+            "similarSampleSize": similar_count,
+            "scoreBucketSampleSize": bucket.get("sampleSize"),
+            "scoreBucketEffectiveSampleSize": bucket.get("effectiveSampleSize"),
+            "pathLabel": path_label,
+            "scoreBucketLabel": bucket.get("bucketLabel"),
+        },
+        "longTerm": {
+            "sampleSize": len(recent_rows),
+            "directionAccuracy": recent_window(len(recent_rows)).get("directionAccuracy") if recent_rows else None,
+            "softAccuracy": recent_window(len(recent_rows)).get("softAccuracy") if recent_rows else None,
+        },
+    }
+
+    credibility = {
+        "dataQuality": {
+            "level": "high" if target_row and v2_day else "low",
+            "score": 90 if target_row and v2_day else 45,
+            "reason": "历史状态、V2 评分和相似案例均可用" if target_row and v2_day else "关键数据缺失",
+        },
+        "statisticalCredibility": {
+            "level": _metric_level(stat_score, 1, 2),
+            "score": 35 + stat_score * 25,
+            "reason": f"相似样本 {similar_count}，评分档有效样本 {bucket_sample or 0}",
+        },
+        "modelConsistency": {
+            "level": _metric_level(consistency_score, 1, 2),
+            "score": 35 + consistency_score * 25,
+            "reason": "宏观风险与微观路径冲突" if conflict else "核心证据方向基本可解释",
+        },
+        "stateStability": {
+            "level": "medium" if conflict or macro_extreme_bearish else "high",
+            "score": 58 if conflict or macro_extreme_bearish else 76,
+            "reason": "当前处在高位风险与惯性冲突区，容易快速切换" if conflict or macro_extreme_bearish else "状态冲突不明显",
+        },
+    }
+
+    model_attitude = "strong" if abs(score) >= 8 or veto else ("medium" if abs(score) >= 3 else "weak")
+    evidence_conflict = "high" if conflict or (macro_extreme_bearish and (micro_positive >= 2 or micro_flat)) else ("medium" if macro_bearish or macro_bullish else "low")
+    thesis = {
+        "judgement": state_label_text,
+        "actionMeaning": posture["label"],
+        "summary": state_summary,
+        "modelAttitude": model_attitude,
+        "statisticalCredibility": credibility["statisticalCredibility"]["level"],
+        "evidenceConflict": evidence_conflict,
+        "riskLevel": "high" if macro_extreme_bearish else ("medium" if macro_bearish else "low"),
+    }
+
+    reasoning_chain = [
+        {
+            "step": "观测",
+            "title": "先看到了什么",
+            "summary": f"V2 score={score}，当前状态 {state_label(state_key_from_row(target_row))}，活跃信号 {len(signals)} 个。",
+            "tags": ["Walk-Forward", "状态识别"],
+        },
+        {
+            "step": "态势",
+            "title": "这些信号组合成什么状态",
+            "summary": state_summary,
+            "tags": ["态势归纳"],
+        },
+        {
+            "step": "投影",
+            "title": "历史同类路径怎么走",
+            "summary": f"相似案例 T+1 {_fmt_pct(t1_avg)}，T+3 {_fmt_pct(t3_avg)}，T+5 {_fmt_pct(t5_avg)}。",
+            "tags": ["相似案例", "回溯"],
+        },
+        {
+            "step": "决策",
+            "title": "今天该怎么理解",
+            "summary": posture["label"],
+            "tags": ["决策支持"],
+        },
+    ]
+
+    invalidation_rules = []
+    if macro_extreme_bearish and (micro_positive >= 2 or micro_flat):
+        invalidation_rules = [
+            "若微观相似路径 T+1/T+3 同时转负，状态从“惯性未坏”切到“风险确认”。",
+            "若 V2 负分收敛到 -3 以内且过热技术信号退潮，风险态势降级。",
+            "若评分档样本继续显示 T+3/T+5 大幅转弱，优先相信回撤风险。",
+        ]
+    elif macro_bearish:
+        invalidation_rules = [
+            "若 V2 score 回到中性区且相似路径转正，偏空判断降级。",
+            "若新增负向信号继续增加，风险判断升级。",
+        ]
+    else:
+        invalidation_rules = [
+            "若 V2 score 跌破卖出阈值，当前状态转入风险观察。",
+            "若相似案例短中期均值同时转负，降低进攻性。",
+        ]
+
+    base_probability = 0.50
+    risk_probability = 0.35 if macro_bearish else 0.25
+    reflexive_probability = max(0.10, round(1.0 - base_probability - risk_probability, 2))
+    scenario_projection = [
+        {
+            "id": "base",
+            "title": "基准情景",
+            "probability": base_probability,
+            "stance": "neutral",
+            "summary": "高位震荡，惯性未断，等待更明确的转弱或修复信号。",
+            "path": [
+                {"window": "T+1", "value": t1_avg},
+                {"window": "T+3", "value": t3_avg},
+                {"window": "T+5", "value": t5_avg},
+            ],
+            "triggers": ["相似路径维持震荡", "V2 负分不继续扩大", "行业个股状态仍强"],
+            "risk": "容易把高位震荡误读成低风险。",
+        },
+        {
+            "id": "risk",
+            "title": "风险情景",
+            "probability": risk_probability,
+            "stance": "risk",
+            "summary": "微观路径转弱后，过热风险释放，回撤确认。",
+            "path": [
+                {"window": "T+1", "value": bucket_t1.get("avgAbsReturn")},
+                {"window": "T+3", "value": bucket_t3.get("avgAbsReturn")},
+                {"window": "T+5", "value": (bucket.get("stateWeightedT5") or bucket.get("t5") or {}).get("avgAbsReturn")},
+            ],
+            "triggers": ["T+1/T+3 相似路径同时转负", "负向信号增加", "技术高位回落"],
+            "risk": "风险确认时再反应，可能已经错过第一段回撤。",
+        },
+        {
+            "id": "reflexive",
+            "title": "反身性情景",
+            "probability": reflexive_probability,
+            "stance": "positive",
+            "summary": "强势惯性继续上冲，随后再释放位置风险。",
+            "path": [
+                {"window": "T+1", "value": max([v for v in [t1_avg, 0.0] if v is not None])},
+                {"window": "T+3", "value": max([v for v in [t3_avg, 0.0] if v is not None])},
+                {"window": "T+5", "value": t5_avg},
+            ],
+            "triggers": ["行业个股继续强", "高位信号钝化", "相似案例仍不转弱"],
+            "risk": "逼空阶段容易追在情绪最热的位置。",
+        },
+    ]
+
+    post_check = {
+        "windows": calibration["recentWindows"],
+        "longTerm": calibration["longTerm"],
+        "stateGroup": {
+            "label": state_label_text,
+            "sampleSize": similar_count,
+            "avgT1": t1_avg,
+            "avgT3": t3_avg,
+            "avgT5": t5_avg,
+            "winRateT1": t1.get("winRate"),
+            "scoreBucketSampleSize": bucket.get("sampleSize"),
+            "note": "当前分组用于校验“体感准”是否只是近期印象；样本少时只作弱证据。",
+        },
+    }
+
+    return {
+        "date": date_str,
+        "stateLabel": state_label_text,
+        "stateSummary": state_summary,
+        "decisionPosture": posture,
+        "thesis": thesis,
+        "modelSource": {
+            "primary": "V2 Walk-Forward",
+            "secondary": ["相似案例", "同档历史统计", "技术温度"],
+            "note": "V2 暂作实时主线；其他证据用于解释、冲突识别和可信度降级。",
+        },
+        "reasoningChain": reasoning_chain,
+        "evidenceItems": evidence_items,
+        "evidenceMatrix": evidence_matrix,
+        "scenarioProjection": scenario_projection,
+        "credibility": credibility,
+        "calibration": calibration,
+        "postCheck": post_check,
+        "invalidationRules": invalidation_rules,
+        "diagnostics": {
+            "score": score,
+            "veto": veto,
+            "regime": regime,
+            "signals": signals,
+            "signalBreakdown": signal_breakdown,
+            "conflict": conflict,
+            "pathLabel": path_label,
+        },
+    }
+
+
 def build_decision(
     history_summary: list[dict[str, Any]],
     rolling_metrics: list[dict[str, Any]],
@@ -2060,6 +2729,7 @@ def main() -> None:
     close_by_date = load_anchor_close_prices(anchor_code) if anchor_code else {}
     transitions = build_transitions(data["history_summary"], data["state_transitions"])
     similar_cases, window_stats = compute_similar_cases(data["history_summary"], close_by_date)
+    score_bucket_stats = compute_score_bucket_stats(data["v2_scoring"], data["history_summary"])
 
     # 「今日看板」专属数据预计算
     print("正在构建 today 数据...")
@@ -2079,6 +2749,13 @@ def main() -> None:
         window_stats,
         data["operator_playbook"],
         excess_return_data=trends_payload.get("excessReturn"),
+    )
+    state_cockpit = build_state_cockpit(
+        data["history_summary"],
+        data["v2_scoring"],
+        score_bucket_stats,
+        similar_cases,
+        window_stats,
     )
 
     dashboard_view = {
@@ -2120,18 +2797,23 @@ def main() -> None:
         "aiInsight": build_ai_insight(data["operator_playbook"], data["personality_profile"], data["signal_lifts"], data["extreme_divergences"]),
         "predictionEvaluation": build_prediction_evaluation(data["prediction_backtest"]),
         "decision": today_decision,
+        "stateCockpit": state_cockpit,
         "dateIndex": build_date_index(
             data["history_summary"],
             close_by_date,
             data["rolling_metrics"],
             {entry["date"]: entry for entry in trends_payload.get("poolCorrelations", [])},
             quadrant_distributions,
+            data["v2_scoring"],
+            score_bucket_stats,
         ),
     }
 
     path_label = dashboard_view["summary"].get("pathLabel")
     if path_label not in PATH_LABELS:
         dashboard_view["summary"]["pathLabel"] = "unknown"
+
+    dashboard_view["scoreBucketStats"] = score_bucket_stats
 
     print(f"正在写入输出文件到 {OUTPUT_PATH}...")
     with open(OUTPUT_PATH, "w", encoding="utf-8") as handle:

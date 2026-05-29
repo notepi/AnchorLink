@@ -87,6 +87,7 @@ export default async function HistoryV2Page({ searchParams }: PageProps) {
           priceHistory={isRangeMode ? filteredExcessReturn : dashboard.trends.excessReturn}
           dailyMetrics={dailyMetrics}
           confidenceIntervals={dashboard.predictionEvaluation?.confidenceIntervals}
+          scoreBucketStats={dashboard.scoreBucketStats}
         />
         <TransitionHeatmap
           transitionData={dashboard.tableData.stateTransitions}

@@ -455,6 +455,186 @@ export interface SimilarCase {
   matchingSignals: string[];
 }
 
+/** 评分分档窗口统计 */
+export interface ScoreBucketWindowStat {
+  avgExcess: number | null;
+  excessPosRate: number | null;
+  avgAbsReturn: number | null;
+  absPosRate: number | null;
+}
+
+/** 评分分档统计 */
+export interface ScoreBucketStat {
+  date: string;
+  score: number;
+  bucketLabel: string;
+  bucketLo: number;
+  bucketHi: number;
+  sampleSize: number;
+  effectiveSampleSize?: number | null;
+  stateDivergence?: number | null;
+  dominantState?: string | null;
+  currentState?: string | null;
+  stateMismatch?: boolean | null;
+  t1: ScoreBucketWindowStat;
+  t3: ScoreBucketWindowStat;
+  t5: ScoreBucketWindowStat;
+  stateWeightedT1?: ScoreBucketWindowStat | null;
+  stateWeightedT3?: ScoreBucketWindowStat | null;
+  stateWeightedT5?: ScoreBucketWindowStat | null;
+}
+
+/** 态势驾驶舱证据指标 */
+export interface CockpitMetric {
+  label: string;
+  value: string | number | boolean | null;
+}
+
+/** 态势驾驶舱证据项 */
+export interface CockpitEvidenceItem {
+  id: string;
+  title: string;
+  stance: 'positive' | 'risk' | 'neutral';
+  strength: 'high' | 'medium' | 'low';
+  sourceTag: string;
+  detail: string;
+  metrics: CockpitMetric[];
+}
+
+/** 态势驾驶舱可信度项 */
+export interface CockpitCredibilityItem {
+  level: 'high' | 'medium' | 'low';
+  score: number;
+  reason: string;
+}
+
+/** 态势驾驶舱回溯窗口 */
+export interface CockpitCalibrationWindow {
+  windowDays: number;
+  sampleSize: number;
+  directionAccuracy: number | null;
+  softAccuracy?: number | null;
+  avgAbsReturn: number | null;
+  avgExcess: number | null;
+}
+
+export interface CockpitEvidenceStatement {
+  title: string;
+  summary: string;
+  sourceTag: string;
+  weight: 'high' | 'medium' | 'low';
+  stance: 'positive' | 'risk' | 'neutral';
+}
+
+export interface CockpitConflictItem {
+  title: string;
+  summary: string;
+  leftLabel: string;
+  leftValue: string;
+  rightLabel: string;
+  rightValue: string;
+  severity: 'high' | 'medium' | 'low';
+}
+
+export interface CockpitScenario {
+  id: 'base' | 'risk' | 'reflexive' | string;
+  title: string;
+  probability: number;
+  stance: 'positive' | 'risk' | 'neutral';
+  summary: string;
+  path: Array<{ window: string; value: number | null }>;
+  triggers: string[];
+  risk: string;
+}
+
+/** 态势驾驶舱 */
+export interface StateCockpit {
+  date: string;
+  stateLabel: string;
+  stateSummary: string;
+  decisionPosture: {
+    code: string;
+    label: string;
+    tone: 'positive' | 'warning' | 'danger' | 'neutral';
+  };
+  thesis?: {
+    judgement: string;
+    actionMeaning: string;
+    summary: string;
+    modelAttitude: 'strong' | 'medium' | 'weak';
+    statisticalCredibility: 'high' | 'medium' | 'low';
+    evidenceConflict: 'high' | 'medium' | 'low';
+    riskLevel: 'high' | 'medium' | 'low';
+  };
+  modelSource: {
+    primary: string;
+    secondary: string[];
+    note: string;
+  };
+  reasoningChain: Array<{
+    step: string;
+    title: string;
+    summary: string;
+    tags: string[];
+  }>;
+  evidenceItems: CockpitEvidenceItem[];
+  evidenceMatrix?: {
+    supporting: CockpitEvidenceStatement[];
+    opposing: CockpitEvidenceStatement[];
+    conflicts: CockpitConflictItem[];
+  };
+  scenarioProjection?: CockpitScenario[];
+  credibility: {
+    dataQuality: CockpitCredibilityItem;
+    statisticalCredibility: CockpitCredibilityItem;
+    modelConsistency: CockpitCredibilityItem;
+    stateStability: CockpitCredibilityItem;
+  };
+  calibration: {
+    recentWindows: CockpitCalibrationWindow[];
+    currentState: {
+      similarSampleSize: number;
+      scoreBucketSampleSize?: number | null;
+      scoreBucketEffectiveSampleSize?: number | null;
+      pathLabel: string;
+      scoreBucketLabel?: string | null;
+    };
+    longTerm: {
+      sampleSize: number;
+      directionAccuracy: number | null;
+      softAccuracy?: number | null;
+    };
+  };
+  postCheck?: {
+    windows: CockpitCalibrationWindow[];
+    longTerm: {
+      sampleSize: number;
+      directionAccuracy: number | null;
+      softAccuracy?: number | null;
+    };
+    stateGroup: {
+      label: string;
+      sampleSize: number;
+      avgT1: number | null;
+      avgT3: number | null;
+      avgT5: number | null;
+      winRateT1?: number | null;
+      scoreBucketSampleSize?: number | null;
+      note: string;
+    };
+  };
+  invalidationRules: string[];
+  diagnostics: {
+    score: number;
+    veto: boolean;
+    regime: string;
+    signals: string[];
+    signalBreakdown: Array<{ signal: string; rawWeight: number; adjustedWeight: number; category: string }>;
+    conflict: boolean;
+    pathLabel: string;
+  };
+}
+
 /** 单日映射索引条目 */
 export interface DateEntry {
   /** 当日映射 */
@@ -481,6 +661,8 @@ export interface DateEntry {
   transitionTop5?: TransitionTarget[];
   /** 今日看板：当日 4 池联动快照 */
   poolCorrSnapshot?: PoolCorrelations | null;
+  /** 态势驾驶舱：当日状态、决策链与可信度 */
+  stateCockpit?: StateCockpit;
 }
 
 /** 状态转移摘要 */
@@ -1262,6 +1444,9 @@ export interface DashboardView {
   /** 决策模块：今日判定 + 明日操作 */
   decision: DecisionView;
 
+  /** 态势驾驶舱：状态、决策链、可信度 */
+  stateCockpit?: StateCockpit;
+
   /** 预测准确度评估 */
   predictionEvaluation: {
     /** 分时段回测指标 */
@@ -1289,6 +1474,9 @@ export interface DashboardView {
     /** 置信区间 */
     confidenceIntervals: ConfidenceInterval[];
   };
+
+  /** V2 评分分档历史统计 */
+  scoreBucketStats: ScoreBucketStat[];
 
   /** 按日期索引的映射数据 */
   dateIndex: Record<string, DateEntry>;

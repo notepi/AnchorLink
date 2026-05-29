@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef, useEffect, useState } from 'react';
-import { createChart, ColorType, LineSeries, createSeriesMarkers } from 'lightweight-charts';
+import { useRef, useEffect, useState, Fragment } from 'react';
+import { createChart, ColorType, LineSeries, createSeriesMarkers, CrosshairMode } from 'lightweight-charts';
 import type { DashboardView } from '@/types/dashboard-view';
 import { formatPercent, formatWinRate, formatSimilarity, getValueColorClass, formatPathLabel, formatDate, formatNumber } from '@/lib/history-v2/formatters';
 
@@ -20,6 +20,7 @@ interface HistoryMappingProps {
   priceHistory: DashboardView['trends']['excessReturn'];
   dailyMetrics: DailyMetric[];
   confidenceIntervals?: DashboardView['predictionEvaluation']['confidenceIntervals'];
+  scoreBucketStats?: DashboardView['scoreBucketStats'];
 }
 
 interface HoverState {
@@ -39,7 +40,7 @@ function formatPrice(value: number | null | undefined): string {
   return value == null || Number.isNaN(value) ? '--' : value.toFixed(2);
 }
 
-export default function HistoryMapping({ currentMapping, pathLabel, similarCases, windowStats, priceHistory, dailyMetrics, confidenceIntervals }: HistoryMappingProps) {
+export default function HistoryMapping({ currentMapping, pathLabel, similarCases, windowStats, priceHistory, dailyMetrics, confidenceIntervals, scoreBucketStats }: HistoryMappingProps) {
   const mappingTags = currentMapping?.tags ?? currentMapping?.signalLabels ?? [];
   const casesToShow = similarCases?.slice?.(0, 5) ?? [];
   const allCases = similarCases ?? [];
@@ -62,7 +63,7 @@ export default function HistoryMapping({ currentMapping, pathLabel, similarCases
         horzLines: { color: '#252525' },
       },
       crosshair: {
-        mode: 0,
+        mode: CrosshairMode.Normal,
         vertLine: { color: '#555', width: 1, style: 2, labelBackgroundColor: '#333' },
         horzLine: { color: '#555', width: 1, style: 2, labelBackgroundColor: '#333' },
       },
@@ -123,7 +124,6 @@ export default function HistoryMapping({ currentMapping, pathLabel, similarCases
         time: timeStr,
         position: 'belowBar',
         color: '#3b82f6',
-        borderColor: '#3b82f6',
         shape: 'circle',
         size: radius > 6 ? 3 : radius > 4 ? 2 : 1,
       }]);
@@ -217,6 +217,129 @@ export default function HistoryMapping({ currentMapping, pathLabel, similarCases
           ))}
         </div>
       )}
+
+      {/* 同档历史统计 */}
+      {scoreBucketStats && scoreBucketStats.length > 0 && (() => {
+        const latest = scoreBucketStats[scoreBucketStats.length - 1];
+        const currentBucket = latest.bucketLabel;
+        const currentScore = latest.score;
+        const sampleSize = latest.sampleSize;
+        const t1 = latest.t1;
+        const t3 = latest.t3;
+        const t5 = latest.t5;
+        const sw1 = latest.stateWeightedT1;
+        const sw3 = latest.stateWeightedT3;
+        const sw5 = latest.stateWeightedT5;
+        const hasMismatch = latest.stateMismatch === true && (latest.stateDivergence ?? 0) > 0.5;
+        const hasWeightedData = sw1 != null;
+
+        const fmtPct = (v: number | null | undefined) => {
+          if (v == null || Number.isNaN(v)) return '--';
+          return `${v > 0 ? '+' : ''}${v.toFixed(2)}%`;
+        };
+        const fmtRate = (v: number | null | undefined) => {
+          if (v == null || Number.isNaN(v)) return '--';
+          return `${(v * 100).toFixed(0)}%`;
+        };
+        // A股配色：红涨绿跌
+        const cls = (v: number | null | undefined) => {
+          if (v == null) return '';
+          return v > 0 ? 'red' : v < 0 ? 'green' : '';
+        };
+
+        const STATE_ZH: Record<string, string> = {
+          'positive+positive': '行业强+个股强',
+          'positive+neutral': '行业强+个股中',
+          'positive+negative': '行业强+个股弱',
+          'neutral+positive': '行业中+个股强',
+          'neutral+neutral': '行业中+个股中',
+          'neutral+negative': '行业中+个股弱',
+          'negative+positive': '行业弱+个股强',
+          'negative+neutral': '行业弱+个股中',
+          'negative+negative': '行业弱+个股弱',
+        };
+
+        const directionReversed = hasMismatch && hasWeightedData
+          && t1?.avgExcess != null && sw1?.avgExcess != null
+          && Math.sign(sw1.avgExcess) !== Math.sign(t1.avgExcess);
+
+        return (
+          <div style={{ marginTop: '12px' }}>
+            <h3 style={{ fontSize: '13px', marginBottom: '8px', color: 'var(--text-secondary)' }}>
+              同档历史统计
+              <span style={{ marginLeft: '8px', fontSize: '11px', color: 'var(--muted)' }}>
+                当前评分 {currentScore > 0 ? '+' : ''}{currentScore}（{currentBucket}档，n={sampleSize}）
+              </span>
+            </h3>
+            <table className="mini-table" aria-label="同档历史统计">
+              <thead>
+                <tr><th>窗口</th><th>超额均值</th><th>超额胜率</th><th>个股均值</th><th>个股胜率</th></tr>
+              </thead>
+              <tbody>
+                {[
+                  { label: 'T+1', stat: t1, weightedStat: sw1 },
+                  { label: 'T+3', stat: t3, weightedStat: sw3 },
+                  { label: 'T+5', stat: t5, weightedStat: sw5 },
+                ].map(({ label, stat, weightedStat }) => (
+                  <Fragment key={label}>
+                    <tr>
+                      <td>{label}</td>
+                      <td className={cls(stat?.avgExcess)}>{fmtPct(stat?.avgExcess)}</td>
+                      <td>{fmtRate(stat?.excessPosRate)}</td>
+                      <td className={cls(stat?.avgAbsReturn)}>{fmtPct(stat?.avgAbsReturn)}</td>
+                      <td>{fmtRate(stat?.absPosRate)}</td>
+                    </tr>
+                    {hasMismatch && weightedStat && (
+                      <tr style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
+                        <td style={{ paddingLeft: '16px' }}>└ 加权</td>
+                        <td className={cls(weightedStat?.avgExcess)}>{fmtPct(weightedStat?.avgExcess)}</td>
+                        <td>{fmtRate(weightedStat?.excessPosRate)}</td>
+                        <td className={cls(weightedStat?.avgAbsReturn)}>{fmtPct(weightedStat?.avgAbsReturn)}</td>
+                        <td>{fmtRate(weightedStat?.absPosRate)}</td>
+                      </tr>
+                    )}
+                  </Fragment>
+                ))}
+              </tbody>
+            </table>
+            <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>
+              超额 = 个股 vs 行业链，个股 = 绝对涨跌；均值 = 平均幅度，胜率 = 涨的比例。同档所有历史日统计，Walk-Forward 仅用当日之前数据
+              {hasMismatch && hasWeightedData && '；加权行按状态相似度调整，有效样本 ' + (latest.effectiveSampleSize?.toFixed(1) ?? '--')}
+            </div>
+            {hasMismatch && (
+              <div style={{
+                margin: '8px 0',
+                padding: '8px 12px',
+                borderRadius: '6px',
+                borderLeft: '3px solid var(--amber)',
+                background: 'var(--amber-soft)',
+                fontSize: '12px',
+                lineHeight: '1.6',
+              }}>
+                <strong>状态偏离提醒</strong>：当前状态为
+                <span style={{ color: 'var(--text)' }}>
+                  {STATE_ZH[latest.currentState ?? ''] ?? latest.currentState}
+                </span>
+                ，同档 {sampleSize} 个历史日中
+                {STATE_ZH[latest.dominantState ?? ''] ?? latest.dominantState}
+                占多数，分档统计已被状态相似度加权调整。偏离度
+                {((latest.stateDivergence ?? 0) * 100).toFixed(0)}%，有效样本
+                {latest.effectiveSampleSize?.toFixed(1)}。
+                {directionReversed && (
+                  <span style={{ color: 'var(--amber)' }}>
+                    {' '}加权后方向反转：原始 T+1 {fmtPct(t1?.avgExcess)} → 加权 {fmtPct(sw1?.avgExcess)}
+                  </span>
+                )}
+              </div>
+            )}
+            {directionReversed && (
+              <div style={{ fontSize: '11px', color: 'var(--amber)', marginTop: '6px' }}>
+                注意：状态加权后 T+1 方向与原始分档统计相反，建议以下方「最相似历史案例」为准
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {(() => {
         const pathInfo = formatPathLabel(pathLabel);

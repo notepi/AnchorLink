@@ -179,24 +179,29 @@ export function formatRank(rank: number | null | undefined, total: number | null
 }
 
 // ============================================================
-// 报告读取（reports/ 目录）
+// 报告读取（data/output/ 目录）
 // ============================================================
 
 /**
- * 获取所有报告日期
+ * 获取所有报告日期（有 v2_report.md 的日期）
  */
 export async function getReportDates(): Promise<string[]> {
   try {
-    const reportsDir = join(DATA_DIR, '..', 'reports');
-    const entries = await readdir(reportsDir, { withFileTypes: true });
+    const entries = await readdir(OUTPUT_DIR, { withFileTypes: true });
 
-    const dates = entries
-      .filter(entry => entry.isDirectory())
-      .map(entry => entry.name)
-      .filter(name => /^\d{8}$/.test(name))
-      .sort((a, b) => b.localeCompare(a));
+    const dates: string[] = [];
+    for (const entry of entries) {
+      if (entry.isDirectory() && /^\d{8}$/.test(entry.name)) {
+        try {
+          const subFiles = await readdir(join(OUTPUT_DIR, entry.name));
+          if (subFiles.some(f => f === 'v2_report.md' || f === 'industry_report.md')) {
+            dates.push(entry.name);
+          }
+        } catch { /* skip unreadable dirs */ }
+      }
+    }
 
-    return dates;
+    return dates.sort((a, b) => b.localeCompare(a));
   } catch (error) {
     console.error('Failed to read report dates:', error);
     return [];
@@ -216,19 +221,26 @@ export async function getReportList(): Promise<Array<{ date: string; path: strin
 
 /**
  * 获取单篇报告内容（Markdown）
+ * 优先读 v2_report.md，不存在则 fallback 到 industry_report.md
  */
 export async function getReport(date: string): Promise<string | null> {
   try {
-    const reportDir = join(DATA_DIR, '..', 'reports', date);
-    const files = await readdir(reportDir);
+    const reportDir = join(OUTPUT_DIR, date);
 
-    // 查找 Markdown 文件
+    // 优先读 V2 评分报告
+    const v2Path = join(reportDir, 'v2_report.md');
+    try {
+      const content = await readFile(v2Path, 'utf-8');
+      return content;
+    } catch { /* v2_report.md 不存在，继续 fallback */ }
+
+    // Fallback: 原有行业报告
+    const files = await readdir(reportDir);
     const mdFile = files.find(f => f.endsWith('.md'));
     if (!mdFile) return null;
 
     const filePath = join(reportDir, mdFile);
-    const content = await readFile(filePath, 'utf-8');
-    return content;
+    return await readFile(filePath, 'utf-8');
   } catch (error) {
     console.error(`Failed to read report for ${date}:`, error);
     return null;
