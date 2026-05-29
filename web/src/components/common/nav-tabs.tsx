@@ -10,6 +10,7 @@ const navItems = [
   { label: 'Layers', href: '/layers' },
   { label: '量化实验室', href: '/history' },
   { label: 'V2 评分', href: '/v2' },
+  { label: '态势驾驶舱', href: '/cockpit' },
   { label: '今日看板', href: '/today' },
   { label: 'History V2', href: '/history-v2' },
   { label: 'Pools', href: '/pools' },
