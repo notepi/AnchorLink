@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>V2 分档校准分析</title>
+<style>
+body { font-family: -apple-system, sans-serif; background: #1a1a2e; color: #e0e0e0; max-width: 1100px; margin: 0 auto; padding: 20px; }
+h1 { color: #f59e0b; font-size: 20px; }
+h2 { color: #3b82f6; font-size: 16px; margin-top: 30px; border-bottom: 1px solid #333; padding-bottom: 6px; }
+table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 13px; }
+th { background: #16213e; color: #f59e0b; padding: 8px 12px; text-align: left; }
+td { padding: 6px 12px; border-bottom: 1px solid #222; }
+tr:hover { background: #1f2937; }
+.pos { color: #ef4444; } .neg { color: #22c55e; } .muted { color: #888; }
+.bad { background: rgba(239,68,68,0.15); } .good { background: rgba(34,197,94,0.15); }
+.card { background: #16213e; border-radius: 8px; padding: 16px; margin: 12px 0; }
+.metric { display: inline-block; margin: 8px 20px; }
+.metric .value { font-size: 24px; font-weight: bold; }
+.metric .label { font-size: 12px; color: #888; }
+canvas { margin: 12px 0; }
+.note { font-size: 12px; color: #888; margin: 8px 0; line-height: 1.6; }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+</head>
+<body>
+<h1>V2 分档校准分析 — 铂力特 (688333.SH)</h1>
+<p class="note">样本: 102 个交易日（去极值 &plusmn;10%） | 数据来源: scoreBucketStats 分档统计 + v2_scoring 实际收益</p>
+
+<h2>1. 核心结论</h2>
+<div class="card">
+<div class="metric"><div class="value" style="color:#ef4444">0.007</div><div class="label">分档超额 R&sup2;</div></div>
+<div class="metric"><div class="value" style="color:#ef4444">0.092</div><div class="label">Spearman IC</div></div>
+<div class="metric"><div class="value" style="color:#ef4444">51%</div><div class="label">方向准确率</div></div>
+<div class="metric"><div class="value" style="color:#ef4444">&beta;=0.14</div><div class="label">幅度校准(1.0=完美)</div></div>
+</div>
+<p class="note">
+<b>&beta;=0.14</b>: 分档预测每1%超额，实际只对应0.14%，预测幅度严重偏大。<br>
+<b>R&sup2;=0.007</b>: 分档预测对实际超额的解释力不到1%。<br>
+<b>方向准确率51%</b>: 和抛硬币差不多。
+</p>
+
+<h2>2. 回归校准</h2>
+<table>
+<tr><th>预测源</th><th>N</th><th>&beta;</th><th>&alpha;</th><th>R&sup2;</th><th>IC</th><th>IC p</th><th>方向</th><th>RMSE</th></tr>
+<tr class=""><td>分档→超额</td><td>102</td><td>0.14</td><td>-0.12%</td><td>0.007</td><td>0.092</td><td>0.358</td><td>51%</td><td>2.72%</td></tr>
+<tr class="good"><td>分档→个股</td><td>102</td><td>0.38</td><td>-0.31%</td><td>0.071</td><td>0.234</td><td>0.018</td><td>56%</td><td>4.01%</td></tr>
+<tr class=""><td>相似案例T+1</td><td>102</td><td>0.04</td><td>+0.02%</td><td>0.000</td><td>0.004</td><td>0.972</td><td>51%</td><td>3.82%</td></tr>
+<tr class=""><td>相似案例T+3</td><td>100</td><td>0.02</td><td>+0.60%</td><td>0.000</td><td>0.026</td><td>0.798</td><td>48%</td><td>7.67%</td></tr>
+<tr class=""><td>相似案例T+5</td><td>99</td><td>0.40</td><td>+0.29%</td><td>0.011</td><td>0.018</td><td>0.857</td><td>42%</td><td>8.67%</td></tr>
+<tr class="good"><td>评分→超额</td><td>102</td><td>0.12</td><td>-0.11%</td><td>0.051</td><td>0.217</td><td>0.029</td><td>54%</td><td>4.58%</td></tr>
+<tr class=""><td>评分→个股</td><td>102</td><td>0.10</td><td>+0.03%</td><td>0.014</td><td>0.117</td><td>0.240</td><td>58%</td><td>5.44%</td></tr>
+</table>
+
+<h2>3. 胜率校准 — 预测超额正率 vs 实际正率</h2>
+<p class="note">完美校准: 预测正率X%，实际也约X%。反向 = 预测高正率的档，实际正率反而低。</p>
+<table>
+<tr><th>预测超额正率档</th><th>N</th><th>预测正率</th><th>实际正率</th><th>偏差</th></tr>
+<tr class="bad"><td>30%档</td><td>21</td><td>30%</td><td>62%</td><td class="pos">+32%</td></tr>
+<tr class="bad"><td>46%档</td><td>19</td><td>46%</td><td>58%</td><td class="pos">+11%</td></tr>
+<tr class="good"><td>52%档</td><td>21</td><td>52%</td><td>52%</td><td class="neg">+0%</td></tr>
+<tr class="bad"><td>60%档</td><td>18</td><td>60%</td><td>22%</td><td class="neg">-38%</td></tr>
+<tr class="bad"><td>77%档</td><td>23</td><td>77%</td><td>43%</td><td class="neg">-34%</td></tr>
+</table>
+<canvas id="wrChart" height="200"></canvas>
+
+<h2>4. 量级校准 — 预测超额幅度 vs 实际幅度</h2>
+<table>
+<tr><th>量级带</th><th>N</th><th>预测超额</th><th>实际超额</th><th>校准度</th><th>实际正率</th><th>方向一致</th></tr>
+<tr class="bad"><td>强烈看空(<-2%)</td><td>4</td><td class="neg">-3.60%</td><td class="neg">-1.18%</td><td>0.33x</td><td>25%</td><td>75%</td></tr>
+<tr class="bad"><td>温和看空(-2%~0.5%)</td><td>31</td><td class="neg">-0.91%</td><td class="neg">-0.04%</td><td>0.05x</td><td>52%</td><td>48%</td></tr>
+<tr class="bad"><td>中性(-0.5%~+0.5%)</td><td>35</td><td class="pos">+0.02%</td><td class="neg">-0.32%</td><td>方向错</td><td>46%</td><td>51%</td></tr>
+<tr class="bad"><td>温和看多(+0.5%~+2%)</td><td>22</td><td class="pos">+1.10%</td><td class="pos">+0.69%</td><td>0.63x</td><td>50%</td><td>50%</td></tr>
+<tr class="bad"><td>强烈看多(>+2%)</td><td>10</td><td class="pos">+2.96%</td><td class="neg">-0.83%</td><td>方向错</td><td>50%</td><td>50%</td></tr>
+</table>
+
+<h2>5. 量级校准 — 预测个股幅度 vs 实际个股幅度</h2>
+<table>
+<tr><th>量级带</th><th>N</th><th>预测个股</th><th>实际个股</th><th>校准度</th><th>实际正率</th><th>方向一致</th></tr>
+<tr class="bad"><td>预测大跌(<-2%)</td><td>16</td><td class="neg">-2.67%</td><td class="neg">-1.68%</td><td>0.63x</td><td>25%</td><td>75%</td></tr>
+<tr class="bad"><td>预测中跌(-2%~-0.5%)</td><td>19</td><td class="neg">-1.23%</td><td class="pos">+0.67%</td><td>方向错</td><td>58%</td><td>42%</td></tr>
+<tr class="bad"><td>预测微跌(-0.5%~0%)</td><td>5</td><td class="neg">-0.24%</td><td class="neg">-4.87%</td><td>20.04x</td><td>0%</td><td>100%</td></tr>
+<tr class="bad"><td>预测微红(0%~+1%)</td><td>12</td><td class="pos">+0.39%</td><td class="pos">+0.00%</td><td>0.0x</td><td>42%</td><td>42%</td></tr>
+<tr class="bad"><td>预测小红(+1%~+3%)</td><td>32</td><td class="pos">+2.12%</td><td class="pos">+0.52%</td><td>0.25x</td><td>53%</td><td>53%</td></tr>
+<tr class="bad"><td>预测大红(>+3%)</td><td>18</td><td class="pos">+4.97%</td><td class="pos">+1.42%</td><td>0.29x</td><td>56%</td><td>56%</td></tr>
+</table>
+
+<h2>6. 按评分分组 — 实际收益</h2>
+<table>
+<tr><th>评分</th><th>N</th><th>实际超额</th><th>实际个股</th><th>超额正率</th><th>个股正率</th></tr>
+<tr><td>≤-8</td><td>5</td><td class="neg">-0.39%</td><td class="pos">+0.17%</td><td>40%</td><td>60%</td></tr>
+<tr><td>-7~-5</td><td>13</td><td class="neg">-1.17%</td><td class="neg">-0.26%</td><td>46%</td><td>46%</td></tr>
+<tr><td>-4~-2</td><td>13</td><td class="neg">-0.73%</td><td class="neg">-1.18%</td><td>38%</td><td>38%</td></tr>
+<tr><td>-1~0</td><td>19</td><td class="neg">-0.33%</td><td class="neg">-1.56%</td><td>47%</td><td>26%</td></tr>
+<tr><td>+1~+2</td><td>19</td><td class="pos">+0.06%</td><td class="pos">+0.75%</td><td>47%</td><td>53%</td></tr>
+<tr><td>+3~+5</td><td>25</td><td class="pos">+0.76%</td><td class="pos">+1.82%</td><td>56%</td><td>60%</td></tr>
+<tr><td>≥+6</td><td>8</td><td class="pos">+0.29%</td><td class="neg">-1.04%</td><td>50%</td><td>38%</td></tr>
+</table>
+
+<h2>7. 散点图 — 预测超额 vs 实际超额</h2>
+<canvas id="scatterChart" height="350"></canvas>
+
+<h2>8. 逐日校准明细</h2>
+<div style="max-height:500px;overflow:auto">
+<table>
+<tr><th>日期</th><th>评分</th><th>预测超额</th><th>实际超额</th><th>误差</th><th>预测个股</th><th>实际个股</th><th>误差</th><th>超额&check;</th><th>个股&check;</th></tr>
+<tr><td>20251127</td><td>-2</td><td>-0.51%</td><td class="pos">+0.00%</td><td>+0.51%</td><td>-2.06%</td><td class="pos">+1.95%</td><td>+4.01%</td><td>✗</td><td>✗</td></tr>
+<tr><td>20251201</td><td>-1</td><td>-0.38%</td><td class="neg">-2.23%</td><td>-1.84%</td><td>-1.06%</td><td class="pos">+0.75%</td><td>+1.81%</td><td>✓</td><td>✗</td></tr>
+<tr><td>20251202</td><td>0</td><td>-0.55%</td><td class="neg">-1.66%</td><td>-1.11%</td><td>-1.22%</td><td class="neg">-3.99%</td><td>-2.78%</td><td>✓</td><td>✓</td></tr>
+<tr><td>20251210</td><td>-3</td><td>+0.17%</td><td class="pos">+1.74%</td><td>+1.57%</td><td>+2.87%</td><td class="pos">+3.12%</td><td>+0.25%</td><td>✓</td><td>✓</td></tr>
+<tr><td>20251218</td><td>-9</td><td>-3.76%</td><td class="neg">-3.84%</td><td>-0.07%</td><td>-0.51%</td><td class="neg">-0.67%</td><td>-0.16%</td><td>✓</td><td>✓</td></tr>
+<tr><td>20251219</td><td>-4</td><td>+0.56%</td><td class="neg">-2.15%</td><td>-2.71%</td><td>+2.93%</td><td class="neg">-3.34%</td><td>-6.27%</td><td>✗</td><td>✗</td></tr>
+<tr><td>20251222</td><td>0</td><td>-0.83%</td><td class="pos">+0.95%</td><td>+1.78%</td><td>-1.91%</td><td class="neg">-3.17%</td><td>-1.26%</td><td>✗</td><td>✓</td></tr>
+<tr><td>20251223</td><td>-3</td><td>+0.19%</td><td class="neg">-2.02%</td><td>-2.21%</td><td>+1.90%</td><td class="pos">+3.51%</td><td>+1.61%</td><td>✗</td><td>✓</td></tr>
+<tr><td>20251224</td><td>3</td><td>+2.84%</td><td class="neg">-1.22%</td><td>-4.06%</td><td>+2.28%</td><td class="pos">+8.77%</td><td>+6.49%</td><td>✗</td><td>✓</td></tr>
+<tr><td>20251225</td><td>2</td><td>+1.67%</td><td class="pos">+1.79%</td><td>+0.12%</td><td>+4.14%</td><td class="pos">+4.78%</td><td>+0.64%</td><td>✓</td><td>✓</td></tr>
+<tr><td>20251226</td><td>-11</td><td>-3.51%</td><td class="neg">-2.47%</td><td>+1.05%</td><td>-0.53%</td><td class="pos">+2.39%</td><td>+2.92%</td><td>✓</td><td>✗</td></tr>
+<tr><td>20251229</td><td>-11</td><td>-4.14%</td><td class="neg">-2.48%</td><td>+1.67%</td><td>-0.44%</td><td class="neg">-6.22%</td><td>-5.77%</td><td>✓</td><td>✓</td></tr>
+<tr><td>20251230</td><td>4</td><td>+3.07%</td><td class="pos">+4.78%</td><td>+1.71%</td><td>+5.26%</td><td class="pos">+9.32%</td><td>+4.06%</td><td>✓</td><td>✓</td></tr>
+<tr><td>20251231</td><td>-5</td><td>-0.21%</td><td class="neg">-9.14%</td><td>-8.93%</td><td>+1.52%</td><td class="neg">-6.24%</td><td>-7.76%</td><td>✓</td><td>✗</td></tr>
+<tr><td>20260105</td><td>2</td><td>+2.09%</td><td class="neg">-6.65%</td><td>-8.73%</td><td>+4.93%</td><td class="pos">+1.99%</td><td>-2.94%</td><td>✗</td><td>✓</td></tr>
+<tr><td>20260106</td><td>1</td><td>-0.61%</td><td class="neg">-4.23%</td><td>-3.62%</td><td>-2.79%</td><td class="neg">-5.05%</td><td>-2.26%</td><td>✓</td><td>✓</td></tr>
+<tr><td>20260107</td><td>5</td><td>+0.73%</td><td class="pos">+1.87%</td><td>+1.15%</td><td>-0.56%</td><td class="pos">+9.77%</td><td>+10.33%</td><td>✓</td><td>✗</td></tr>
+<tr><td>20260108</td><td>-1</td><td>-0.37%</td><td class="pos">+1.74%</td><td>+2.11%</td><td>-0.68%</td><td class="pos">+5.17%</td><td>+5.85%</td><td>✗</td><td>✗</td></tr>
+<tr><td>20260113</td><td>-1</td><td>-0.34%</td><td class="pos">+1.65%</td><td>+1.99%</td><td>+0.28%</td><td class="neg">-1.40%</td><td>-1.68%</td><td>✗</td><td>✗</td></tr>
+<tr><td>20260114</td><td>-2</td><td>+0.15%</td><td class="neg">-0.08%</td><td>-0.23%</td><td>-0.13%</td><td class="neg">-6.31%</td><td>-6.18%</td><td>✗</td><td>✓</td></tr>
+<tr><td>20260115</td><td>-3</td><td>-1.05%</td><td class="pos">+2.69%</td><td>+3.73%</td><td>+1.74%</td><td class="pos">+1.37%</td><td>-0.37%</td><td>✗</td><td>✓</td></tr>
+<tr><td>20260116</td><td>-7</td><td>+4.28%</td><td class="pos">+0.61%</td><td>-3.67%</td><td>+8.26%</td><td class="pos">+3.57%</td><td>-4.68%</td><td>✓</td><td>✓</td></tr>
+<tr><td>20260119</td><td>-1</td><td>+0.25%</td><td class="neg">-0.33%</td><td>-0.58%</td><td>-0.26%</td><td class="neg">-6.67%</td><td>-6.41%</td><td>✗</td><td>✓</td></tr>
+<tr><td>20260120</td><td>2</td><td>+2.91%</td><td class="pos">+0.61%</td><td>-2.30%</td><td>+6.00%</td><td class="neg">-1.16%</td><td>-7.16%</td><td>✓</td><td>✗</td></tr>
+<tr><td>20260121</td><td>3</td><td>+3.48%</td><td class="neg">-0.98%</td><td>-4.46%</td><td>+5.52%</td><td class="pos">+3.16%</td><td>-2.36%</td><td>✗</td><td>✓</td></tr>
+<tr><td>20260122</td><td>2</td><td>+0.59%</td><td class="neg">-0.87%</td><td>-1.45%</td><td>+4.01%</td><td class="pos">+8.98%</td><td>+4.97%</td><td>✗</td><td>✓</td></tr>
+<tr><td>20260123</td><td>0</td><td>-1.61%</td><td class="pos">+2.78%</td><td>+4.39%</td><td>-3.41%</td><td class="neg">-6.40%</td><td>-2.99%</td><td>✗</td><td>✓</td></tr>
+<tr><td>20260126</td><td>-1</td><td>+0.06%</td><td class="pos">+0.64%</td><td>+0.59%</td><td>-1.97%</td><td class="pos">+1.28%</td><td>+3.25%</td><td>✓</td><td>✗</td></tr>
+<tr><td>20260127</td><td>0</td><td>-0.48%</td><td class="neg">-3.27%</td><td>-2.79%</td><td>-2.77%</td><td class="neg">-5.22%</td><td>-2.46%</td><td>✓</td><td>✓</td></tr>
+<tr><td>20260128</td><td>3</td><td>+1.76%</td><td class="pos">+3.23%</td><td>+1.47%</td><td>+4.77%</td><td class="pos">+0.69%</td><td>-4.08%</td><td>✓</td><td>✓</td></tr>
+<tr><td>20260129</td><td>-1</td><td>+0.14%</td><td class="pos">+0.19%</td><td>+0.04%</td><td>-1.48%</td><td class="neg">-1.46%</td><td>+0.02%</td><td>✓</td><td>✓</td></tr>
+<tr><td>20260130</td><td>0</td><td>-0.92%</td><td class="neg">-2.52%</td><td>-1.60%</td><td>-3.02%</td><td class="neg">-2.94%</td><td>+0.08%</td><td>✓</td><td>✓</td></tr>
+<tr><td>20260202</td><td>5</td><td>+0.13%</td><td class="neg">-2.83%</td><td>-2.96%</td><td>+1.02%</td><td class="pos">+2.06%</td><td>+1.04%</td><td>✗</td><td>✓</td></tr>
+<tr><td>20260203</td><td>3</td><td>+0.52%</td><td class="neg">-2.36%</td><td>-2.88%</td><td>+4.47%</td><td class="neg">-3.76%</td><td>-8.23%</td><td>✗</td><td>✗</td></tr>
+<tr><td>20260204</td><td>7</td><td>+0.41%</td><td class="neg">-0.52%</td><td>-0.93%</td><td>+2.46%</td><td class="neg">-1.48%</td><td>-3.94%</td><td>✗</td><td>✗</td></tr>
+<tr><td>20260205</td><td>7</td><td>+0.23%</td><td class="neg">-0.88%</td><td>-1.10%</td><td>+1.68%</td><td class="neg">-2.35%</td><td>-4.03%</td><td>✗</td><td>✗</td></tr>
+<tr><td>20260206</td><td>5</td><td>+0.13%</td><td class="pos">+1.76%</td><td>+1.63%</td><td>+1.10%</td><td class="pos">+3.72%</td><td>+2.62%</td><td>✓</td><td>✓</td></tr>
+<tr><td>20260209</td><td>3</td><td>+0.76%</td><td class="pos">+1.74%</td><td>+0.98%</td><td>+3.85%</td><td class="neg">-0.23%</td><td>-4.07%</td><td>✓</td><td>✗</td></tr>
+<tr><td>20260210</td><td>0</td><td>-0.90%</td><td class="neg">-0.84%</td><td>+0.06%</td><td>-2.61%</td><td class="neg">-2.13%</td><td>+0.48%</td><td>✓</td><td>✓</td></tr>
+<tr><td>20260211</td><td>7</td><td>+0.40%</td><td class="pos">+1.67%</td><td>+1.27%</td><td>+1.54%</td><td class="pos">+0.52%</td><td>-1.02%</td><td>✓</td><td>✓</td></tr>
+<tr><td>20260212</td><td>1</td><td>-0.89%</td><td class="neg">-0.49%</td><td>+0.40%</td><td>-2.53%</td><td class="neg">-1.59%</td><td>+0.94%</td><td>✓</td><td>✓</td></tr>
+<tr><td>20260213</td><td>0</td><td>-1.19%</td><td class="neg">-0.51%</td><td>+0.68%</td><td>-2.72%</td><td class="neg">-0.39%</td><td>+2.33%</td><td>✓</td><td>✓</td></tr>
+<tr><td>20260224</td><td>1</td><td>-1.07%</td><td class="pos">+1.58%</td><td>+2.66%</td><td>-3.24%</td><td class="pos">+4.35%</td><td>+7.59%</td><td>✗</td><td>✗</td></tr>
+<tr><td>20260225</td><td>2</td><td>+0.91%</td><td class="pos">+3.98%</td><td>+3.07%</td><td>+3.21%</td><td class="pos">+5.64%</td><td>+2.42%</td><td>✓</td><td>✓</td></tr>
+<tr><td>20260226</td><td>-7</td><td>+3.95%</td><td class="pos">+0.11%</td><td>-3.84%</td><td>+7.79%</td><td class="pos">+1.39%</td><td>-6.40%</td><td>✓</td><td>✓</td></tr>
+<tr><td>20260227</td><td>-7</td><td>+2.76%</td><td class="neg">-5.80%</td><td>-8.56%</td><td>+5.78%</td><td class="neg">-0.78%</td><td>-6.56%</td><td>✗</td><td>✗</td></tr>
+<tr><td>20260302</td><td>1</td><td>-0.71%</td><td class="pos">+0.14%</td><td>+0.85%</td><td>-3.10%</td><td class="neg">-8.50%</td><td>-5.40%</td><td>✗</td><td>✓</td></tr>
+<tr><td>20260303</td><td>-1</td><td>+0.05%</td><td class="neg">-3.80%</td><td>-3.85%</td><td>-1.34%</td><td class="neg">-1.23%</td><td>+0.12%</td><td>✗</td><td>✓</td></tr>
+<tr><td>20260304</td><td>7</td><td>-0.57%</td><td class="pos">+0.07%</td><td>+0.64%</td><td>+0.27%</td><td class="pos">+0.92%</td><td>+0.65%</td><td>✗</td><td>✓</td></tr>
+<tr><td>20260305</td><td>4</td><td>+0.90%</td><td class="neg">-1.30%</td><td>-2.21%</td><td>+2.99%</td><td class="neg">-0.99%</td><td>-3.97%</td><td>✗</td><td>✗</td></tr>
+<tr><td>20260306</td><td>3</td><td>+0.90%</td><td class="neg">-2.07%</td><td>-2.97%</td><td>+2.92%</td><td class="neg">-3.74%</td><td>-6.66%</td><td>✗</td><td>✗</td></tr>
+<tr><td>20260310</td><td>1</td><td>-0.90%</td><td class="neg">-0.23%</td><td>+0.67%</td><td>-3.04%</td><td class="neg">-2.69%</td><td>+0.35%</td><td>✓</td><td>✓</td></tr>
+<tr><td>20260311</td><td>7</td><td>+0.47%</td><td class="pos">+1.53%</td><td>+1.06%</td><td>+1.32%</td><td class="neg">-1.13%</td><td>-2.44%</td><td>✓</td><td>✗</td></tr>
+<tr><td>20260312</td><td>4</td><td>+2.19%</td><td class="pos">+2.22%</td><td>+0.02%</td><td>+4.06%</td><td class="neg">-3.31%</td><td>-7.37%</td><td>✓</td><td>✗</td></tr>
+<tr><td>20260313</td><td>-3</td><td>-0.78%</td><td class="pos">+0.34%</td><td>+1.12%</td><td>+1.31%</td><td class="neg">-0.38%</td><td>-1.69%</td><td>✗</td><td>✗</td></tr>
+<tr><td>20260316</td><td>-2</td><td>-0.31%</td><td class="neg">-0.73%</td><td>-0.42%</td><td>-1.42%</td><td class="neg">-4.06%</td><td>-2.64%</td><td>✓</td><td>✓</td></tr>
+<tr><td>20260317</td><td>3</td><td>+1.30%</td><td class="neg">-1.59%</td><td>-2.88%</td><td>+2.70%</td><td class="pos">+3.40%</td><td>+0.69%</td><td>✗</td><td>✓</td></tr>
+<tr><td>20260318</td><td>5</td><td>-0.37%</td><td class="pos">+1.00%</td><td>+1.37%</td><td>+0.30%</td><td class="neg">-0.86%</td><td>-1.16%</td><td>✗</td><td>✗</td></tr>
+<tr><td>20260319</td><td>3</td><td>+1.99%</td><td class="pos">+0.15%</td><td>-1.85%</td><td>+3.23%</td><td class="neg">-3.01%</td><td>-6.25%</td><td>✓</td><td>✗</td></tr>
+<tr><td>20260320</td><td>-5</td><td>-0.40%</td><td class="neg">-2.45%</td><td>-2.06%</td><td>+1.45%</td><td class="neg">-6.48%</td><td>-7.93%</td><td>✓</td><td>✗</td></tr>
+<tr><td>20260323</td><td>-1</td><td>-0.56%</td><td class="pos">+0.65%</td><td>+1.21%</td><td>-1.56%</td><td class="pos">+1.76%</td><td>+3.32%</td><td>✗</td><td>✗</td></tr>
+<tr><td>20260324</td><td>3</td><td>+0.88%</td><td class="pos">+1.27%</td><td>+0.39%</td><td>+1.86%</td><td class="pos">+2.62%</td><td>+0.76%</td><td>✓</td><td>✓</td></tr>
+<tr><td>20260325</td><td>2</td><td>+0.92%</td><td class="neg">-0.94%</td><td>-1.87%</td><td>+1.94%</td><td class="neg">-1.09%</td><td>-3.03%</td><td>✗</td><td>✗</td></tr>
+<tr><td>20260326</td><td>2</td><td>+0.40%</td><td class="pos">+4.19%</td><td>+3.78%</td><td>+1.93%</td><td class="pos">+2.89%</td><td>+0.95%</td><td>✓</td><td>✓</td></tr>
+<tr><td>20260327</td><td>-5</td><td>-0.79%</td><td class="neg">-2.04%</td><td>-1.25%</td><td>+0.26%</td><td class="pos">+2.13%</td><td>+1.87%</td><td>✓</td><td>✓</td></tr>
+<tr><td>20260330</td><td>2</td><td>+0.39%</td><td class="neg">-0.34%</td><td>-0.73%</td><td>+2.58%</td><td class="neg">-0.03%</td><td>-2.61%</td><td>✗</td><td>✗</td></tr>
+<tr><td>20260331</td><td>1</td><td>-0.74%</td><td class="pos">+1.72%</td><td>+2.46%</td><td>-2.26%</td><td class="neg">-0.10%</td><td>+2.16%</td><td>✗</td><td>✓</td></tr>
+<tr><td>20260401</td><td>-2</td><td>-0.18%</td><td class="pos">+0.96%</td><td>+1.14%</td><td>-1.51%</td><td class="neg">-2.07%</td><td>-0.56%</td><td>✗</td><td>✓</td></tr>
+<tr><td>20260402</td><td>0</td><td>-0.59%</td><td class="pos">+0.89%</td><td>+1.48%</td><td>-2.26%</td><td class="neg">-1.01%</td><td>+1.25%</td><td>✗</td><td>✓</td></tr>
+<tr><td>20260403</td><td>-5</td><td>-0.95%</td><td class="pos">+1.13%</td><td>+2.08%</td><td>+0.51%</td><td class="neg">-0.76%</td><td>-1.27%</td><td>✗</td><td>✗</td></tr>
+<tr><td>20260407</td><td>3</td><td>+1.69%</td><td class="neg">-0.40%</td><td>-2.09%</td><td>+2.45%</td><td class="pos">+7.21%</td><td>+4.76%</td><td>✗</td><td>✓</td></tr>
+<tr><td>20260408</td><td>-1</td><td>-0.23%</td><td class="neg">-0.05%</td><td>+0.18%</td><td>-1.02%</td><td class="neg">-2.44%</td><td>-1.42%</td><td>✓</td><td>✓</td></tr>
+<tr><td>20260409</td><td>0</td><td>-0.51%</td><td class="neg">-0.56%</td><td>-0.05%</td><td>-2.08%</td><td class="neg">-0.81%</td><td>+1.27%</td><td>✓</td><td>✓</td></tr>
+<tr><td>20260410</td><td>-6</td><td>-0.47%</td><td class="neg">-2.45%</td><td>-1.98%</td><td>+2.84%</td><td class="neg">-1.42%</td><td>-4.26%</td><td>✓</td><td>✗</td></tr>
+<tr><td>20260413</td><td>3</td><td>+0.32%</td><td class="pos">+1.02%</td><td>+0.70%</td><td>+2.50%</td><td class="pos">+6.06%</td><td>+3.56%</td><td>✓</td><td>✓</td></tr>
+<tr><td>20260414</td><td>-6</td><td>+2.02%</td><td class="neg">-1.98%</td><td>-4.00%</td><td>+5.61%</td><td class="neg">-0.75%</td><td>-6.36%</td><td>✗</td><td>✗</td></tr>
+<tr><td>20260415</td><td>2</td><td>+0.37%</td><td class="neg">-0.02%</td><td>-0.39%</td><td>+2.72%</td><td class="pos">+0.19%</td><td>-2.53%</td><td>✗</td><td>✓</td></tr>
+<tr><td>20260416</td><td>0</td><td>-0.41%</td><td class="pos">+0.01%</td><td>+0.42%</td><td>-1.89%</td><td class="pos">+0.56%</td><td>+2.45%</td><td>✗</td><td>✗</td></tr>
+<tr><td>20260420</td><td>5</td><td>-0.19%</td><td class="neg">-2.67%</td><td>-2.48%</td><td>+0.15%</td><td class="neg">-3.10%</td><td>-3.25%</td><td>✓</td><td>✗</td></tr>
+<tr><td>20260421</td><td>8</td><td>+1.81%</td><td class="pos">+3.08%</td><td>+1.27%</td><td>+5.20%</td><td class="pos">+2.18%</td><td>-3.02%</td><td>✓</td><td>✓</td></tr>
+<tr><td>20260422</td><td>7</td><td>+0.26%</td><td class="neg">-2.59%</td><td>-2.84%</td><td>+0.52%</td><td class="neg">-3.92%</td><td>-4.45%</td><td>✗</td><td>✗</td></tr>
+<tr><td>20260423</td><td>9</td><td>+1.45%</td><td class="neg">-0.04%</td><td>-1.49%</td><td>+3.38%</td><td class="neg">-3.07%</td><td>-6.45%</td><td>✗</td><td>✗</td></tr>
+<tr><td>20260424</td><td>5</td><td>+0.26%</td><td class="pos">+4.55%</td><td>+4.29%</td><td>+0.39%</td><td class="pos">+3.62%</td><td>+3.22%</td><td>✓</td><td>✓</td></tr>
+<tr><td>20260427</td><td>4</td><td>+1.48%</td><td class="pos">+1.60%</td><td>+0.12%</td><td>+2.84%</td><td class="neg">-2.11%</td><td>-4.95%</td><td>✓</td><td>✗</td></tr>
+<tr><td>20260428</td><td>3</td><td>+1.49%</td><td class="neg">-0.36%</td><td>-1.85%</td><td>+2.49%</td><td class="pos">+0.08%</td><td>-2.41%</td><td>✗</td><td>✓</td></tr>
+<tr><td>20260429</td><td>5</td><td>+0.35%</td><td class="neg">-0.00%</td><td>-0.35%</td><td>+0.45%</td><td class="pos">+4.67%</td><td>+4.22%</td><td>✗</td><td>✓</td></tr>
+<tr><td>20260430</td><td>1</td><td>-0.54%</td><td class="neg">-0.55%</td><td>-0.01%</td><td>-2.55%</td><td class="pos">+2.55%</td><td>+5.09%</td><td>✓</td><td>✗</td></tr>
+<tr><td>20260506</td><td>2</td><td>+0.35%</td><td class="pos">+1.73%</td><td>+1.37%</td><td>+2.45%</td><td class="pos">+2.72%</td><td>+0.27%</td><td>✓</td><td>✓</td></tr>
+<tr><td>20260507</td><td>-3</td><td>-1.71%</td><td class="neg">-4.00%</td><td>-2.29%</td><td>-0.60%</td><td class="pos">+1.25%</td><td>+1.85%</td><td>✓</td><td>✗</td></tr>
+<tr><td>20260508</td><td>-7</td><td>-0.83%</td><td class="pos">+1.26%</td><td>+2.09%</td><td>+2.53%</td><td class="pos">+2.98%</td><td>+0.44%</td><td>✗</td><td>✓</td></tr>
+<tr><td>20260511</td><td>-5</td><td>-1.79%</td><td class="pos">+2.64%</td><td>+4.43%</td><td>-0.23%</td><td class="neg">-0.03%</td><td>+0.20%</td><td>✗</td><td>✓</td></tr>
+<tr><td>20260512</td><td>-3</td><td>-0.65%</td><td class="neg">-1.59%</td><td>-0.93%</td><td>+0.37%</td><td class="neg">-1.18%</td><td>-1.55%</td><td>✓</td><td>✗</td></tr>
+<tr><td>20260513</td><td>4</td><td>+0.69%</td><td class="pos">+4.13%</td><td>+3.44%</td><td>+2.04%</td><td class="neg">-2.65%</td><td>-4.69%</td><td>✓</td><td>✗</td></tr>
+<tr><td>20260514</td><td>-4</td><td>-0.74%</td><td class="neg">-1.85%</td><td>-1.11%</td><td>+0.23%</td><td class="neg">-4.13%</td><td>-4.36%</td><td>✓</td><td>✗</td></tr>
+<tr><td>20260515</td><td>-7</td><td>-1.35%</td><td class="neg">-0.02%</td><td>+1.34%</td><td>+1.34%</td><td class="pos">+0.67%</td><td>-0.68%</td><td>✓</td><td>✓</td></tr>
+<tr><td>20260518</td><td>2</td><td>+0.71%</td><td class="neg">-0.91%</td><td>-1.62%</td><td>+1.65%</td><td class="neg">-1.78%</td><td>-3.43%</td><td>✗</td><td>✗</td></tr>
+<tr><td>20260519</td><td>5</td><td>+0.51%</td><td class="pos">+5.36%</td><td>+4.86%</td><td>+0.94%</td><td class="pos">+4.00%</td><td>+3.07%</td><td>✓</td><td>✓</td></tr>
+<tr><td>20260520</td><td>-4</td><td>-0.84%</td><td class="neg">-2.81%</td><td>-1.97%</td><td>-0.15%</td><td class="neg">-5.12%</td><td>-4.97%</td><td>✓</td><td>✓</td></tr>
+<tr><td>20260521</td><td>1</td><td>-0.43%</td><td class="pos">+0.68%</td><td>+1.10%</td><td>-1.87%</td><td class="pos">+2.22%</td><td>+4.09%</td><td>✗</td><td>✗</td></tr>
+<tr><td>20260522</td><td>-5</td><td>-1.40%</td><td class="pos">+2.96%</td><td>+4.36%</td><td>-0.69%</td><td class="pos">+2.39%</td><td>+3.07%</td><td>✗</td><td>✗</td></tr>
+<tr><td>20260526</td><td>-10</td><td>-2.98%</td><td class="pos">+4.06%</td><td>+7.04%</td><td>-2.32%</td><td class="pos">+1.03%</td><td>+3.35%</td><td>✗</td><td>✗</td></tr>
+<tr><td>20260527</td><td>-12</td><td>-1.25%</td><td class="pos">+2.79%</td><td>+4.04%</td><td>-1.50%</td><td class="pos">+4.31%</td><td>+5.81%</td><td>✗</td><td>✗</td></tr>
+</table></div>
+
+<script>
+const daily = [{"date": "20251127", "score": -2, "pred_excess": -0.51, "pred_abs": -2.06, "actual_exc": 0.0, "actual_abs": 1.95}, {"date": "20251201", "score": -1, "pred_excess": -0.38, "pred_abs": -1.06, "actual_exc": -2.23, "actual_abs": 0.75}, {"date": "20251202", "score": 0, "pred_excess": -0.55, "pred_abs": -1.22, "actual_exc": -1.66, "actual_abs": -3.99}, {"date": "20251210", "score": -3, "pred_excess": 0.17, "pred_abs": 2.87, "actual_exc": 1.74, "actual_abs": 3.12}, {"date": "20251218", "score": -9, "pred_excess": -3.76, "pred_abs": -0.51, "actual_exc": -3.84, "actual_abs": -0.67}, {"date": "20251219", "score": -4, "pred_excess": 0.56, "pred_abs": 2.93, "actual_exc": -2.15, "actual_abs": -3.34}, {"date": "20251222", "score": 0, "pred_excess": -0.83, "pred_abs": -1.91, "actual_exc": 0.95, "actual_abs": -3.17}, {"date": "20251223", "score": -3, "pred_excess": 0.19, "pred_abs": 1.9, "actual_exc": -2.02, "actual_abs": 3.51}, {"date": "20251224", "score": 3, "pred_excess": 2.84, "pred_abs": 2.28, "actual_exc": -1.22, "actual_abs": 8.77}, {"date": "20251225", "score": 2, "pred_excess": 1.67, "pred_abs": 4.14, "actual_exc": 1.79, "actual_abs": 4.78}, {"date": "20251226", "score": -11, "pred_excess": -3.51, "pred_abs": -0.53, "actual_exc": -2.47, "actual_abs": 2.39}, {"date": "20251229", "score": -11, "pred_excess": -4.14, "pred_abs": -0.44, "actual_exc": -2.48, "actual_abs": -6.22}, {"date": "20251230", "score": 4, "pred_excess": 3.07, "pred_abs": 5.26, "actual_exc": 4.78, "actual_abs": 9.32}, {"date": "20251231", "score": -5, "pred_excess": -0.21, "pred_abs": 1.52, "actual_exc": -9.14, "actual_abs": -6.24}, {"date": "20260105", "score": 2, "pred_excess": 2.09, "pred_abs": 4.93, "actual_exc": -6.65, "actual_abs": 1.99}, {"date": "20260106", "score": 1, "pred_excess": -0.61, "pred_abs": -2.79, "actual_exc": -4.23, "actual_abs": -5.05}, {"date": "20260107", "score": 5, "pred_excess": 0.73, "pred_abs": -0.56, "actual_exc": 1.87, "actual_abs": 9.77}, {"date": "20260108", "score": -1, "pred_excess": -0.37, "pred_abs": -0.68, "actual_exc": 1.74, "actual_abs": 5.17}, {"date": "20260113", "score": -1, "pred_excess": -0.34, "pred_abs": 0.28, "actual_exc": 1.65, "actual_abs": -1.4}, {"date": "20260114", "score": -2, "pred_excess": 0.15, "pred_abs": -0.13, "actual_exc": -0.08, "actual_abs": -6.31}, {"date": "20260115", "score": -3, "pred_excess": -1.05, "pred_abs": 1.74, "actual_exc": 2.69, "actual_abs": 1.37}, {"date": "20260116", "score": -7, "pred_excess": 4.28, "pred_abs": 8.26, "actual_exc": 0.61, "actual_abs": 3.57}, {"date": "20260119", "score": -1, "pred_excess": 0.25, "pred_abs": -0.26, "actual_exc": -0.33, "actual_abs": -6.67}, {"date": "20260120", "score": 2, "pred_excess": 2.91, "pred_abs": 6.0, "actual_exc": 0.61, "actual_abs": -1.16}, {"date": "20260121", "score": 3, "pred_excess": 3.48, "pred_abs": 5.52, "actual_exc": -0.98, "actual_abs": 3.16}, {"date": "20260122", "score": 2, "pred_excess": 0.59, "pred_abs": 4.01, "actual_exc": -0.87, "actual_abs": 8.98}, {"date": "20260123", "score": 0, "pred_excess": -1.61, "pred_abs": -3.41, "actual_exc": 2.78, "actual_abs": -6.4}, {"date": "20260126", "score": -1, "pred_excess": 0.06, "pred_abs": -1.97, "actual_exc": 0.64, "actual_abs": 1.28}, {"date": "20260127", "score": 0, "pred_excess": -0.48, "pred_abs": -2.77, "actual_exc": -3.27, "actual_abs": -5.22}, {"date": "20260128", "score": 3, "pred_excess": 1.76, "pred_abs": 4.77, "actual_exc": 3.23, "actual_abs": 0.69}, {"date": "20260129", "score": -1, "pred_excess": 0.14, "pred_abs": -1.48, "actual_exc": 0.19, "actual_abs": -1.46}, {"date": "20260130", "score": 0, "pred_excess": -0.92, "pred_abs": -3.02, "actual_exc": -2.52, "actual_abs": -2.94}, {"date": "20260202", "score": 5, "pred_excess": 0.13, "pred_abs": 1.02, "actual_exc": -2.83, "actual_abs": 2.06}, {"date": "20260203", "score": 3, "pred_excess": 0.52, "pred_abs": 4.47, "actual_exc": -2.36, "actual_abs": -3.76}, {"date": "20260204", "score": 7, "pred_excess": 0.41, "pred_abs": 2.46, "actual_exc": -0.52, "actual_abs": -1.48}, {"date": "20260205", "score": 7, "pred_excess": 0.23, "pred_abs": 1.68, "actual_exc": -0.88, "actual_abs": -2.35}, {"date": "20260206", "score": 5, "pred_excess": 0.13, "pred_abs": 1.1, "actual_exc": 1.76, "actual_abs": 3.72}, {"date": "20260209", "score": 3, "pred_excess": 0.76, "pred_abs": 3.85, "actual_exc": 1.74, "actual_abs": -0.23}, {"date": "20260210", "score": 0, "pred_excess": -0.9, "pred_abs": -2.61, "actual_exc": -0.84, "actual_abs": -2.13}, {"date": "20260211", "score": 7, "pred_excess": 0.4, "pred_abs": 1.54, "actual_exc": 1.67, "actual_abs": 0.52}, {"date": "20260212", "score": 1, "pred_excess": -0.89, "pred_abs": -2.53, "actual_exc": -0.49, "actual_abs": -1.59}, {"date": "20260213", "score": 0, "pred_excess": -1.19, "pred_abs": -2.72, "actual_exc": -0.51, "actual_abs": -0.39}, {"date": "20260224", "score": 1, "pred_excess": -1.07, "pred_abs": -3.24, "actual_exc": 1.58, "actual_abs": 4.35}, {"date": "20260225", "score": 2, "pred_excess": 0.91, "pred_abs": 3.21, "actual_exc": 3.98, "actual_abs": 5.64}, {"date": "20260226", "score": -7, "pred_excess": 3.95, "pred_abs": 7.79, "actual_exc": 0.11, "actual_abs": 1.39}, {"date": "20260227", "score": -7, "pred_excess": 2.76, "pred_abs": 5.78, "actual_exc": -5.8, "actual_abs": -0.78}, {"date": "20260302", "score": 1, "pred_excess": -0.71, "pred_abs": -3.1, "actual_exc": 0.14, "actual_abs": -8.5}, {"date": "20260303", "score": -1, "pred_excess": 0.05, "pred_abs": -1.34, "actual_exc": -3.8, "actual_abs": -1.23}, {"date": "20260304", "score": 7, "pred_excess": -0.57, "pred_abs": 0.27, "actual_exc": 0.07, "actual_abs": 0.92}, {"date": "20260305", "score": 4, "pred_excess": 0.9, "pred_abs": 2.99, "actual_exc": -1.3, "actual_abs": -0.99}, {"date": "20260306", "score": 3, "pred_excess": 0.9, "pred_abs": 2.92, "actual_exc": -2.07, "actual_abs": -3.74}, {"date": "20260310", "score": 1, "pred_excess": -0.9, "pred_abs": -3.04, "actual_exc": -0.23, "actual_abs": -2.69}, {"date": "20260311", "score": 7, "pred_excess": 0.47, "pred_abs": 1.32, "actual_exc": 1.53, "actual_abs": -1.13}, {"date": "20260312", "score": 4, "pred_excess": 2.19, "pred_abs": 4.06, "actual_exc": 2.22, "actual_abs": -3.31}, {"date": "20260313", "score": -3, "pred_excess": -0.78, "pred_abs": 1.31, "actual_exc": 0.34, "actual_abs": -0.38}, {"date": "20260316", "score": -2, "pred_excess": -0.31, "pred_abs": -1.42, "actual_exc": -0.73, "actual_abs": -4.06}, {"date": "20260317", "score": 3, "pred_excess": 1.3, "pred_abs": 2.7, "actual_exc": -1.59, "actual_abs": 3.4}, {"date": "20260318", "score": 5, "pred_excess": -0.37, "pred_abs": 0.3, "actual_exc": 1.0, "actual_abs": -0.86}, {"date": "20260319", "score": 3, "pred_excess": 1.99, "pred_abs": 3.23, "actual_exc": 0.15, "actual_abs": -3.01}, {"date": "20260320", "score": -5, "pred_excess": -0.4, "pred_abs": 1.45, "actual_exc": -2.45, "actual_abs": -6.48}, {"date": "20260323", "score": -1, "pred_excess": -0.56, "pred_abs": -1.56, "actual_exc": 0.65, "actual_abs": 1.76}, {"date": "20260324", "score": 3, "pred_excess": 0.88, "pred_abs": 1.86, "actual_exc": 1.27, "actual_abs": 2.62}, {"date": "20260325", "score": 2, "pred_excess": 0.92, "pred_abs": 1.94, "actual_exc": -0.94, "actual_abs": -1.09}, {"date": "20260326", "score": 2, "pred_excess": 0.4, "pred_abs": 1.93, "actual_exc": 4.19, "actual_abs": 2.89}, {"date": "20260327", "score": -5, "pred_excess": -0.79, "pred_abs": 0.26, "actual_exc": -2.04, "actual_abs": 2.13}, {"date": "20260330", "score": 2, "pred_excess": 0.39, "pred_abs": 2.58, "actual_exc": -0.34, "actual_abs": -0.03}, {"date": "20260331", "score": 1, "pred_excess": -0.74, "pred_abs": -2.26, "actual_exc": 1.72, "actual_abs": -0.1}, {"date": "20260401", "score": -2, "pred_excess": -0.18, "pred_abs": -1.51, "actual_exc": 0.96, "actual_abs": -2.07}, {"date": "20260402", "score": 0, "pred_excess": -0.59, "pred_abs": -2.26, "actual_exc": 0.89, "actual_abs": -1.01}, {"date": "20260403", "score": -5, "pred_excess": -0.95, "pred_abs": 0.51, "actual_exc": 1.13, "actual_abs": -0.76}, {"date": "20260407", "score": 3, "pred_excess": 1.69, "pred_abs": 2.45, "actual_exc": -0.4, "actual_abs": 7.21}, {"date": "20260408", "score": -1, "pred_excess": -0.23, "pred_abs": -1.02, "actual_exc": -0.05, "actual_abs": -2.44}, {"date": "20260409", "score": 0, "pred_excess": -0.51, "pred_abs": -2.08, "actual_exc": -0.56, "actual_abs": -0.81}, {"date": "20260410", "score": -6, "pred_excess": -0.47, "pred_abs": 2.84, "actual_exc": -2.45, "actual_abs": -1.42}, {"date": "20260413", "score": 3, "pred_excess": 0.32, "pred_abs": 2.5, "actual_exc": 1.02, "actual_abs": 6.06}, {"date": "20260414", "score": -6, "pred_excess": 2.02, "pred_abs": 5.61, "actual_exc": -1.98, "actual_abs": -0.75}, {"date": "20260415", "score": 2, "pred_excess": 0.37, "pred_abs": 2.72, "actual_exc": -0.02, "actual_abs": 0.19}, {"date": "20260416", "score": 0, "pred_excess": -0.41, "pred_abs": -1.89, "actual_exc": 0.01, "actual_abs": 0.56}, {"date": "20260420", "score": 5, "pred_excess": -0.19, "pred_abs": 0.15, "actual_exc": -2.67, "actual_abs": -3.1}, {"date": "20260421", "score": 8, "pred_excess": 1.81, "pred_abs": 5.2, "actual_exc": 3.08, "actual_abs": 2.18}, {"date": "20260422", "score": 7, "pred_excess": 0.26, "pred_abs": 0.52, "actual_exc": -2.59, "actual_abs": -3.92}, {"date": "20260423", "score": 9, "pred_excess": 1.45, "pred_abs": 3.38, "actual_exc": -0.04, "actual_abs": -3.07}, {"date": "20260424", "score": 5, "pred_excess": 0.26, "pred_abs": 0.39, "actual_exc": 4.55, "actual_abs": 3.62}, {"date": "20260427", "score": 4, "pred_excess": 1.48, "pred_abs": 2.84, "actual_exc": 1.6, "actual_abs": -2.11}, {"date": "20260428", "score": 3, "pred_excess": 1.49, "pred_abs": 2.49, "actual_exc": -0.36, "actual_abs": 0.08}, {"date": "20260429", "score": 5, "pred_excess": 0.35, "pred_abs": 0.45, "actual_exc": -0.0, "actual_abs": 4.67}, {"date": "20260430", "score": 1, "pred_excess": -0.54, "pred_abs": -2.55, "actual_exc": -0.55, "actual_abs": 2.55}, {"date": "20260506", "score": 2, "pred_excess": 0.35, "pred_abs": 2.45, "actual_exc": 1.73, "actual_abs": 2.72}, {"date": "20260507", "score": -3, "pred_excess": -1.71, "pred_abs": -0.6, "actual_exc": -4.0, "actual_abs": 1.25}, {"date": "20260508", "score": -7, "pred_excess": -0.83, "pred_abs": 2.53, "actual_exc": 1.26, "actual_abs": 2.98}, {"date": "20260511", "score": -5, "pred_excess": -1.79, "pred_abs": -0.23, "actual_exc": 2.64, "actual_abs": -0.03}, {"date": "20260512", "score": -3, "pred_excess": -0.65, "pred_abs": 0.37, "actual_exc": -1.59, "actual_abs": -1.18}, {"date": "20260513", "score": 4, "pred_excess": 0.69, "pred_abs": 2.04, "actual_exc": 4.13, "actual_abs": -2.65}, {"date": "20260514", "score": -4, "pred_excess": -0.74, "pred_abs": 0.23, "actual_exc": -1.85, "actual_abs": -4.13}, {"date": "20260515", "score": -7, "pred_excess": -1.35, "pred_abs": 1.34, "actual_exc": -0.02, "actual_abs": 0.67}, {"date": "20260518", "score": 2, "pred_excess": 0.71, "pred_abs": 1.65, "actual_exc": -0.91, "actual_abs": -1.78}, {"date": "20260519", "score": 5, "pred_excess": 0.51, "pred_abs": 0.94, "actual_exc": 5.36, "actual_abs": 4.0}, {"date": "20260520", "score": -4, "pred_excess": -0.84, "pred_abs": -0.15, "actual_exc": -2.81, "actual_abs": -5.12}, {"date": "20260521", "score": 1, "pred_excess": -0.43, "pred_abs": -1.87, "actual_exc": 0.68, "actual_abs": 2.22}, {"date": "20260522", "score": -5, "pred_excess": -1.4, "pred_abs": -0.69, "actual_exc": 2.96, "actual_abs": 2.39}, {"date": "20260526", "score": -10, "pred_excess": -2.98, "pred_abs": -2.32, "actual_exc": 4.06, "actual_abs": 1.03}, {"date": "20260527", "score": -12, "pred_excess": -1.25, "pred_abs": -1.5, "actual_exc": 2.79, "actual_abs": 4.31}];
+const scatterData = daily.filter(d => d.pred_excess !== null).map(d => ({x: d.pred_excess, y: d.actual_exc}));
+
+new Chart(document.getElementById('scatterChart').getContext('2d'), {
+  type: 'scatter',
+  data: { datasets: [
+    { label: '预测vs实际', data: scatterData, backgroundColor: 'rgba(59,130,246,0.6)', pointRadius: 4 },
+  ]},
+  options: {
+    plugins: { annotation: { annotations: {
+      diag: { type: 'line', xMin: -4, xMax: 4, yMin: -4, yMax: 4, borderColor: '#22c55e', borderWidth: 1, borderDash: [5,5] }
+    }}},
+    scales: {
+      x: { title: { display: true, text: '预测超额(%)', color: '#888' }, grid: { color: '#222' }, ticks: { color: '#888' } },
+      y: { title: { display: true, text: '实际超额(%)', color: '#888' }, grid: { color: '#222' }, ticks: { color: '#888' } }
+    }
+  }
+});
+
+const wrData = [{"pred_wr": 30.0, "actual_wr": 62.0, "n": 21, "bias": 32.0}, {"pred_wr": 46.0, "actual_wr": 58.0, "n": 19, "bias": 11.0}, {"pred_wr": 52.0, "actual_wr": 52.0, "n": 21, "bias": 0.0}, {"pred_wr": 60.0, "actual_wr": 22.0, "n": 18, "bias": -38.0}, {"pred_wr": 77.0, "actual_wr": 43.0, "n": 23, "bias": -34.0}];
+new Chart(document.getElementById('wrChart').getContext('2d'), {
+  type: 'bar',
+  data: {
+    labels: wrData.map(d => d.pred_wr + '%'),
+    datasets: [
+      { label: '预测正率', data: wrData.map(d => d.pred_wr), backgroundColor: 'rgba(59,130,246,0.6)' },
+      { label: '实际正率', data: wrData.map(d => d.actual_wr), backgroundColor: 'rgba(245,158,11,0.6)' },
+    ]
+  },
+  options: {
+    scales: {
+      x: { grid: { color: '#222' }, ticks: { color: '#888' } },
+      y: { grid: { color: '#222' }, ticks: { color: '#888' }, title: { display: true, text: '正率(%)', color: '#888' } }
+    }
+  }
+});
+</script>
+</body>
+</html>
