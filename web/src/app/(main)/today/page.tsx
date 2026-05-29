@@ -78,13 +78,11 @@ export default async function TodayPage({ searchParams }: PageProps) {
   // 当前象限 key（用于 9 格高亮）
   const currentQuadrant =
     (dateEntry?.todayAttribution?.currentQuadrant
-      ?? attribution?.currentQuadrant
-      ?? currentMapping?.quadrantState) as string | undefined;
+      ?? attribution?.currentQuadrant) as string | undefined;
 
   const currentQuadrantLabel =
     dateEntry?.todayAttribution?.currentQuadrantLabel ??
     attribution?.currentQuadrantLabel ??
-    currentMapping?.quadrantLabel ??
     '-';
 
   const currentQuadrantStat = quadrantStats.find(
@@ -121,7 +119,7 @@ export default async function TodayPage({ searchParams }: PageProps) {
         selectedDate={selectedDate}
         todayDeviation={attribution?.alphaVsIndustryChain}
       />
-      <LinkageTable todayCorr={todayCorr} />
+      <LinkageTable latestCorr={todayCorr} />
 
       {/* 当前象限 9 格定位 */}
       <TodayQuadrantGrid quadrants={quadrantStats} currentQuadrant={currentQuadrant} />

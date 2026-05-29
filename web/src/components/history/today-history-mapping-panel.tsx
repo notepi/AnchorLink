@@ -24,7 +24,7 @@ function pathLabelColor(label: string): string {
       return 'text-anchor-negative border-anchor-negative/40 bg-anchor-negative/10';
     case '弱势修复':
       return 'text-anchor-accent border-anchor-accent/40 bg-anchor-accent/10';
-    case '分化震荡':
+    case '窄幅震荡':
       return 'text-anchor-textSecondary border-anchor-border bg-anchor-bgTertiary';
     case '样本分歧':
     default:

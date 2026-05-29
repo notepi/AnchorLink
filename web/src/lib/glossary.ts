@@ -41,14 +41,14 @@ export const PATH_LABEL: Record<string, string> = {
   pullback_after_rise: '冲高回落',
   continue_fall:       '继续走弱',
   weak_repair:         '弱势修复',
-  range_bound:         '分化震荡',
+  range_bound:         '窄幅震荡',
   disagreement:        '样本分歧',
   // 中文 key 兼容（后端可能输出中文）
   强势延续: '强势延续',
   冲高回落: '冲高回落',
   继续走弱: '继续走弱',
   弱势修复: '弱势修复',
-  分化震荡: '分化震荡',
+  窄幅震荡: '窄幅震荡',
   样本分歧: '样本分歧',
 } as const;
 

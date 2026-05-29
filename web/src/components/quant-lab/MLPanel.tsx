@@ -127,7 +127,7 @@ function FeatureBars({ model, name }: { model: MLModelResult; name: string }) {
 export default function MLPanel({ data }: { data: MLAnalysis }) {
   const models = Object.entries(data);
   // 找最佳模型（直接命中率最高）
-  const bestName = models.reduce((acc, [n, m]) => (m.direction_accuracy > acc[1] ? [n, m.direction_accuracy] : acc), ['', 0])[0];
+  const bestName = models.reduce<[string, number]>((acc, [n, m]) => (m.direction_accuracy > acc[1] ? [n, m.direction_accuracy] : acc), ['', 0])[0];
   // 默认展示 GradientBoosting 的分位和特征
   const gbr = data['GradientBoosting'];
   const rf = data['RandomForest'];

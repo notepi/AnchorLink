@@ -39,11 +39,11 @@ export default function AutocorrChart({
     <div className="ql-grid-2">
       <div>
         <h3>5d 超额自相关 <span style={{ fontWeight: 400 }}>半衰期 {data.excess_5d.half_life_days ?? '—'} 天</span></h3>
-        {lags.map((lag) => row(lag, (data.excess_5d as Record<string, number | null>)[`lag${lag}`]))}
+        {lags.map((lag) => row(lag, (data.excess_5d as unknown as Record<string, number | null>)[`lag${lag}`]))}
       </div>
       <div>
         <h3>10d 超额自相关 <span style={{ fontWeight: 400 }}>半衰期 {data.excess_10d.half_life_days ?? '—'} 天</span></h3>
-        {lags.map((lag) => row(lag, (data.excess_10d as Record<string, number | null>)[`lag${lag}`]))}
+        {lags.map((lag) => row(lag, (data.excess_10d as unknown as Record<string, number | null>)[`lag${lag}`]))}
       </div>
     </div>
   );

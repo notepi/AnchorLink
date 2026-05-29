@@ -213,11 +213,11 @@ function derivePathLabel(stats: HistoricalPathStat[]): string {
     }
   }
 
-  // 分化震荡
+  // 窄幅震荡
   const allSmall = [r1, r3, r5].every((r) => r === null || Math.abs(r) < 0.2);
   const allWinRateNarrow = [w1, w3, w5].every((w) => w === null || (w >= 0.45 && w <= 0.55));
   if (allSmall && allWinRateNarrow) {
-    return '分化震荡';
+    return '窄幅震荡';
   }
 
   return '样本分歧';
