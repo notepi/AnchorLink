@@ -601,6 +601,7 @@ def load_all_data() -> dict[str, Any]:
         "personality_profile": read_json("history_personality_profile.json"),
         "prediction_backtest": read_json("history_prediction_backtest.json"),
         "v2_scoring": read_json("v2_scoring.json"),
+        "drift_report": read_json("param_drift_report.json"),
         "config": read_yaml(CONFIG_PATH),
     }
     print(f"加载完成：共 {len(data['history_summary'])} 条 history_summary")
@@ -1790,9 +1791,32 @@ def build_personality(personality_profile: dict[str, Any], operator_playbook: di
     }
 
 
-def build_operator(operator_playbook: dict[str, Any]) -> dict[str, Any]:
+def build_operator(operator_playbook: dict[str, Any], drift_report: dict[str, Any] | None = None) -> dict[str, Any]:
     print("正在构建 operator...")
     playbook = operator_playbook.get("playbook", {})
+
+    # 漂移告警
+    drift_alert = {}
+    if drift_report and drift_report.get("driftDetected"):
+        checks = drift_report.get("checks", {})
+        items = []
+        labels = {
+            "percentileThresholds": "百分位阈值漂移",
+            "signalWeights": "信号权重漂移",
+            "regimeDistribution": "Regime分布漂移",
+            "strategyPerformance": "策略整体漂移",
+        }
+        for key, label in labels.items():
+            if checks.get(key, {}).get("drift"):
+                items.append(label)
+        drift_alert = {
+            "detected": True,
+            "summary": drift_report.get("summary", ""),
+            "items": items,
+        }
+    else:
+        drift_alert = {"detected": False, "summary": "", "items": []}
+
     return {
         "asOfDate": str(operator_playbook.get("as_of_date") or ""),
         "dateRangeStart": str(operator_playbook.get("date_range_start") or ""),
@@ -1812,6 +1836,7 @@ def build_operator(operator_playbook: dict[str, Any]) -> dict[str, Any]:
         "signalTraps": camelize(operator_playbook.get("signal_traps", [])),
         "conditionalEffects": camelize(operator_playbook.get("conditional_effects", [])),
         "confirmationPairs": camelize(operator_playbook.get("confirmation_pairs", [])),
+        "driftAlert": drift_alert,
     }
 
 
@@ -2793,7 +2818,7 @@ def main() -> None:
             window_stats,
         ),
         "personality": build_personality(data["personality_profile"], data["operator_playbook"]),
-        "operator": build_operator(data["operator_playbook"]),
+        "operator": build_operator(data["operator_playbook"], data.get("drift_report", {})),
         "aiInsight": build_ai_insight(data["operator_playbook"], data["personality_profile"], data["signal_lifts"], data["extreme_divergences"]),
         "predictionEvaluation": build_prediction_evaluation(data["prediction_backtest"]),
         "decision": today_decision,

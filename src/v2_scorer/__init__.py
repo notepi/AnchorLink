@@ -197,10 +197,10 @@ def compute_thresholds_from_sample(sample: pd.DataFrame) -> dict:
 
     return {
         "excess_5d_p15": e5.quantile(0.15) if len(e5) > 10 else -4.91,
-        "excess_5d_p85": e5.quantile(0.85) if len(e5) > 10 else 5.74,
-        "excess_10d_p15": e10.quantile(0.15) if len(e10) > 10 else -6.11,
-        "excess_10d_p70": e10.quantile(0.70) if len(e10) > 10 else 3.0,
-        "excess_10d_p85": e10.quantile(0.85) if len(e10) > 10 else 5.5,
+        "excess_5d_p85": e5.quantile(0.85) if len(e5) > 10 else 6.24,
+        "excess_10d_p15": e10.quantile(0.15) if len(e10) > 10 else -6.36,
+        "excess_10d_p70": e10.quantile(0.70) if len(e10) > 10 else 4.25,
+        "excess_10d_p85": e10.quantile(0.85) if len(e10) > 10 else 7.26,
     }
 
 

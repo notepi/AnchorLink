@@ -16,10 +16,10 @@
 
 ## 数据管道
 
-九步必须按顺序执行，不可跳步：
+十步必须按顺序执行，不可跳步：
 
 ```
-src.price.run → src.dailyreport.run → build_history_analysis.py → build_v2_scoring.py → build_daily_report.py → analyze_2nd_order_signals.py → composite_signal_backtest.py → deep_quant_analysis.py → build_dashboard_view.py
+src.price.run → src.dailyreport.run → build_history_analysis.py → build_v2_scoring.py → build_daily_report.py → analyze_2nd_order_signals.py → composite_signal_backtest.py → deep_quant_analysis.py → excess_grade_backtest.py → build_dashboard_view.py
 ```
 
 V2 评分脚本需用 `-m` 运行：`uv run python -m scripts.build_v2_scoring`

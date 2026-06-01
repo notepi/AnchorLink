@@ -120,6 +120,26 @@ def main():
                 print("[ERROR] 前端数据构建失败")
                 success = False
 
+        # 5. 参数漂移检测（不阻断管道）
+        if success:
+            if not run_module("scripts.param_drift_check", "参数漂移检测"):
+                print("[WARN] 漂移检测失败（不影响主流程）")
+
+        # 6. 参数自动校准（仅漂移时运行）
+        if success:
+            drift_report_path = PROJECT_ROOT / "data" / "output" / "param_drift_report.json"
+            try:
+                import json as _json
+                with open(drift_report_path) as _f:
+                    _drift = _json.load(_f)
+                if _drift.get("driftDetected"):
+                    if not run_module("scripts.auto_calibrate_v2", "参数自动校准（漂移已检测）"):
+                        print("[WARN] 校准失败（不影响主流程）")
+                else:
+                    print("[INFO] 无漂移，跳过校准")
+            except Exception:
+                print("[WARN] 无法读取漂移报告，跳过校准")
+
     print("\n" + "=" * 60)
     if success:
         print("所有任务完成")

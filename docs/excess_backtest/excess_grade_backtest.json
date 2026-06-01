@@ -1,0 +1,6420 @@
+{
+  "generatedAt": "20260601",
+  "disclaimer": "空间层用Oracle退出（理论上界）；常态/风险层用中位数价格收益（描述典型价格水平，非可交易退出收益）",
+  "gradeThresholds": {
+    "excess_5d": {
+      "qThresholds": {
+        "P20": -3.6312,
+        "P40": -0.9158,
+        "P60": 1.7673,
+        "P80": 4.6687
+      },
+      "qLabels": {
+        "1": "极冷(P0-P20)",
+        "2": "偏冷(P20-P40)",
+        "3": "中性(P40-P60)",
+        "4": "偏热(P60-P80)",
+        "5": "极热(P80-P100)"
+      },
+      "gThresholds": {
+        "P20": -3.1183,
+        "P40": -1.0408,
+        "P60": 0.8363,
+        "P80": 3.7278
+      },
+      "gLabels": {
+        "1": "大降(P0-P20)",
+        "2": "小降(P20-P40)",
+        "3": "稳定(P40-P60)",
+        "4": "小升(P60-P80)",
+        "5": "大升(P80-P100)"
+      }
+    },
+    "excess_10d": {
+      "qThresholds": {
+        "P20": -4.9908,
+        "P40": -0.9128,
+        "P60": 2.7393,
+        "P80": 6.3541
+      },
+      "qLabels": {
+        "1": "极冷(P0-P20)",
+        "2": "偏冷(P20-P40)",
+        "3": "中性(P40-P60)",
+        "4": "偏热(P60-P80)",
+        "5": "极热(P80-P100)"
+      },
+      "gThresholds": {
+        "P20": -2.6777,
+        "P40": -1.0455,
+        "P60": 0.8151,
+        "P80": 3.2736
+      },
+      "gLabels": {
+        "1": "大降(P0-P20)",
+        "2": "小降(P20-P40)",
+        "3": "稳定(P40-P60)",
+        "4": "小升(P60-P80)",
+        "5": "大升(P80-P100)"
+      }
+    },
+    "daily_excess": {
+      "qThresholds": {
+        "P20": -2.1479,
+        "P40": -0.7348,
+        "P60": 0.4506,
+        "P80": 1.7963
+      },
+      "qLabels": {
+        "1": "极冷(P0-P20)",
+        "2": "偏冷(P20-P40)",
+        "3": "中性(P40-P60)",
+        "4": "偏热(P60-P80)",
+        "5": "极热(P80-P100)"
+      },
+      "gThresholds": {
+        "P20": -2.9546,
+        "P40": -0.7674,
+        "P60": 1.163,
+        "P80": 3.0139
+      },
+      "gLabels": {
+        "1": "大降(P0-P20)",
+        "2": "小降(P20-P40)",
+        "3": "稳定(P40-P60)",
+        "4": "小升(P60-P80)",
+        "5": "大升(P80-P100)"
+      }
+    }
+  },
+  "gridProfiles": {
+    "excess_5d": {
+      "Q1_极冷_G1_大降": {
+        "qGrade": 1,
+        "gGrade": 1,
+        "nTriggers": 18,
+        "longSpace": {
+          "n": 18,
+          "upsideMean": 26.0425,
+          "upsideMedian": 19.2236,
+          "adverseMean": -7.1683,
+          "upsideAdverseRatio": 3.633,
+          "std": 18.933,
+          "p25": 11.191,
+          "p75": 38.1606,
+          "skew": 0.5477,
+          "maxUpside": 57.7237,
+          "maxAdverse": -18.4744
+        },
+        "shortSpace": {
+          "n": 18,
+          "upsideMean": 7.1683,
+          "upsideMedian": 6.431,
+          "adverseMean": -26.0425,
+          "upsideAdverseRatio": 0.2753,
+          "std": 5.2555,
+          "p25": 3.6571,
+          "p75": 8.5945,
+          "skew": 0.9399,
+          "maxUpside": 18.4744,
+          "maxAdverse": -57.7237
+        },
+        "longReturn": {
+          "retMean": 6.1128,
+          "retMedian": 5.2861,
+          "winRate": 0.6667,
+          "profitFactor": 4.9004,
+          "var95": -9.1147,
+          "retentionMean": -0.0923,
+          "retentionMedian": 0.2356
+        },
+        "shortReturn": {
+          "retMean": -6.1128,
+          "retMedian": -5.2861,
+          "winRate": 0.3333,
+          "profitFactor": 0.2041,
+          "var95": -22.6848,
+          "retentionMean": -2.1572,
+          "retentionMedian": -1.0642
+        },
+        "longPath": {
+          "peakDayMedian": 12.5,
+          "peakDayMean": 11.9,
+          "medianDayMean": 14.2,
+          "medianDayMedian": 14.0,
+          "favorableFirstRate": 0.2222
+        },
+        "shortPath": {
+          "peakDayMedian": 3.5,
+          "peakDayMean": 6.6,
+          "medianDayMean": 14.2,
+          "medianDayMedian": 14.0,
+          "favorableFirstRate": 0.7778
+        },
+        "profile": {
+          "spaceBias": "偏多",
+          "shortCompetitiveness": 0.2753,
+          "normalPerformance": "正向",
+          "pathTag": "先不利",
+          "favorableFirstRate": 0.2222,
+          "confidence": "中",
+          "summary": "做多空间优势明显，中位数价格收益为正，但常先浮亏再反转，执行压力大"
+        }
+      },
+      "Q1_极冷_G2_小降": {
+        "qGrade": 1,
+        "gGrade": 2,
+        "nTriggers": 14,
+        "longSpace": {
+          "n": 14,
+          "upsideMean": 20.7175,
+          "upsideMedian": 16.1279,
+          "adverseMean": -5.8357,
+          "upsideAdverseRatio": 3.5501,
+          "std": 17.7726,
+          "p25": 10.4747,
+          "p75": 19.8378,
+          "skew": 1.6105,
+          "maxUpside": 66.7895,
+          "maxAdverse": -17.6603
+        },
+        "shortSpace": {
+          "n": 14,
+          "upsideMean": 5.8357,
+          "upsideMedian": 4.1918,
+          "adverseMean": -20.7175,
+          "upsideAdverseRatio": 0.2817,
+          "std": 5.5707,
+          "p25": 1.0992,
+          "p75": 8.0303,
+          "skew": 1.0951,
+          "maxUpside": 17.6603,
+          "maxAdverse": -66.7895
+        },
+        "longReturn": {
+          "retMean": 5.3445,
+          "retMedian": 3.0522,
+          "winRate": 0.7857,
+          "profitFactor": 4.9951,
+          "var95": -7.626,
+          "retentionMean": -0.0561,
+          "retentionMedian": 0.224
+        },
+        "shortReturn": {
+          "retMean": -5.3445,
+          "retMedian": -3.0522,
+          "winRate": 0.2143,
+          "profitFactor": 0.2002,
+          "var95": -25.0642,
+          "retentionMean": -6.8847,
+          "retentionMedian": -0.723
+        },
+        "longPath": {
+          "peakDayMedian": 9.5,
+          "peakDayMean": 9.6,
+          "medianDayMean": 13.3,
+          "medianDayMedian": 13.5,
+          "favorableFirstRate": 0.4286
+        },
+        "shortPath": {
+          "peakDayMedian": 5.5,
+          "peakDayMean": 8.6,
+          "medianDayMean": 13.3,
+          "medianDayMedian": 13.5,
+          "favorableFirstRate": 0.5714
+        },
+        "profile": {
+          "spaceBias": "偏多",
+          "shortCompetitiveness": 0.2817,
+          "normalPerformance": "正向",
+          "pathTag": "路径拉锯",
+          "favorableFirstRate": 0.4286,
+          "confidence": "中",
+          "summary": "做多空间优势明显，中位数价格收益为正，路径拉锯"
+        }
+      },
+      "Q1_极冷_G3_稳定": {
+        "qGrade": 1,
+        "gGrade": 3,
+        "nTriggers": 6,
+        "longSpace": {
+          "n": 6,
+          "upsideMean": 13.8335,
+          "upsideMedian": 13.9284,
+          "adverseMean": -5.3091,
+          "upsideAdverseRatio": 2.6056,
+          "std": 7.7773,
+          "p25": 9.0918,
+          "p75": 17.4748,
+          "skew": 0.2395,
+          "maxUpside": 25.5521,
+          "maxAdverse": -14.857
+        },
+        "shortSpace": {
+          "n": 6,
+          "upsideMean": 5.3091,
+          "upsideMedian": 4.4451,
+          "adverseMean": -13.8335,
+          "upsideAdverseRatio": 0.3838,
+          "std": 5.4563,
+          "p25": 1.2331,
+          "p75": 6.7757,
+          "skew": 1.1856,
+          "maxUpside": 14.857,
+          "maxAdverse": -25.5521
+        },
+        "longReturn": {
+          "retMean": 2.9288,
+          "retMedian": 3.8967,
+          "winRate": 0.6667,
+          "profitFactor": 3.2105,
+          "var95": -5.5398,
+          "retentionMean": -0.1256,
+          "retentionMedian": 0.2399
+        },
+        "shortReturn": {
+          "retMean": -2.9288,
+          "retMedian": -3.8967,
+          "winRate": 0.3333,
+          "profitFactor": 0.3115,
+          "var95": -9.1399,
+          "retentionMean": -5.6459,
+          "retentionMedian": -1.6091
+        },
+        "longPath": {
+          "peakDayMedian": 12.0,
+          "peakDayMean": 12.0,
+          "medianDayMean": 16.0,
+          "medianDayMedian": 16.5,
+          "favorableFirstRate": 0.1667
+        },
+        "shortPath": {
+          "peakDayMedian": 4.5,
+          "peakDayMean": 6.0,
+          "medianDayMean": 16.0,
+          "medianDayMedian": 16.5,
+          "favorableFirstRate": 0.8333
+        },
+        "profile": {
+          "spaceBias": "偏多",
+          "shortCompetitiveness": 0.3838,
+          "normalPerformance": "正向",
+          "pathTag": "先不利",
+          "favorableFirstRate": 0.1667,
+          "confidence": "低",
+          "summary": "做多空间优势明显，中位数价格收益为正，但常先浮亏再反转，执行压力大"
+        }
+      },
+      "Q1_极冷_G4_小升": {
+        "qGrade": 1,
+        "gGrade": 4,
+        "nTriggers": 4,
+        "longSpace": {
+          "n": 4,
+          "upsideMean": 16.4608,
+          "upsideMedian": 12.3046,
+          "adverseMean": -8.8799,
+          "upsideAdverseRatio": 1.8537,
+          "std": 17.33,
+          "p25": 7.9614,
+          "p75": 20.8039,
+          "skew": 1.3082,
+          "maxUpside": 40.9331,
+          "maxAdverse": -18.3398
+        },
+        "shortSpace": {
+          "n": 4,
+          "upsideMean": 8.8799,
+          "upsideMedian": 8.1696,
+          "adverseMean": -16.4608,
+          "upsideAdverseRatio": 0.5395,
+          "std": 7.5685,
+          "p25": 4.1688,
+          "p75": 12.8806,
+          "skew": 0.447,
+          "maxUpside": 18.3398,
+          "maxAdverse": -40.9331
+        },
+        "longReturn": {
+          "retMean": 3.8565,
+          "retMedian": 0.7344,
+          "winRate": 0.5,
+          "profitFactor": 2.1458,
+          "var95": -9.536,
+          "retentionMean": 0.2139,
+          "retentionMedian": 0.2976
+        },
+        "shortReturn": {
+          "retMean": -3.8565,
+          "retMedian": -0.7344,
+          "winRate": 0.5,
+          "profitFactor": 0.466,
+          "var95": -21.6198,
+          "retentionMean": -7.3334,
+          "retentionMedian": -0.2741
+        },
+        "longPath": {
+          "peakDayMedian": 11.0,
+          "peakDayMean": 9.0,
+          "medianDayMean": 12.0,
+          "medianDayMedian": 12.0,
+          "favorableFirstRate": 0.5
+        },
+        "shortPath": {
+          "peakDayMedian": 5.5,
+          "peakDayMean": 7.2,
+          "medianDayMean": 12.0,
+          "medianDayMedian": 12.0,
+          "favorableFirstRate": 0.5
+        },
+        "profile": {
+          "spaceBias": "样本不足",
+          "shortCompetitiveness": null,
+          "normalPerformance": "-",
+          "pathTag": "-",
+          "favorableFirstRate": null,
+          "confidence": "无效",
+          "summary": "仅4个样本，不足以生成画像"
+        }
+      },
+      "Q1_极冷_G5_大升": {
+        "qGrade": 1,
+        "gGrade": 5,
+        "nTriggers": 7,
+        "longSpace": {
+          "n": 7,
+          "upsideMean": 24.5227,
+          "upsideMedian": 11.9661,
+          "adverseMean": -7.3416,
+          "upsideAdverseRatio": 3.3403,
+          "std": 21.764,
+          "p25": 10.7575,
+          "p75": 34.2385,
+          "skew": 1.2579,
+          "maxUpside": 64.6362,
+          "maxAdverse": -14.4615
+        },
+        "shortSpace": {
+          "n": 7,
+          "upsideMean": 7.3416,
+          "upsideMedian": 7.8531,
+          "adverseMean": -24.5227,
+          "upsideAdverseRatio": 0.2994,
+          "std": 5.6839,
+          "p25": 3.9162,
+          "p75": 10.9286,
+          "skew": -0.1184,
+          "maxUpside": 14.4615,
+          "maxAdverse": -64.6362
+        },
+        "longReturn": {
+          "retMean": 4.7934,
+          "retMedian": 0.5367,
+          "winRate": 0.7143,
+          "profitFactor": 4.491,
+          "var95": -5.4829,
+          "retentionMean": -0.0938,
+          "retentionMedian": 0.0449
+        },
+        "shortReturn": {
+          "retMean": -4.7934,
+          "retMedian": -0.5367,
+          "winRate": 0.2857,
+          "profitFactor": 0.2227,
+          "var95": -21.6939,
+          "retentionMean": 0.5583,
+          "retentionMedian": -0.0353
+        },
+        "longPath": {
+          "peakDayMedian": 11.0,
+          "peakDayMean": 9.9,
+          "medianDayMean": 13.9,
+          "medianDayMedian": 14.0,
+          "favorableFirstRate": 0.4286
+        },
+        "shortPath": {
+          "peakDayMedian": 2.0,
+          "peakDayMean": 8.3,
+          "medianDayMean": 13.9,
+          "medianDayMedian": 14.0,
+          "favorableFirstRate": 0.5714
+        },
+        "profile": {
+          "spaceBias": "偏多",
+          "shortCompetitiveness": 0.2994,
+          "normalPerformance": "正向",
+          "pathTag": "路径拉锯",
+          "favorableFirstRate": 0.4286,
+          "confidence": "低",
+          "summary": "做多空间优势明显，中位数价格收益为正，路径拉锯"
+        }
+      },
+      "Q2_偏冷_G1_大降": {
+        "qGrade": 2,
+        "gGrade": 1,
+        "nTriggers": 11,
+        "longSpace": {
+          "n": 11,
+          "upsideMean": 15.1107,
+          "upsideMedian": 10.3061,
+          "adverseMean": -8.7802,
+          "upsideAdverseRatio": 1.721,
+          "std": 15.0225,
+          "p25": 7.0416,
+          "p75": 12.5504,
+          "skew": 1.6978,
+          "maxUpside": 44.9086,
+          "maxAdverse": -20.0
+        },
+        "shortSpace": {
+          "n": 11,
+          "upsideMean": 8.7802,
+          "upsideMedian": 8.4755,
+          "adverseMean": -15.1107,
+          "upsideAdverseRatio": 0.5811,
+          "std": 5.412,
+          "p25": 6.0494,
+          "p75": 11.1309,
+          "skew": 0.274,
+          "maxUpside": 20.0,
+          "maxAdverse": -44.9086
+        },
+        "longReturn": {
+          "retMean": 0.7682,
+          "retMedian": -0.1362,
+          "winRate": 0.3636,
+          "profitFactor": 1.278,
+          "var95": -9.9446,
+          "retentionMean": -0.3228,
+          "retentionMedian": -0.0107
+        },
+        "shortReturn": {
+          "retMean": -0.7682,
+          "retMedian": 0.1362,
+          "winRate": 0.6364,
+          "profitFactor": 0.7825,
+          "var95": -17.6073,
+          "retentionMean": 1.3323,
+          "retentionMedian": 0.2986
+        },
+        "longPath": {
+          "peakDayMedian": 15.0,
+          "peakDayMean": 12.2,
+          "medianDayMean": 10.5,
+          "medianDayMedian": 10.0,
+          "favorableFirstRate": 0.4545
+        },
+        "shortPath": {
+          "peakDayMedian": 12.0,
+          "peakDayMean": 11.0,
+          "medianDayMean": 10.5,
+          "medianDayMedian": 10.0,
+          "favorableFirstRate": 0.5455
+        },
+        "profile": {
+          "spaceBias": "多空拉扯",
+          "shortCompetitiveness": 0.5811,
+          "normalPerformance": "中性",
+          "pathTag": "路径拉锯",
+          "favorableFirstRate": 0.5,
+          "confidence": "中",
+          "summary": "多空空间接近，不宜单边操作"
+        }
+      },
+      "Q2_偏冷_G2_小降": {
+        "qGrade": 2,
+        "gGrade": 2,
+        "nTriggers": 11,
+        "longSpace": {
+          "n": 11,
+          "upsideMean": 17.1563,
+          "upsideMedian": 16.0545,
+          "adverseMean": -5.7419,
+          "upsideAdverseRatio": 2.9879,
+          "std": 8.6832,
+          "p25": 13.4035,
+          "p75": 18.2191,
+          "skew": 0.9941,
+          "maxUpside": 35.419,
+          "maxAdverse": -12.7652
+        },
+        "shortSpace": {
+          "n": 11,
+          "upsideMean": 5.7419,
+          "upsideMedian": 4.3885,
+          "adverseMean": -17.1563,
+          "upsideAdverseRatio": 0.3347,
+          "std": 4.4394,
+          "p25": 2.3179,
+          "p75": 9.2345,
+          "skew": 0.4211,
+          "maxUpside": 12.7652,
+          "maxAdverse": -35.419
+        },
+        "longReturn": {
+          "retMean": 4.2736,
+          "retMedian": 6.9381,
+          "winRate": 0.8182,
+          "profitFactor": 5.9656,
+          "var95": -4.7336,
+          "retentionMean": 0.1333,
+          "retentionMedian": 0.2882
+        },
+        "shortReturn": {
+          "retMean": -4.2736,
+          "retMedian": -6.9381,
+          "winRate": 0.1818,
+          "profitFactor": 0.1676,
+          "var95": -9.5891,
+          "retentionMean": -4.1726,
+          "retentionMedian": -0.946
+        },
+        "longPath": {
+          "peakDayMedian": 13.0,
+          "peakDayMean": 11.7,
+          "medianDayMean": 9.7,
+          "medianDayMedian": 10.0,
+          "favorableFirstRate": 0.2727
+        },
+        "shortPath": {
+          "peakDayMedian": 6.0,
+          "peakDayMean": 7.9,
+          "medianDayMean": 9.7,
+          "medianDayMedian": 10.0,
+          "favorableFirstRate": 0.6364
+        },
+        "profile": {
+          "spaceBias": "偏多",
+          "shortCompetitiveness": 0.3347,
+          "normalPerformance": "正向",
+          "pathTag": "先不利",
+          "favorableFirstRate": 0.2727,
+          "confidence": "中",
+          "summary": "做多空间优势明显，中位数价格收益为正，但常先浮亏再反转，执行压力大"
+        }
+      },
+      "Q2_偏冷_G3_稳定": {
+        "qGrade": 2,
+        "gGrade": 3,
+        "nTriggers": 13,
+        "longSpace": {
+          "n": 13,
+          "upsideMean": 16.7848,
+          "upsideMedian": 12.2795,
+          "adverseMean": -8.3698,
+          "upsideAdverseRatio": 2.0054,
+          "std": 12.6238,
+          "p25": 6.6969,
+          "p75": 28.972,
+          "skew": 0.5393,
+          "maxUpside": 36.8935,
+          "maxAdverse": -15.3343
+        },
+        "shortSpace": {
+          "n": 13,
+          "upsideMean": 8.3698,
+          "upsideMedian": 6.4281,
+          "adverseMean": -16.7848,
+          "upsideAdverseRatio": 0.4987,
+          "std": 4.7653,
+          "p25": 4.7619,
+          "p75": 12.8448,
+          "skew": 0.4248,
+          "maxUpside": 15.3343,
+          "maxAdverse": -36.8935
+        },
+        "longReturn": {
+          "retMean": 1.8272,
+          "retMedian": 1.0968,
+          "winRate": 0.5385,
+          "profitFactor": 1.9106,
+          "var95": -7.2394,
+          "retentionMean": -0.3509,
+          "retentionMedian": 0.0665
+        },
+        "shortReturn": {
+          "retMean": -1.8272,
+          "retMedian": -1.0968,
+          "winRate": 0.4615,
+          "profitFactor": 0.5234,
+          "var95": -12.0588,
+          "retentionMean": -0.7182,
+          "retentionMedian": -0.1694
+        },
+        "longPath": {
+          "peakDayMedian": 18.0,
+          "peakDayMean": 14.9,
+          "medianDayMean": 11.2,
+          "medianDayMedian": 11.0,
+          "favorableFirstRate": 0.1538
+        },
+        "shortPath": {
+          "peakDayMedian": 9.0,
+          "peakDayMean": 8.5,
+          "medianDayMean": 11.2,
+          "medianDayMedian": 11.0,
+          "favorableFirstRate": 0.8462
+        },
+        "profile": {
+          "spaceBias": "多空拉扯",
+          "shortCompetitiveness": 0.4987,
+          "normalPerformance": "正向",
+          "pathTag": "路径拉锯",
+          "favorableFirstRate": 0.5,
+          "confidence": "中",
+          "summary": "多空空间接近，不宜单边操作"
+        }
+      },
+      "Q2_偏冷_G4_小升": {
+        "qGrade": 2,
+        "gGrade": 4,
+        "nTriggers": 6,
+        "longSpace": {
+          "n": 6,
+          "upsideMean": 17.2044,
+          "upsideMedian": 17.2157,
+          "adverseMean": -3.9119,
+          "upsideAdverseRatio": 4.398,
+          "std": 11.285,
+          "p25": 11.8592,
+          "p75": 19.7042,
+          "skew": 0.6256,
+          "maxUpside": 36.0223,
+          "maxAdverse": -16.083
+        },
+        "shortSpace": {
+          "n": 6,
+          "upsideMean": 3.9119,
+          "upsideMedian": 1.8995,
+          "adverseMean": -17.2044,
+          "upsideAdverseRatio": 0.2274,
+          "std": 6.3281,
+          "p25": 0.1661,
+          "p75": 4.2514,
+          "skew": 1.8738,
+          "maxUpside": 16.083,
+          "maxAdverse": -36.0223
+        },
+        "longReturn": {
+          "retMean": 6.2664,
+          "retMedian": 5.6011,
+          "winRate": 0.8333,
+          "profitFactor": 5.5458,
+          "var95": -5.8226,
+          "retentionMean": -0.0064,
+          "retentionMedian": 0.328
+        },
+        "shortReturn": {
+          "retMean": -6.2664,
+          "retMedian": -5.6011,
+          "winRate": 0.1667,
+          "profitFactor": 0.1803,
+          "var95": -19.4158,
+          "retentionMean": -19.1942,
+          "retentionMedian": -0.9857
+        },
+        "longPath": {
+          "peakDayMedian": 9.5,
+          "peakDayMean": 8.7,
+          "medianDayMean": 13.3,
+          "medianDayMedian": 14.0,
+          "favorableFirstRate": 0.5
+        },
+        "shortPath": {
+          "peakDayMedian": 6.5,
+          "peakDayMean": 7.7,
+          "medianDayMean": 13.3,
+          "medianDayMedian": 14.0,
+          "favorableFirstRate": 0.5
+        },
+        "profile": {
+          "spaceBias": "偏多",
+          "shortCompetitiveness": 0.2274,
+          "normalPerformance": "正向",
+          "pathTag": "路径拉锯",
+          "favorableFirstRate": 0.5,
+          "confidence": "低",
+          "summary": "做多空间优势明显，中位数价格收益为正，路径拉锯"
+        }
+      },
+      "Q2_偏冷_G5_大升": {
+        "qGrade": 2,
+        "gGrade": 5,
+        "nTriggers": 5,
+        "longSpace": {
+          "n": 5,
+          "upsideMean": 18.2881,
+          "upsideMedian": 16.1067,
+          "adverseMean": -6.1289,
+          "upsideAdverseRatio": 2.9839,
+          "std": 9.9367,
+          "p25": 12.5659,
+          "p75": 24.0362,
+          "skew": 0.44,
+          "maxUpside": 32.0561,
+          "maxAdverse": -10.7607
+        },
+        "shortSpace": {
+          "n": 5,
+          "upsideMean": 6.1289,
+          "upsideMedian": 4.6761,
+          "adverseMean": -18.2881,
+          "upsideAdverseRatio": 0.3351,
+          "std": 3.1299,
+          "p25": 3.6561,
+          "p75": 7.9272,
+          "skew": 0.9687,
+          "maxUpside": 10.7607,
+          "maxAdverse": -32.0561
+        },
+        "longReturn": {
+          "retMean": 3.4847,
+          "retMedian": 3.8056,
+          "winRate": 0.8,
+          "profitFactor": 9.3523,
+          "var95": -1.0711,
+          "retentionMean": 0.1309,
+          "retentionMedian": 0.1856
+        },
+        "shortReturn": {
+          "retMean": -3.4847,
+          "retMedian": -3.8056,
+          "winRate": 0.2,
+          "profitFactor": 0.1069,
+          "var95": -7.3613,
+          "retentionMean": -0.6705,
+          "retentionMedian": -0.8176
+        },
+        "longPath": {
+          "peakDayMedian": 9.0,
+          "peakDayMean": 12.0,
+          "medianDayMean": 11.4,
+          "medianDayMedian": 12.0,
+          "favorableFirstRate": 0.2
+        },
+        "shortPath": {
+          "peakDayMedian": 12.0,
+          "peakDayMean": 10.0,
+          "medianDayMean": 11.4,
+          "medianDayMedian": 12.0,
+          "favorableFirstRate": 0.8
+        },
+        "profile": {
+          "spaceBias": "偏多",
+          "shortCompetitiveness": 0.3351,
+          "normalPerformance": "正向",
+          "pathTag": "先不利",
+          "favorableFirstRate": 0.2,
+          "confidence": "低",
+          "summary": "做多空间优势明显，中位数价格收益为正，但常先浮亏再反转，执行压力大"
+        }
+      },
+      "Q3_中性_G1_大降": {
+        "qGrade": 3,
+        "gGrade": 1,
+        "nTriggers": 9,
+        "longSpace": {
+          "n": 9,
+          "upsideMean": 21.0831,
+          "upsideMedian": 12.7192,
+          "adverseMean": -9.2696,
+          "upsideAdverseRatio": 2.2744,
+          "std": 18.6328,
+          "p25": 11.7351,
+          "p75": 24.6268,
+          "skew": 1.0377,
+          "maxUpside": 55.8382,
+          "maxAdverse": -25.6388
+        },
+        "shortSpace": {
+          "n": 9,
+          "upsideMean": 9.2696,
+          "upsideMedian": 7.4214,
+          "adverseMean": -21.0831,
+          "upsideAdverseRatio": 0.4397,
+          "std": 6.6903,
+          "p25": 6.0616,
+          "p75": 8.8623,
+          "skew": 2.175,
+          "maxUpside": 25.6388,
+          "maxAdverse": -55.8382
+        },
+        "longReturn": {
+          "retMean": 2.3946,
+          "retMedian": 0.2809,
+          "winRate": 0.6667,
+          "profitFactor": 2.0358,
+          "var95": -11.2251,
+          "retentionMean": 0.054,
+          "retentionMedian": 0.0786
+        },
+        "shortReturn": {
+          "retMean": -2.3946,
+          "retMedian": -0.2809,
+          "winRate": 0.3333,
+          "profitFactor": 0.4912,
+          "var95": -15.0884,
+          "retentionMean": -0.8289,
+          "retentionMedian": -0.0463
+        },
+        "longPath": {
+          "peakDayMedian": 12.0,
+          "peakDayMean": 12.7,
+          "medianDayMean": 12.2,
+          "medianDayMedian": 12.0,
+          "favorableFirstRate": 0.2222
+        },
+        "shortPath": {
+          "peakDayMedian": 3.0,
+          "peakDayMean": 5.9,
+          "medianDayMean": 12.2,
+          "medianDayMedian": 12.0,
+          "favorableFirstRate": 0.7778
+        },
+        "profile": {
+          "spaceBias": "多空拉扯",
+          "shortCompetitiveness": 0.4397,
+          "normalPerformance": "正向",
+          "pathTag": "路径拉锯",
+          "favorableFirstRate": 0.5,
+          "confidence": "低",
+          "summary": "多空空间接近，不宜单边操作"
+        }
+      },
+      "Q3_中性_G2_小降": {
+        "qGrade": 3,
+        "gGrade": 2,
+        "nTriggers": 9,
+        "longSpace": {
+          "n": 9,
+          "upsideMean": 21.7933,
+          "upsideMedian": 16.0385,
+          "adverseMean": -7.9552,
+          "upsideAdverseRatio": 2.7395,
+          "std": 13.9746,
+          "p25": 10.1956,
+          "p75": 34.3126,
+          "skew": 0.8633,
+          "maxUpside": 45.8108,
+          "maxAdverse": -17.5392
+        },
+        "shortSpace": {
+          "n": 9,
+          "upsideMean": 7.9552,
+          "upsideMedian": 8.0725,
+          "adverseMean": -21.7933,
+          "upsideAdverseRatio": 0.365,
+          "std": 4.523,
+          "p25": 5.0787,
+          "p75": 9.0437,
+          "skew": 1.1606,
+          "maxUpside": 17.5392,
+          "maxAdverse": -45.8108
+        },
+        "longReturn": {
+          "retMean": 4.9515,
+          "retMedian": 3.1087,
+          "winRate": 0.7778,
+          "profitFactor": 9.9,
+          "var95": -2.1615,
+          "retentionMean": 0.1667,
+          "retentionMedian": 0.2286
+        },
+        "shortReturn": {
+          "retMean": -4.9515,
+          "retMedian": -3.1087,
+          "winRate": 0.2222,
+          "profitFactor": 0.0872,
+          "var95": -12.6984,
+          "retentionMean": -1.0325,
+          "retentionMedian": -0.651
+        },
+        "longPath": {
+          "peakDayMedian": 6.0,
+          "peakDayMean": 9.9,
+          "medianDayMean": 13.7,
+          "medianDayMedian": 12.0,
+          "favorableFirstRate": 0.5556
+        },
+        "shortPath": {
+          "peakDayMedian": 10.0,
+          "peakDayMean": 11.3,
+          "medianDayMean": 13.7,
+          "medianDayMedian": 12.0,
+          "favorableFirstRate": 0.4444
+        },
+        "profile": {
+          "spaceBias": "偏多",
+          "shortCompetitiveness": 0.365,
+          "normalPerformance": "正向",
+          "pathTag": "路径拉锯",
+          "favorableFirstRate": 0.5556,
+          "confidence": "低",
+          "summary": "做多空间优势明显，中位数价格收益为正，路径拉锯"
+        }
+      },
+      "Q3_中性_G3_稳定": {
+        "qGrade": 3,
+        "gGrade": 3,
+        "nTriggers": 14,
+        "longSpace": {
+          "n": 14,
+          "upsideMean": 10.9921,
+          "upsideMedian": 10.7227,
+          "adverseMean": -10.3161,
+          "upsideAdverseRatio": 1.0655,
+          "std": 6.2243,
+          "p25": 6.2473,
+          "p75": 16.1724,
+          "skew": 0.4418,
+          "maxUpside": 21.8104,
+          "maxAdverse": -20.979
+        },
+        "shortSpace": {
+          "n": 14,
+          "upsideMean": 10.3161,
+          "upsideMedian": 10.9131,
+          "adverseMean": -10.9921,
+          "upsideAdverseRatio": 0.9385,
+          "std": 5.5965,
+          "p25": 6.7927,
+          "p75": 12.8845,
+          "skew": 0.0592,
+          "maxUpside": 20.979,
+          "maxAdverse": -21.8104
+        },
+        "longReturn": {
+          "retMean": -1.5528,
+          "retMedian": -1.253,
+          "winRate": 0.4286,
+          "profitFactor": 0.462,
+          "var95": -7.8336,
+          "retentionMean": -0.422,
+          "retentionMedian": -0.1844
+        },
+        "shortReturn": {
+          "retMean": 1.5528,
+          "retMedian": 1.253,
+          "winRate": 0.5714,
+          "profitFactor": 2.1645,
+          "var95": -6.1173,
+          "retentionMean": 0.7242,
+          "retentionMedian": 0.2902
+        },
+        "longPath": {
+          "peakDayMedian": 15.5,
+          "peakDayMean": 12.8,
+          "medianDayMean": 12.8,
+          "medianDayMedian": 11.5,
+          "favorableFirstRate": 0.2143
+        },
+        "shortPath": {
+          "peakDayMedian": 6.5,
+          "peakDayMean": 8.0,
+          "medianDayMean": 12.8,
+          "medianDayMedian": 11.5,
+          "favorableFirstRate": 0.7857
+        },
+        "profile": {
+          "spaceBias": "偏空",
+          "shortCompetitiveness": 0.9385,
+          "normalPerformance": "负向",
+          "pathTag": "先有利",
+          "favorableFirstRate": 0.7857,
+          "confidence": "中",
+          "summary": "做空空间优势明显，中位数价格收益为负，路径先有利"
+        }
+      },
+      "Q3_中性_G4_小升": {
+        "qGrade": 3,
+        "gGrade": 4,
+        "nTriggers": 9,
+        "longSpace": {
+          "n": 9,
+          "upsideMean": 11.8154,
+          "upsideMedian": 12.6631,
+          "adverseMean": -10.3682,
+          "upsideAdverseRatio": 1.1396,
+          "std": 11.0068,
+          "p25": 3.4188,
+          "p75": 14.3244,
+          "skew": 1.3317,
+          "maxUpside": 35.9358,
+          "maxAdverse": -15.1508
+        },
+        "shortSpace": {
+          "n": 9,
+          "upsideMean": 10.3682,
+          "upsideMedian": 11.738,
+          "adverseMean": -11.8154,
+          "upsideAdverseRatio": 0.8775,
+          "std": 4.7573,
+          "p25": 6.9804,
+          "p75": 14.5299,
+          "skew": -0.8134,
+          "maxUpside": 15.1508,
+          "maxAdverse": -35.9358
+        },
+        "longReturn": {
+          "retMean": -0.7809,
+          "retMedian": -1.2752,
+          "winRate": 0.4444,
+          "profitFactor": 0.7745,
+          "var95": -8.8437,
+          "retentionMean": -0.4841,
+          "retentionMedian": 0.0055
+        },
+        "shortReturn": {
+          "retMean": 0.7809,
+          "retMedian": 1.2752,
+          "winRate": 0.5556,
+          "profitFactor": 1.2912,
+          "var95": -9.9222,
+          "retentionMean": -0.7734,
+          "retentionMedian": 0.1086
+        },
+        "longPath": {
+          "peakDayMedian": 8.0,
+          "peakDayMean": 9.3,
+          "medianDayMean": 9.9,
+          "medianDayMedian": 10.0,
+          "favorableFirstRate": 0.5556
+        },
+        "shortPath": {
+          "peakDayMedian": 8.0,
+          "peakDayMean": 10.8,
+          "medianDayMean": 9.9,
+          "medianDayMedian": 10.0,
+          "favorableFirstRate": 0.4444
+        },
+        "profile": {
+          "spaceBias": "多空拉扯偏空",
+          "shortCompetitiveness": 0.8775,
+          "normalPerformance": "中性",
+          "pathTag": "路径拉锯",
+          "favorableFirstRate": 0.4444,
+          "confidence": "低",
+          "summary": "做空竞争力上升，路径拉锯"
+        }
+      },
+      "Q3_中性_G5_大升": {
+        "qGrade": 3,
+        "gGrade": 5,
+        "nTriggers": 5,
+        "longSpace": {
+          "n": 5,
+          "upsideMean": 20.7021,
+          "upsideMedian": 14.3351,
+          "adverseMean": -8.1177,
+          "upsideAdverseRatio": 2.5502,
+          "std": 11.9499,
+          "p25": 12.95,
+          "p75": 25.7914,
+          "skew": 1.2361,
+          "maxUpside": 39.4278,
+          "maxAdverse": -14.9942
+        },
+        "shortSpace": {
+          "n": 5,
+          "upsideMean": 8.1177,
+          "upsideMedian": 5.8693,
+          "adverseMean": -20.7021,
+          "upsideAdverseRatio": 0.3921,
+          "std": 5.9023,
+          "p25": 4.715,
+          "p75": 13.6157,
+          "skew": 0.2769,
+          "maxUpside": 14.9942,
+          "maxAdverse": -39.4278
+        },
+        "longReturn": {
+          "retMean": 3.3663,
+          "retMedian": 2.9056,
+          "winRate": 0.8,
+          "profitFactor": 6.1671,
+          "var95": -2.5513,
+          "retentionMean": 0.0806,
+          "retentionMedian": 0.1127
+        },
+        "shortReturn": {
+          "retMean": -3.3663,
+          "retMedian": -2.9056,
+          "winRate": 0.2,
+          "profitFactor": 0.1622,
+          "var95": -11.6835,
+          "retentionMean": -2.1151,
+          "retentionMedian": -0.1938
+        },
+        "longPath": {
+          "peakDayMedian": 10.0,
+          "peakDayMean": 11.0,
+          "medianDayMean": 11.0,
+          "medianDayMedian": 12.0,
+          "favorableFirstRate": 0.2
+        },
+        "shortPath": {
+          "peakDayMedian": 2.0,
+          "peakDayMean": 5.8,
+          "medianDayMean": 11.0,
+          "medianDayMedian": 12.0,
+          "favorableFirstRate": 0.8
+        },
+        "profile": {
+          "spaceBias": "偏多",
+          "shortCompetitiveness": 0.3921,
+          "normalPerformance": "正向",
+          "pathTag": "先不利",
+          "favorableFirstRate": 0.2,
+          "confidence": "低",
+          "summary": "做多空间优势明显，中位数价格收益为正，但常先浮亏再反转，执行压力大"
+        }
+      },
+      "Q4_偏热_G1_大降": {
+        "qGrade": 4,
+        "gGrade": 1,
+        "nTriggers": 3,
+        "longSpace": {
+          "n": 3,
+          "upsideMean": 21.1221,
+          "upsideMedian": 28.0174,
+          "adverseMean": -4.5487,
+          "upsideAdverseRatio": 4.6435,
+          "std": 13.1809,
+          "p25": 16.9706,
+          "p75": 28.7212,
+          "skew": -1.7099,
+          "maxUpside": 29.4251,
+          "maxAdverse": -17.0331
+        },
+        "shortSpace": {
+          "n": 3,
+          "upsideMean": 4.5487,
+          "upsideMedian": -1.4103,
+          "adverseMean": -21.1221,
+          "upsideAdverseRatio": 0.2154,
+          "std": 10.8155,
+          "p25": -1.6934,
+          "p75": 7.8114,
+          "skew": 1.7267,
+          "maxUpside": 17.0331,
+          "maxAdverse": -29.4251
+        },
+        "longReturn": {
+          "retMean": 5.3741,
+          "retMedian": 10.404,
+          "winRate": 0.6667,
+          "profitFactor": 2.725,
+          "var95": -7.3712,
+          "retentionMean": -0.2288,
+          "retentionMedian": 0.3536
+        },
+        "shortReturn": {
+          "retMean": -5.3741,
+          "retMedian": -10.404,
+          "winRate": 0.3333,
+          "profitFactor": 0.367,
+          "var95": -14.5984,
+          "retentionMean": 5.1824,
+          "retentionMedian": 7.3772
+        },
+        "longPath": {
+          "peakDayMedian": 8.0,
+          "peakDayMean": 10.0,
+          "medianDayMean": 8.7,
+          "medianDayMedian": 8.0,
+          "favorableFirstRate": 0.3333
+        },
+        "shortPath": {
+          "peakDayMedian": 1.0,
+          "peakDayMean": 7.3,
+          "medianDayMean": 8.7,
+          "medianDayMedian": 8.0,
+          "favorableFirstRate": 0.6667
+        },
+        "profile": {
+          "spaceBias": "样本不足",
+          "shortCompetitiveness": null,
+          "normalPerformance": "-",
+          "pathTag": "-",
+          "favorableFirstRate": null,
+          "confidence": "无效",
+          "summary": "仅3个样本，不足以生成画像"
+        }
+      },
+      "Q4_偏热_G2_小降": {
+        "qGrade": 4,
+        "gGrade": 2,
+        "nTriggers": 7,
+        "longSpace": {
+          "n": 7,
+          "upsideMean": 16.6695,
+          "upsideMedian": 9.3907,
+          "adverseMean": -8.4978,
+          "upsideAdverseRatio": 1.9616,
+          "std": 11.2928,
+          "p25": 8.5035,
+          "p75": 25.4057,
+          "skew": 0.6387,
+          "maxUpside": 33.6794,
+          "maxAdverse": -12.1985
+        },
+        "shortSpace": {
+          "n": 7,
+          "upsideMean": 8.4978,
+          "upsideMedian": 8.1568,
+          "adverseMean": -16.6695,
+          "upsideAdverseRatio": 0.5098,
+          "std": 2.7253,
+          "p25": 6.4995,
+          "p75": 10.6261,
+          "skew": 0.119,
+          "maxUpside": 12.1985,
+          "maxAdverse": -33.6794
+        },
+        "longReturn": {
+          "retMean": 1.9442,
+          "retMedian": 0.0109,
+          "winRate": 0.5714,
+          "profitFactor": 2.8602,
+          "var95": -3.1201,
+          "retentionMean": -0.0521,
+          "retentionMedian": 0.0012
+        },
+        "shortReturn": {
+          "retMean": -1.9442,
+          "retMedian": -0.0109,
+          "winRate": 0.4286,
+          "profitFactor": 0.3496,
+          "var95": -10.1656,
+          "retentionMean": -0.43,
+          "retentionMedian": -0.0013
+        },
+        "longPath": {
+          "peakDayMedian": 20.0,
+          "peakDayMean": 17.4,
+          "medianDayMean": 14.0,
+          "medianDayMedian": 16.0,
+          "favorableFirstRate": 0.1429
+        },
+        "shortPath": {
+          "peakDayMedian": 8.0,
+          "peakDayMean": 7.3,
+          "medianDayMean": 14.0,
+          "medianDayMedian": 16.0,
+          "favorableFirstRate": 0.8571
+        },
+        "profile": {
+          "spaceBias": "多空拉扯",
+          "shortCompetitiveness": 0.5098,
+          "normalPerformance": "正向",
+          "pathTag": "路径拉锯",
+          "favorableFirstRate": 0.5,
+          "confidence": "低",
+          "summary": "多空空间接近，不宜单边操作"
+        }
+      },
+      "Q4_偏热_G3_稳定": {
+        "qGrade": 4,
+        "gGrade": 3,
+        "nTriggers": 8,
+        "longSpace": {
+          "n": 8,
+          "upsideMean": 10.3265,
+          "upsideMedian": 9.8876,
+          "adverseMean": -11.657,
+          "upsideAdverseRatio": 0.8859,
+          "std": 3.32,
+          "p25": 8.4228,
+          "p75": 12.143,
+          "skew": 0.1105,
+          "maxUpside": 14.8215,
+          "maxAdverse": -17.5586
+        },
+        "shortSpace": {
+          "n": 8,
+          "upsideMean": 11.657,
+          "upsideMedian": 11.7472,
+          "adverseMean": -10.3265,
+          "upsideAdverseRatio": 1.1288,
+          "std": 4.0554,
+          "p25": 11.2511,
+          "p75": 13.1966,
+          "skew": -1.0092,
+          "maxUpside": 17.5586,
+          "maxAdverse": -14.8215
+        },
+        "longReturn": {
+          "retMean": -2.5583,
+          "retMedian": -2.8833,
+          "winRate": 0.125,
+          "profitFactor": 0.1499,
+          "var95": -5.9924,
+          "retentionMean": -0.3082,
+          "retentionMedian": -0.2757
+        },
+        "shortReturn": {
+          "retMean": 2.5583,
+          "retMedian": 2.8833,
+          "winRate": 0.875,
+          "profitFactor": 6.6706,
+          "var95": -1.9068,
+          "retentionMean": 0.1075,
+          "retentionMedian": 0.2467
+        },
+        "longPath": {
+          "peakDayMedian": 5.0,
+          "peakDayMean": 5.8,
+          "medianDayMean": 9.0,
+          "medianDayMedian": 6.0,
+          "favorableFirstRate": 1.0
+        },
+        "shortPath": {
+          "peakDayMedian": 17.5,
+          "peakDayMean": 17.1,
+          "medianDayMean": 9.0,
+          "medianDayMedian": 6.0,
+          "favorableFirstRate": 0.0
+        },
+        "profile": {
+          "spaceBias": "偏空",
+          "shortCompetitiveness": 1.1288,
+          "normalPerformance": "负向",
+          "pathTag": "路径拉锯",
+          "favorableFirstRate": 0.5,
+          "confidence": "低",
+          "summary": "做空空间优势明显，中位数价格收益为负，路径拉锯"
+        }
+      },
+      "Q4_偏热_G4_小升": {
+        "qGrade": 4,
+        "gGrade": 4,
+        "nTriggers": 13,
+        "longSpace": {
+          "n": 13,
+          "upsideMean": 15.5581,
+          "upsideMedian": 12.8153,
+          "adverseMean": -8.3613,
+          "upsideAdverseRatio": 1.8607,
+          "std": 11.4308,
+          "p25": 10.8308,
+          "p75": 22.0937,
+          "skew": 0.8776,
+          "maxUpside": 39.4111,
+          "maxAdverse": -15.6118
+        },
+        "shortSpace": {
+          "n": 13,
+          "upsideMean": 8.3613,
+          "upsideMedian": 8.1644,
+          "adverseMean": -15.5581,
+          "upsideAdverseRatio": 0.5374,
+          "std": 4.891,
+          "p25": 5.4422,
+          "p75": 12.2208,
+          "skew": -0.0585,
+          "maxUpside": 15.6118,
+          "maxAdverse": -39.4111
+        },
+        "longReturn": {
+          "retMean": 1.1978,
+          "retMedian": -0.8101,
+          "winRate": 0.4615,
+          "profitFactor": 1.5209,
+          "var95": -7.9902,
+          "retentionMean": -0.3108,
+          "retentionMedian": -0.0691
+        },
+        "shortReturn": {
+          "retMean": -1.1978,
+          "retMedian": 0.8101,
+          "winRate": 0.5385,
+          "profitFactor": 0.6575,
+          "var95": -12.2503,
+          "retentionMean": -2.0783,
+          "retentionMedian": 0.1086
+        },
+        "longPath": {
+          "peakDayMedian": 6.0,
+          "peakDayMean": 9.2,
+          "medianDayMean": 8.9,
+          "medianDayMedian": 7.0,
+          "favorableFirstRate": 0.6154
+        },
+        "shortPath": {
+          "peakDayMedian": 13.0,
+          "peakDayMean": 11.2,
+          "medianDayMean": 8.9,
+          "medianDayMedian": 7.0,
+          "favorableFirstRate": 0.3846
+        },
+        "profile": {
+          "spaceBias": "多空拉扯",
+          "shortCompetitiveness": 0.5374,
+          "normalPerformance": "正向",
+          "pathTag": "路径拉锯",
+          "favorableFirstRate": 0.5,
+          "confidence": "中",
+          "summary": "多空空间接近，不宜单边操作"
+        }
+      },
+      "Q4_偏热_G5_大升": {
+        "qGrade": 4,
+        "gGrade": 5,
+        "nTriggers": 13,
+        "longSpace": {
+          "n": 13,
+          "upsideMean": 16.7963,
+          "upsideMedian": 15.5616,
+          "adverseMean": -8.9996,
+          "upsideAdverseRatio": 1.8663,
+          "std": 12.5016,
+          "p25": 10.7084,
+          "p75": 22.8098,
+          "skew": 0.8544,
+          "maxUpside": 44.8322,
+          "maxAdverse": -27.2902
+        },
+        "shortSpace": {
+          "n": 13,
+          "upsideMean": 8.9996,
+          "upsideMedian": 7.886,
+          "adverseMean": -16.7963,
+          "upsideAdverseRatio": 0.5358,
+          "std": 6.1347,
+          "p25": 5.1508,
+          "p75": 9.8795,
+          "skew": 2.4395,
+          "maxUpside": 27.2902,
+          "maxAdverse": -44.8322
+        },
+        "longReturn": {
+          "retMean": 0.7433,
+          "retMedian": 1.1465,
+          "winRate": 0.6154,
+          "profitFactor": 1.2783,
+          "var95": -12.0136,
+          "retentionMean": -0.1048,
+          "retentionMedian": 0.1389
+        },
+        "shortReturn": {
+          "retMean": -0.7433,
+          "retMedian": -1.1465,
+          "winRate": 0.3846,
+          "profitFactor": 0.7823,
+          "var95": -11.3241,
+          "retentionMean": -0.4805,
+          "retentionMedian": -0.1454
+        },
+        "longPath": {
+          "peakDayMedian": 16.0,
+          "peakDayMean": 13.8,
+          "medianDayMean": 11.2,
+          "medianDayMedian": 11.0,
+          "favorableFirstRate": 0.3077
+        },
+        "shortPath": {
+          "peakDayMedian": 9.0,
+          "peakDayMean": 10.5,
+          "medianDayMean": 11.2,
+          "medianDayMedian": 11.0,
+          "favorableFirstRate": 0.6923
+        },
+        "profile": {
+          "spaceBias": "多空拉扯",
+          "shortCompetitiveness": 0.5358,
+          "normalPerformance": "中性",
+          "pathTag": "路径拉锯",
+          "favorableFirstRate": 0.5,
+          "confidence": "中",
+          "summary": "多空空间接近，不宜单边操作"
+        }
+      },
+      "Q5_极热_G1_大降": {
+        "qGrade": 5,
+        "gGrade": 1,
+        "nTriggers": 4,
+        "longSpace": {
+          "n": 4,
+          "upsideMean": 16.613,
+          "upsideMedian": 6.3104,
+          "adverseMean": -7.8525,
+          "upsideAdverseRatio": 2.1156,
+          "std": 22.674,
+          "p25": 4.3894,
+          "p75": 18.534,
+          "skew": 1.9584,
+          "maxUpside": 50.5043,
+          "maxAdverse": -14.3778
+        },
+        "shortSpace": {
+          "n": 4,
+          "upsideMean": 7.8525,
+          "upsideMedian": 8.6876,
+          "adverseMean": -16.613,
+          "upsideAdverseRatio": 0.4727,
+          "std": 6.4039,
+          "p25": 4.6017,
+          "p75": 11.9384,
+          "skew": -0.6136,
+          "maxUpside": 14.3778,
+          "maxAdverse": -50.5043
+        },
+        "longReturn": {
+          "retMean": 2.3295,
+          "retMedian": -1.8839,
+          "winRate": 0.25,
+          "profitFactor": 1.8585,
+          "var95": -6.3874,
+          "retentionMean": -0.5478,
+          "retentionMedian": -0.2953
+        },
+        "shortReturn": {
+          "retMean": -2.3295,
+          "retMedian": 1.8839,
+          "winRate": 0.75,
+          "profitFactor": 0.5381,
+          "var95": -16.9452,
+          "retentionMean": 14.9209,
+          "retentionMedian": 0.3556
+        },
+        "longPath": {
+          "peakDayMedian": 6.5,
+          "peakDayMean": 8.5,
+          "medianDayMean": 14.8,
+          "medianDayMedian": 14.5,
+          "favorableFirstRate": 0.5
+        },
+        "shortPath": {
+          "peakDayMedian": 12.0,
+          "peakDayMean": 11.2,
+          "medianDayMean": 14.8,
+          "medianDayMedian": 14.5,
+          "favorableFirstRate": 0.5
+        },
+        "profile": {
+          "spaceBias": "样本不足",
+          "shortCompetitiveness": null,
+          "normalPerformance": "-",
+          "pathTag": "-",
+          "favorableFirstRate": null,
+          "confidence": "无效",
+          "summary": "仅4个样本，不足以生成画像"
+        }
+      },
+      "Q5_极热_G2_小降": {
+        "qGrade": 5,
+        "gGrade": 2,
+        "nTriggers": 5,
+        "longSpace": {
+          "n": 5,
+          "upsideMean": 6.9095,
+          "upsideMedian": 6.5333,
+          "adverseMean": -13.6129,
+          "upsideAdverseRatio": 0.5076,
+          "std": 4.3588,
+          "p25": 2.9825,
+          "p75": 11.2108,
+          "skew": 0.096,
+          "maxUpside": 11.4893,
+          "maxAdverse": -26.2193
+        },
+        "shortSpace": {
+          "n": 5,
+          "upsideMean": 13.6129,
+          "upsideMedian": 11.1585,
+          "adverseMean": -6.9095,
+          "upsideAdverseRatio": 1.9702,
+          "std": 7.4595,
+          "p25": 9.3636,
+          "p75": 13.9896,
+          "skew": 1.6707,
+          "maxUpside": 26.2193,
+          "maxAdverse": -11.4893
+        },
+        "longReturn": {
+          "retMean": -5.3848,
+          "retMedian": -3.0401,
+          "winRate": 0.0,
+          "profitFactor": 0.0,
+          "var95": -14.2171,
+          "retentionMean": -0.8809,
+          "retentionMedian": -0.2712
+        },
+        "shortReturn": {
+          "retMean": 5.3848,
+          "retMedian": 3.0401,
+          "winRate": 1.0,
+          "profitFactor": 9.9,
+          "var95": 0.5548,
+          "retentionMean": 0.2997,
+          "retentionMedian": 0.2724
+        },
+        "longPath": {
+          "peakDayMedian": 3.0,
+          "peakDayMean": 6.2,
+          "medianDayMean": 11.8,
+          "medianDayMedian": 11.0,
+          "favorableFirstRate": 0.8
+        },
+        "shortPath": {
+          "peakDayMedian": 14.0,
+          "peakDayMean": 14.6,
+          "medianDayMean": 11.8,
+          "medianDayMedian": 11.0,
+          "favorableFirstRate": 0.2
+        },
+        "profile": {
+          "spaceBias": "偏空",
+          "shortCompetitiveness": 1.9702,
+          "normalPerformance": "负向",
+          "pathTag": "先不利",
+          "favorableFirstRate": 0.2,
+          "confidence": "低",
+          "summary": "做空空间优势明显，中位数价格收益为负，但常先浮亏再反转，执行压力大"
+        }
+      },
+      "Q5_极热_G3_稳定": {
+        "qGrade": 5,
+        "gGrade": 3,
+        "nTriggers": 6,
+        "longSpace": {
+          "n": 6,
+          "upsideMean": 11.0715,
+          "upsideMedian": 8.9837,
+          "adverseMean": -6.2738,
+          "upsideAdverseRatio": 1.7647,
+          "std": 8.3771,
+          "p25": 7.2749,
+          "p75": 10.5845,
+          "skew": 1.8992,
+          "maxUpside": 27.312,
+          "maxAdverse": -9.7403
+        },
+        "shortSpace": {
+          "n": 6,
+          "upsideMean": 6.2738,
+          "upsideMedian": 5.8611,
+          "adverseMean": -11.0715,
+          "upsideAdverseRatio": 0.5667,
+          "std": 2.6718,
+          "p25": 4.6694,
+          "p75": 8.3079,
+          "skew": 0.1896,
+          "maxUpside": 9.7403,
+          "maxAdverse": -27.312
+        },
+        "longReturn": {
+          "retMean": 2.2512,
+          "retMedian": 0.3696,
+          "winRate": 0.5,
+          "profitFactor": 4.5154,
+          "var95": -1.9707,
+          "retentionMean": 0.01,
+          "retentionMedian": 0.0574
+        },
+        "shortReturn": {
+          "retMean": -2.2512,
+          "retMedian": -0.3696,
+          "winRate": 0.5,
+          "profitFactor": 0.2215,
+          "var95": -11.2157,
+          "retentionMean": -0.8879,
+          "retentionMedian": -0.0977
+        },
+        "longPath": {
+          "peakDayMedian": 14.0,
+          "peakDayMean": 11.5,
+          "medianDayMean": 12.7,
+          "medianDayMedian": 14.0,
+          "favorableFirstRate": 0.3333
+        },
+        "shortPath": {
+          "peakDayMedian": 14.5,
+          "peakDayMean": 13.2,
+          "medianDayMean": 12.7,
+          "medianDayMedian": 14.0,
+          "favorableFirstRate": 0.6667
+        },
+        "profile": {
+          "spaceBias": "多空拉扯",
+          "shortCompetitiveness": 0.5667,
+          "normalPerformance": "正向",
+          "pathTag": "路径拉锯",
+          "favorableFirstRate": 0.5,
+          "confidence": "低",
+          "summary": "多空空间接近，不宜单边操作"
+        }
+      },
+      "Q5_极热_G4_小升": {
+        "qGrade": 5,
+        "gGrade": 4,
+        "nTriggers": 10,
+        "longSpace": {
+          "n": 10,
+          "upsideMean": 17.0821,
+          "upsideMedian": 12.1541,
+          "adverseMean": -8.8376,
+          "upsideAdverseRatio": 1.9329,
+          "std": 14.1577,
+          "p25": 6.3121,
+          "p75": 25.9076,
+          "skew": 0.7443,
+          "maxUpside": 41.2026,
+          "maxAdverse": -17.4129
+        },
+        "shortSpace": {
+          "n": 10,
+          "upsideMean": 8.8376,
+          "upsideMedian": 8.1611,
+          "adverseMean": -17.0821,
+          "upsideAdverseRatio": 0.5174,
+          "std": 5.2496,
+          "p25": 4.2346,
+          "p75": 12.2403,
+          "skew": 0.2663,
+          "maxUpside": 17.4129,
+          "maxAdverse": -41.2026
+        },
+        "longReturn": {
+          "retMean": 2.6215,
+          "retMedian": 0.8757,
+          "winRate": 0.5,
+          "profitFactor": 1.9873,
+          "var95": -8.2881,
+          "retentionMean": -0.3651,
+          "retentionMedian": -0.0053
+        },
+        "shortReturn": {
+          "retMean": -2.6215,
+          "retMedian": -0.8757,
+          "winRate": 0.5,
+          "profitFactor": 0.5032,
+          "var95": -15.3248,
+          "retentionMean": -1.4353,
+          "retentionMedian": -0.1412
+        },
+        "longPath": {
+          "peakDayMedian": 6.0,
+          "peakDayMean": 8.7,
+          "medianDayMean": 9.8,
+          "medianDayMedian": 9.5,
+          "favorableFirstRate": 0.5
+        },
+        "shortPath": {
+          "peakDayMedian": 10.0,
+          "peakDayMean": 9.2,
+          "medianDayMean": 9.8,
+          "medianDayMedian": 9.5,
+          "favorableFirstRate": 0.5
+        },
+        "profile": {
+          "spaceBias": "多空拉扯",
+          "shortCompetitiveness": 0.5174,
+          "normalPerformance": "正向",
+          "pathTag": "路径拉锯",
+          "favorableFirstRate": 0.5,
+          "confidence": "中",
+          "summary": "多空空间接近，不宜单边操作"
+        }
+      },
+      "Q5_极热_G5_大升": {
+        "qGrade": 5,
+        "gGrade": 5,
+        "nTriggers": 17,
+        "longSpace": {
+          "n": 17,
+          "upsideMean": 17.7554,
+          "upsideMedian": 7.485,
+          "adverseMean": -10.4498,
+          "upsideAdverseRatio": 1.6991,
+          "std": 19.8283,
+          "p25": 4.1949,
+          "p75": 25.9614,
+          "skew": 1.253,
+          "maxUpside": 59.1265,
+          "maxAdverse": -25.1957
+        },
+        "shortSpace": {
+          "n": 17,
+          "upsideMean": 10.4498,
+          "upsideMedian": 10.4238,
+          "adverseMean": -17.7554,
+          "upsideAdverseRatio": 0.5885,
+          "std": 6.2467,
+          "p25": 5.468,
+          "p75": 13.9532,
+          "skew": 0.6646,
+          "maxUpside": 25.1957,
+          "maxAdverse": -59.1265
+        },
+        "longReturn": {
+          "retMean": 0.9937,
+          "retMedian": -3.8372,
+          "winRate": 0.3529,
+          "profitFactor": 1.2436,
+          "var95": -10.3745,
+          "retentionMean": -0.6462,
+          "retentionMedian": -0.4748
+        },
+        "shortReturn": {
+          "retMean": -0.9937,
+          "retMedian": 3.8372,
+          "winRate": 0.6471,
+          "profitFactor": 0.8041,
+          "var95": -20.3695,
+          "retentionMean": -1.1601,
+          "retentionMedian": 0.3966
+        },
+        "longPath": {
+          "peakDayMedian": 11.0,
+          "peakDayMean": 9.9,
+          "medianDayMean": 10.9,
+          "medianDayMedian": 11.0,
+          "favorableFirstRate": 0.4706
+        },
+        "shortPath": {
+          "peakDayMedian": 11.0,
+          "peakDayMean": 10.8,
+          "medianDayMean": 10.9,
+          "medianDayMedian": 11.0,
+          "favorableFirstRate": 0.5294
+        },
+        "profile": {
+          "spaceBias": "多空拉扯",
+          "shortCompetitiveness": 0.5885,
+          "normalPerformance": "中性",
+          "pathTag": "路径拉锯",
+          "favorableFirstRate": 0.5,
+          "confidence": "中",
+          "summary": "多空空间接近，不宜单边操作"
+        }
+      },
+      "_trends": {
+        "q": {
+          "longColdMean": 19.3089,
+          "longHotMean": 15.3879,
+          "longSpread": 3.9209,
+          "longSpreadPct": 0.2031,
+          "shortColdMean": 6.8772,
+          "shortHotMean": 9.2467,
+          "shortSpread": 2.3695,
+          "shortSpreadPct": 0.3445,
+          "longRho": -0.6,
+          "shortRho": 0.4,
+          "retSpread": 3.1405,
+          "retSpreadPct": 0.7861,
+          "retRho": -0.4
+        },
+        "g": {
+          "longDownMean": 19.568,
+          "longUpMean": 17.2504,
+          "longSpread": 2.3176,
+          "longSpreadPct": 0.1184,
+          "shortDownMean": 7.6714,
+          "shortUpMean": 8.614,
+          "shortSpread": 0.9425,
+          "shortSpreadPct": 0.1229,
+          "longRho": -0.5,
+          "shortRho": 0.2,
+          "retSpread": 1.454,
+          "retSpreadPct": 0.4154,
+          "retRho": -0.1
+        },
+        "conditionalG": {
+          "1": {
+            "n": 49,
+            "longDownMean": 23.7128,
+            "longUpMean": 21.5911,
+            "longSpread": 2.1217,
+            "longSpreadPct": 0.0895,
+            "shortDownMean": 6.5853,
+            "shortUpMean": 7.901,
+            "shortSpread": 1.3157,
+            "shortSpreadPct": 0.1998,
+            "longRho": -0.3,
+            "shortRho": 0.5,
+            "retSpread": 1.3239,
+            "retSpreadPct": 0.2292,
+            "retRho": -0.6
+          },
+          "2": {
+            "n": 47,
+            "longDownMean": 16.1335,
+            "longUpMean": 17.697,
+            "longSpread": -1.5635,
+            "longSpreadPct": -0.0969,
+            "shortDownMean": 7.261,
+            "shortUpMean": 4.9196,
+            "shortSpread": -2.3414,
+            "shortSpreadPct": -0.3225,
+            "longRho": 0.9,
+            "shortRho": -0.5,
+            "retSpread": -2.4811,
+            "retSpreadPct": -0.9842,
+            "retRho": 0.5
+          },
+          "3": {
+            "n": 46,
+            "longDownMean": 21.4382,
+            "longUpMean": 14.9892,
+            "longSpread": 6.449,
+            "longSpreadPct": 0.3008,
+            "shortDownMean": 8.6124,
+            "shortUpMean": 9.5644,
+            "shortSpread": 0.9521,
+            "shortSpreadPct": 0.1105,
+            "longRho": -0.5,
+            "shortRho": 0.2,
+            "retSpread": 2.9728,
+            "retSpreadPct": 0.8094,
+            "retRho": -0.1
+          },
+          "4": {
+            "n": 44,
+            "longDownMean": 18.0053,
+            "longUpMean": 16.1772,
+            "longSpread": 1.8281,
+            "longSpreadPct": 0.1015,
+            "shortDownMean": 7.3131,
+            "shortUpMean": 8.6804,
+            "shortSpread": 1.3673,
+            "shortSpreadPct": 0.187,
+            "longRho": -0.3,
+            "shortRho": 0.5,
+            "retSpread": 2.0026,
+            "retSpreadPct": 0.6736,
+            "retRho": -0.7
+          },
+          "5": {
+            "n": 42,
+            "longDownMean": 11.2222,
+            "longUpMean": 17.506,
+            "longSpread": -6.2838,
+            "longSpreadPct": -0.5599,
+            "shortDownMean": 11.0527,
+            "shortUpMean": 9.8527,
+            "shortSpread": -1.2,
+            "shortSpreadPct": -0.1086,
+            "longRho": 0.7,
+            "shortRho": 0.2,
+            "retSpread": -3.5528,
+            "retSpreadPct": -1.8162,
+            "retRho": 0.0
+          }
+        },
+        "conditionalQ": {
+          "1": {
+            "n": 45,
+            "longColdMean": 21.896,
+            "longHotMean": 18.5455,
+            "longSpread": 3.3505,
+            "longSpreadPct": 0.153,
+            "shortColdMean": 7.7797,
+            "shortHotMean": 6.4366,
+            "shortSpread": -1.3431,
+            "shortSpreadPct": -0.1726,
+            "longRho": -0.3,
+            "shortRho": -0.1,
+            "retSpread": 0.4512,
+            "retSpreadPct": 0.1104,
+            "retRho": -0.3
+          },
+          "2": {
+            "n": 46,
+            "longColdMean": 19.1506,
+            "longHotMean": 12.6028,
+            "longSpread": 6.5477,
+            "longSpreadPct": 0.3419,
+            "shortColdMean": 5.7944,
+            "shortHotMean": 10.6291,
+            "shortSpread": 4.8346,
+            "shortSpreadPct": 0.8344,
+            "longRho": -0.7,
+            "shortRho": 0.9,
+            "retSpread": 5.9828,
+            "retSpreadPct": 1.2277,
+            "retRho": -0.9
+          },
+          "3": {
+            "n": 47,
+            "longColdMean": 15.8528,
+            "longHotMean": 10.6458,
+            "longSpread": 5.207,
+            "longSpreadPct": 0.3285,
+            "shortColdMean": 7.4033,
+            "shortHotMean": 9.3499,
+            "shortSpread": 1.9467,
+            "shortSpreadPct": 0.2629,
+            "longRho": -0.6,
+            "shortRho": 0.4,
+            "retSpread": 2.6722,
+            "retSpreadPct": 1.2285,
+            "retRho": -0.4
+          },
+          "4": {
+            "n": 42,
+            "longColdMean": 16.9069,
+            "longHotMean": 16.2207,
+            "longSpread": 0.6863,
+            "longSpreadPct": 0.0406,
+            "shortColdMean": 5.8991,
+            "shortHotMean": 8.5684,
+            "shortSpread": 2.6692,
+            "shortSpreadPct": 0.4525,
+            "longRho": -0.1,
+            "shortRho": -0.1,
+            "retSpread": 3.4856,
+            "retSpreadPct": 0.6574,
+            "retRho": -0.5
+          },
+          "5": {
+            "n": 47,
+            "longColdMean": 21.9249,
+            "longHotMean": 17.3398,
+            "longSpread": 4.5852,
+            "longSpreadPct": 0.2091,
+            "shortColdMean": 6.8363,
+            "shortHotMean": 9.8214,
+            "shortSpread": 2.9851,
+            "shortSpreadPct": 0.4367,
+            "longRho": -0.8,
+            "shortRho": 0.9,
+            "retSpread": 3.3629,
+            "retSpreadPct": 0.7916,
+            "retRho": -0.9
+          }
+        },
+        "quadrants": {
+          "cold_down": {
+            "n": 54,
+            "longUpsideMean": 20.6249,
+            "shortUpsideMean": 6.8606,
+            "medianReturnMean": 4.4502,
+            "shortCompetitiveness": 0.3326
+          },
+          "cold_up": {
+            "n": 22,
+            "longUpsideMean": 19.644,
+            "shortUpsideMean": 6.4103,
+            "medianReturnMean": 4.7274,
+            "shortCompetitiveness": 0.3263
+          },
+          "hot_down": {
+            "n": 19,
+            "longUpsideMean": 14.7922,
+            "shortUpsideMean": 9.0845,
+            "medianReturnMean": 0.6382,
+            "shortCompetitiveness": 0.6141
+          },
+          "hot_up": {
+            "n": 53,
+            "longUpsideMean": 16.8541,
+            "shortUpsideMean": 9.2776,
+            "medianReturnMean": 1.2895,
+            "shortCompetitiveness": 0.5505
+          }
+        },
+        "interaction": {
+          "long": 3.0428,
+          "short": 0.6434,
+          "ret": 0.3741
+        }
+      }
+    },
+    "excess_10d": {
+      "Q1_极冷_G1_大降": {
+        "qGrade": 1,
+        "gGrade": 1,
+        "nTriggers": 14,
+        "longSpace": {
+          "n": 14,
+          "upsideMean": 23.2772,
+          "upsideMedian": 14.991,
+          "adverseMean": -6.9497,
+          "upsideAdverseRatio": 3.3494,
+          "std": 18.6947,
+          "p25": 10.7402,
+          "p75": 33.5112,
+          "skew": 0.921,
+          "maxUpside": 57.6067,
+          "maxAdverse": -17.9287
+        },
+        "shortSpace": {
+          "n": 14,
+          "upsideMean": 6.9497,
+          "upsideMedian": 6.1236,
+          "adverseMean": -23.2772,
+          "upsideAdverseRatio": 0.2986,
+          "std": 5.6569,
+          "p25": 2.9245,
+          "p75": 8.5945,
+          "skew": 0.8142,
+          "maxUpside": 17.9287,
+          "maxAdverse": -57.6067
+        },
+        "longReturn": {
+          "retMean": 5.945,
+          "retMedian": 5.2732,
+          "winRate": 0.6429,
+          "profitFactor": 4.613,
+          "var95": -9.5682,
+          "retentionMean": -0.0465,
+          "retentionMedian": 0.2599
+        },
+        "shortReturn": {
+          "retMean": -5.945,
+          "retMedian": -5.2732,
+          "winRate": 0.3571,
+          "profitFactor": 0.2168,
+          "var95": -24.4602,
+          "retentionMean": -11.8136,
+          "retentionMedian": -0.7014
+        },
+        "longPath": {
+          "peakDayMedian": 10.5,
+          "peakDayMean": 9.5,
+          "medianDayMean": 13.7,
+          "medianDayMedian": 13.0,
+          "favorableFirstRate": 0.2143
+        },
+        "shortPath": {
+          "peakDayMedian": 3.5,
+          "peakDayMean": 5.4,
+          "medianDayMean": 13.7,
+          "medianDayMedian": 13.0,
+          "favorableFirstRate": 0.7857
+        },
+        "profile": {
+          "spaceBias": "偏多",
+          "shortCompetitiveness": 0.2986,
+          "normalPerformance": "正向",
+          "pathTag": "先不利",
+          "favorableFirstRate": 0.2143,
+          "confidence": "中",
+          "summary": "做多空间优势明显，中位数价格收益为正，但常先浮亏再反转，执行压力大"
+        }
+      },
+      "Q1_极冷_G2_小降": {
+        "qGrade": 1,
+        "gGrade": 2,
+        "nTriggers": 7,
+        "longSpace": {
+          "n": 7,
+          "upsideMean": 20.3969,
+          "upsideMedian": 11.1072,
+          "adverseMean": -7.9493,
+          "upsideAdverseRatio": 2.5659,
+          "std": 24.3647,
+          "p25": 3.6148,
+          "p75": 28.9422,
+          "skew": 1.3966,
+          "maxUpside": 66.7895,
+          "maxAdverse": -16.083
+        },
+        "shortSpace": {
+          "n": 7,
+          "upsideMean": 7.9493,
+          "upsideMedian": 4.1022,
+          "adverseMean": -20.3969,
+          "upsideAdverseRatio": 0.3897,
+          "std": 6.9473,
+          "p25": 2.6389,
+          "p75": 14.7938,
+          "skew": 0.2521,
+          "maxUpside": 16.083,
+          "maxAdverse": -66.7895
+        },
+        "longReturn": {
+          "retMean": 3.4068,
+          "retMedian": 1.9816,
+          "winRate": 0.5714,
+          "profitFactor": 2.08,
+          "var95": -7.9829,
+          "retentionMean": -0.3509,
+          "retentionMedian": 0.2263
+        },
+        "shortReturn": {
+          "retMean": -3.4068,
+          "retMedian": -1.9816,
+          "winRate": 0.4286,
+          "profitFactor": 0.4808,
+          "var95": -21.7164,
+          "retentionMean": -7.7363,
+          "retentionMedian": -0.4831
+        },
+        "longPath": {
+          "peakDayMedian": 3.0,
+          "peakDayMean": 7.1,
+          "medianDayMean": 11.7,
+          "medianDayMedian": 12.0,
+          "favorableFirstRate": 0.5714
+        },
+        "shortPath": {
+          "peakDayMedian": 8.0,
+          "peakDayMean": 6.4,
+          "medianDayMean": 11.7,
+          "medianDayMedian": 12.0,
+          "favorableFirstRate": 0.4286
+        },
+        "profile": {
+          "spaceBias": "偏多",
+          "shortCompetitiveness": 0.3897,
+          "normalPerformance": "正向",
+          "pathTag": "路径拉锯",
+          "favorableFirstRate": 0.5714,
+          "confidence": "低",
+          "summary": "做多空间优势明显，中位数价格收益为正，路径拉锯"
+        }
+      },
+      "Q1_极冷_G3_稳定": {
+        "qGrade": 1,
+        "gGrade": 3,
+        "nTriggers": 11,
+        "longSpace": {
+          "n": 11,
+          "upsideMean": 16.1291,
+          "upsideMedian": 14.6484,
+          "adverseMean": -6.4837,
+          "upsideAdverseRatio": 2.4876,
+          "std": 6.0559,
+          "p25": 12.2261,
+          "p75": 16.2626,
+          "skew": 1.5374,
+          "maxUpside": 29.5335,
+          "maxAdverse": -17.5586
+        },
+        "shortSpace": {
+          "n": 11,
+          "upsideMean": 6.4837,
+          "upsideMedian": 4.5337,
+          "adverseMean": -16.1291,
+          "upsideAdverseRatio": 0.402,
+          "std": 5.5034,
+          "p25": 2.4155,
+          "p75": 9.2762,
+          "skew": 0.9083,
+          "maxUpside": 17.5586,
+          "maxAdverse": -29.5335
+        },
+        "longReturn": {
+          "retMean": 3.4285,
+          "retMedian": 1.5228,
+          "winRate": 0.6364,
+          "profitFactor": 6.9252,
+          "var95": -2.3091,
+          "retentionMean": 0.1625,
+          "retentionMedian": 0.1436
+        },
+        "shortReturn": {
+          "retMean": -3.4285,
+          "retMedian": -1.5228,
+          "winRate": 0.3636,
+          "profitFactor": 0.1444,
+          "var95": -10.1159,
+          "retentionMean": -4.1837,
+          "retentionMedian": -0.3359
+        },
+        "longPath": {
+          "peakDayMedian": 10.0,
+          "peakDayMean": 10.2,
+          "medianDayMean": 8.6,
+          "medianDayMedian": 9.0,
+          "favorableFirstRate": 0.4545
+        },
+        "shortPath": {
+          "peakDayMedian": 10.0,
+          "peakDayMean": 9.6,
+          "medianDayMean": 8.6,
+          "medianDayMedian": 9.0,
+          "favorableFirstRate": 0.4545
+        },
+        "profile": {
+          "spaceBias": "多空拉扯",
+          "shortCompetitiveness": 0.402,
+          "normalPerformance": "正向",
+          "pathTag": "路径拉锯",
+          "favorableFirstRate": 0.4545,
+          "confidence": "中",
+          "summary": "多空空间接近，不宜单边操作"
+        }
+      },
+      "Q1_极冷_G4_小升": {
+        "qGrade": 1,
+        "gGrade": 4,
+        "nTriggers": 9,
+        "longSpace": {
+          "n": 9,
+          "upsideMean": 14.6249,
+          "upsideMedian": 15.5947,
+          "adverseMean": -6.9135,
+          "upsideAdverseRatio": 2.1154,
+          "std": 9.8203,
+          "p25": 11.0061,
+          "p75": 18.4012,
+          "skew": -0.0724,
+          "maxUpside": 29.4251,
+          "maxAdverse": -18.3398
+        },
+        "shortSpace": {
+          "n": 9,
+          "upsideMean": 6.9135,
+          "upsideMedian": 6.5413,
+          "adverseMean": -14.6249,
+          "upsideAdverseRatio": 0.4727,
+          "std": 6.6023,
+          "p25": 1.4212,
+          "p75": 12.2208,
+          "skew": 0.5343,
+          "maxUpside": 18.3398,
+          "maxAdverse": -29.4251
+        },
+        "longReturn": {
+          "retMean": 2.4858,
+          "retMedian": 3.2482,
+          "winRate": 0.6667,
+          "profitFactor": 2.1966,
+          "var95": -8.3233,
+          "retentionMean": -0.0224,
+          "retentionMedian": 0.2388
+        },
+        "shortReturn": {
+          "retMean": -2.4858,
+          "retMedian": -3.2482,
+          "winRate": 0.3333,
+          "profitFactor": 0.4553,
+          "var95": -10.2898,
+          "retentionMean": -1.1148,
+          "retentionMedian": -0.2019
+        },
+        "longPath": {
+          "peakDayMedian": 7.0,
+          "peakDayMean": 7.1,
+          "medianDayMean": 13.0,
+          "medianDayMedian": 15.0,
+          "favorableFirstRate": 0.4444
+        },
+        "shortPath": {
+          "peakDayMedian": 4.0,
+          "peakDayMean": 7.8,
+          "medianDayMean": 13.0,
+          "medianDayMedian": 15.0,
+          "favorableFirstRate": 0.5556
+        },
+        "profile": {
+          "spaceBias": "多空拉扯",
+          "shortCompetitiveness": 0.4727,
+          "normalPerformance": "正向",
+          "pathTag": "路径拉锯",
+          "favorableFirstRate": 0.5,
+          "confidence": "低",
+          "summary": "多空空间接近，不宜单边操作"
+        }
+      },
+      "Q1_极冷_G5_大升": {
+        "qGrade": 1,
+        "gGrade": 5,
+        "nTriggers": 4,
+        "longSpace": {
+          "n": 4,
+          "upsideMean": 17.3828,
+          "upsideMedian": 15.9839,
+          "adverseMean": -8.1217,
+          "upsideAdverseRatio": 2.1403,
+          "std": 7.5012,
+          "p25": 11.6647,
+          "p75": 21.7021,
+          "skew": 0.6391,
+          "maxUpside": 26.8033,
+          "maxAdverse": -12.747
+        },
+        "shortSpace": {
+          "n": 4,
+          "upsideMean": 8.1217,
+          "upsideMedian": 7.9496,
+          "adverseMean": -17.3828,
+          "upsideAdverseRatio": 0.4672,
+          "std": 3.6423,
+          "p25": 6.85,
+          "p75": 9.2212,
+          "skew": 0.2825,
+          "maxUpside": 12.747,
+          "maxAdverse": -26.8033
+        },
+        "longReturn": {
+          "retMean": 1.1648,
+          "retMedian": 0.4103,
+          "winRate": 0.75,
+          "profitFactor": 2.8154,
+          "var95": -2.1389,
+          "retentionMean": 0.0455,
+          "retentionMedian": 0.0357
+        },
+        "shortReturn": {
+          "retMean": -1.1648,
+          "retMedian": -0.4103,
+          "winRate": 0.25,
+          "profitFactor": 0.3552,
+          "var95": -5.5249,
+          "retentionMean": -0.3925,
+          "retentionMedian": -0.0518
+        },
+        "longPath": {
+          "peakDayMedian": 11.0,
+          "peakDayMean": 10.8,
+          "medianDayMean": 14.5,
+          "medianDayMedian": 14.0,
+          "favorableFirstRate": 0.25
+        },
+        "shortPath": {
+          "peakDayMedian": 2.0,
+          "peakDayMean": 6.5,
+          "medianDayMean": 14.5,
+          "medianDayMedian": 14.0,
+          "favorableFirstRate": 0.75
+        },
+        "profile": {
+          "spaceBias": "样本不足",
+          "shortCompetitiveness": null,
+          "normalPerformance": "-",
+          "pathTag": "-",
+          "favorableFirstRate": null,
+          "confidence": "无效",
+          "summary": "仅4个样本，不足以生成画像"
+        }
+      },
+      "Q2_偏冷_G1_大降": {
+        "qGrade": 2,
+        "gGrade": 1,
+        "nTriggers": 15,
+        "longSpace": {
+          "n": 15,
+          "upsideMean": 20.9148,
+          "upsideMedian": 16.0545,
+          "adverseMean": -6.673,
+          "upsideAdverseRatio": 3.1342,
+          "std": 13.0972,
+          "p25": 13.0297,
+          "p75": 30.7295,
+          "skew": 0.6387,
+          "maxUpside": 44.5818,
+          "maxAdverse": -17.7247
+        },
+        "shortSpace": {
+          "n": 15,
+          "upsideMean": 6.673,
+          "upsideMedian": 5.6259,
+          "adverseMean": -20.9148,
+          "upsideAdverseRatio": 0.3191,
+          "std": 4.7762,
+          "p25": 4.5518,
+          "p75": 8.988,
+          "skew": 0.6715,
+          "maxUpside": 17.7247,
+          "maxAdverse": -44.5818
+        },
+        "longReturn": {
+          "retMean": 4.8165,
+          "retMedian": 3.1087,
+          "winRate": 0.7333,
+          "profitFactor": 5.4959,
+          "var95": -6.5896,
+          "retentionMean": -0.0181,
+          "retentionMedian": 0.1979
+        },
+        "shortReturn": {
+          "retMean": -4.8165,
+          "retMedian": -3.1087,
+          "winRate": 0.2667,
+          "profitFactor": 0.182,
+          "var95": -18.5684,
+          "retentionMean": -1.1991,
+          "retentionMedian": -0.5526
+        },
+        "longPath": {
+          "peakDayMedian": 11.0,
+          "peakDayMean": 11.4,
+          "medianDayMean": 13.8,
+          "medianDayMedian": 15.0,
+          "favorableFirstRate": 0.2667
+        },
+        "shortPath": {
+          "peakDayMedian": 6.0,
+          "peakDayMean": 7.1,
+          "medianDayMean": 13.8,
+          "medianDayMedian": 15.0,
+          "favorableFirstRate": 0.7333
+        },
+        "profile": {
+          "spaceBias": "偏多",
+          "shortCompetitiveness": 0.3191,
+          "normalPerformance": "正向",
+          "pathTag": "先不利",
+          "favorableFirstRate": 0.2667,
+          "confidence": "中",
+          "summary": "做多空间优势明显，中位数价格收益为正，但常先浮亏再反转，执行压力大"
+        }
+      },
+      "Q2_偏冷_G2_小降": {
+        "qGrade": 2,
+        "gGrade": 2,
+        "nTriggers": 11,
+        "longSpace": {
+          "n": 11,
+          "upsideMean": 22.9645,
+          "upsideMedian": 12.8304,
+          "adverseMean": -8.8056,
+          "upsideAdverseRatio": 2.6079,
+          "std": 20.4571,
+          "p25": 8.0351,
+          "p75": 43.0556,
+          "skew": 0.6928,
+          "maxUpside": 55.8382,
+          "maxAdverse": -14.857
+        },
+        "shortSpace": {
+          "n": 11,
+          "upsideMean": 8.8056,
+          "upsideMedian": 8.2945,
+          "adverseMean": -22.9645,
+          "upsideAdverseRatio": 0.3834,
+          "std": 5.0357,
+          "p25": 5.9373,
+          "p75": 12.7402,
+          "skew": -0.4782,
+          "maxUpside": 14.857,
+          "maxAdverse": -55.8382
+        },
+        "longReturn": {
+          "retMean": 3.4589,
+          "retMedian": -1.8981,
+          "winRate": 0.4545,
+          "profitFactor": 2.3545,
+          "var95": -6.6667,
+          "retentionMean": -0.3287,
+          "retentionMedian": -0.1479
+        },
+        "shortReturn": {
+          "retMean": -3.4589,
+          "retMedian": 1.8981,
+          "winRate": 0.5455,
+          "profitFactor": 0.4247,
+          "var95": -18.5095,
+          "retentionMean": 4.5478,
+          "retentionMedian": 0.2986
+        },
+        "longPath": {
+          "peakDayMedian": 15.0,
+          "peakDayMean": 14.2,
+          "medianDayMean": 12.5,
+          "medianDayMedian": 12.0,
+          "favorableFirstRate": 0.2727
+        },
+        "shortPath": {
+          "peakDayMedian": 6.0,
+          "peakDayMean": 8.2,
+          "medianDayMean": 12.5,
+          "medianDayMedian": 12.0,
+          "favorableFirstRate": 0.7273
+        },
+        "profile": {
+          "spaceBias": "偏多",
+          "shortCompetitiveness": 0.3834,
+          "normalPerformance": "正向",
+          "pathTag": "先不利",
+          "favorableFirstRate": 0.2727,
+          "confidence": "中",
+          "summary": "做多空间优势明显，中位数价格收益为正，但常先浮亏再反转，执行压力大"
+        }
+      },
+      "Q2_偏冷_G3_稳定": {
+        "qGrade": 2,
+        "gGrade": 3,
+        "nTriggers": 6,
+        "longSpace": {
+          "n": 6,
+          "upsideMean": 15.5053,
+          "upsideMedian": 13.3171,
+          "adverseMean": -6.7042,
+          "upsideAdverseRatio": 2.3128,
+          "std": 11.273,
+          "p25": 10.178,
+          "p75": 17.1051,
+          "skew": 1.3365,
+          "maxUpside": 36.0223,
+          "maxAdverse": -15.3343
+        },
+        "shortSpace": {
+          "n": 6,
+          "upsideMean": 6.7042,
+          "upsideMedian": 6.7175,
+          "adverseMean": -15.5053,
+          "upsideAdverseRatio": 0.4324,
+          "std": 6.2045,
+          "p25": 2.1224,
+          "p75": 10.6037,
+          "skew": 0.1326,
+          "maxUpside": 15.3343,
+          "maxAdverse": -36.0223
+        },
+        "longReturn": {
+          "retMean": 4.4221,
+          "retMedian": 2.1025,
+          "winRate": 0.6667,
+          "profitFactor": 4.4493,
+          "var95": -5.7359,
+          "retentionMean": -0.11,
+          "retentionMedian": 0.1494
+        },
+        "shortReturn": {
+          "retMean": -4.4221,
+          "retMedian": -2.1025,
+          "winRate": 0.3333,
+          "profitFactor": 0.2248,
+          "var95": -18.6347,
+          "retentionMean": 2.3301,
+          "retentionMedian": 0.0023
+        },
+        "longPath": {
+          "peakDayMedian": 11.0,
+          "peakDayMean": 11.5,
+          "medianDayMean": 13.5,
+          "medianDayMedian": 14.0,
+          "favorableFirstRate": 0.1667
+        },
+        "shortPath": {
+          "peakDayMedian": 3.0,
+          "peakDayMean": 5.5,
+          "medianDayMean": 13.5,
+          "medianDayMedian": 14.0,
+          "favorableFirstRate": 0.8333
+        },
+        "profile": {
+          "spaceBias": "多空拉扯",
+          "shortCompetitiveness": 0.4324,
+          "normalPerformance": "正向",
+          "pathTag": "路径拉锯",
+          "favorableFirstRate": 0.5,
+          "confidence": "低",
+          "summary": "多空空间接近，不宜单边操作"
+        }
+      },
+      "Q2_偏冷_G4_小升": {
+        "qGrade": 2,
+        "gGrade": 4,
+        "nTriggers": 8,
+        "longSpace": {
+          "n": 8,
+          "upsideMean": 22.7043,
+          "upsideMedian": 17.6279,
+          "adverseMean": -7.1073,
+          "upsideAdverseRatio": 3.1945,
+          "std": 17.307,
+          "p25": 14.6783,
+          "p75": 23.769,
+          "skew": 1.3742,
+          "maxUpside": 57.7237,
+          "maxAdverse": -18.4744
+        },
+        "shortSpace": {
+          "n": 8,
+          "upsideMean": 7.1073,
+          "upsideMedian": 3.7483,
+          "adverseMean": -22.7043,
+          "upsideAdverseRatio": 0.313,
+          "std": 7.7413,
+          "p25": 1.5465,
+          "p75": 13.1883,
+          "skew": 0.6781,
+          "maxUpside": 18.4744,
+          "maxAdverse": -57.7237
+        },
+        "longReturn": {
+          "retMean": 5.4623,
+          "retMedian": 8.2117,
+          "winRate": 0.625,
+          "profitFactor": 4.1216,
+          "var95": -7.5835,
+          "retentionMean": -0.0197,
+          "retentionMedian": 0.3085
+        },
+        "shortReturn": {
+          "retMean": -5.4623,
+          "retMedian": -8.2117,
+          "winRate": 0.375,
+          "profitFactor": 0.2426,
+          "var95": -18.0087,
+          "retentionMean": -2.0544,
+          "retentionMedian": -0.8171
+        },
+        "longPath": {
+          "peakDayMedian": 6.5,
+          "peakDayMean": 9.0,
+          "medianDayMean": 14.0,
+          "medianDayMedian": 14.0,
+          "favorableFirstRate": 0.375
+        },
+        "shortPath": {
+          "peakDayMedian": 4.0,
+          "peakDayMean": 7.8,
+          "medianDayMean": 14.0,
+          "medianDayMedian": 14.0,
+          "favorableFirstRate": 0.625
+        },
+        "profile": {
+          "spaceBias": "偏多",
+          "shortCompetitiveness": 0.313,
+          "normalPerformance": "正向",
+          "pathTag": "先不利",
+          "favorableFirstRate": 0.375,
+          "confidence": "低",
+          "summary": "做多空间优势明显，中位数价格收益为正，但常先浮亏再反转，执行压力大"
+        }
+      },
+      "Q2_偏冷_G5_大升": {
+        "qGrade": 2,
+        "gGrade": 5,
+        "nTriggers": 8,
+        "longSpace": {
+          "n": 8,
+          "upsideMean": 18.3772,
+          "upsideMedian": 9.1161,
+          "adverseMean": -9.3856,
+          "upsideAdverseRatio": 1.958,
+          "std": 23.0503,
+          "p25": 3.6019,
+          "p75": 24.346,
+          "skew": 1.4438,
+          "maxUpside": 64.6362,
+          "maxAdverse": -27.2902
+        },
+        "shortSpace": {
+          "n": 8,
+          "upsideMean": 9.3856,
+          "upsideMedian": 8.2829,
+          "adverseMean": -18.3772,
+          "upsideAdverseRatio": 0.5107,
+          "std": 9.482,
+          "p25": 1.1785,
+          "p75": 13.1453,
+          "skew": 0.9358,
+          "maxUpside": 27.2902,
+          "maxAdverse": -64.6362
+        },
+        "longReturn": {
+          "retMean": 2.617,
+          "retMedian": 0.1712,
+          "winRate": 0.5,
+          "profitFactor": 1.537,
+          "var95": -15.7813,
+          "retentionMean": -0.4943,
+          "retentionMedian": 0.2994
+        },
+        "shortReturn": {
+          "retMean": -2.617,
+          "retMedian": -0.1712,
+          "winRate": 0.5,
+          "profitFactor": 0.6506,
+          "var95": -24.8361,
+          "retentionMean": -7.7273,
+          "retentionMedian": -0.3183
+        },
+        "longPath": {
+          "peakDayMedian": 8.5,
+          "peakDayMean": 9.0,
+          "medianDayMean": 11.6,
+          "medianDayMedian": 12.0,
+          "favorableFirstRate": 0.375
+        },
+        "shortPath": {
+          "peakDayMedian": 4.5,
+          "peakDayMean": 7.5,
+          "medianDayMean": 11.6,
+          "medianDayMedian": 12.0,
+          "favorableFirstRate": 0.625
+        },
+        "profile": {
+          "spaceBias": "多空拉扯",
+          "shortCompetitiveness": 0.5107,
+          "normalPerformance": "正向",
+          "pathTag": "路径拉锯",
+          "favorableFirstRate": 0.5,
+          "confidence": "低",
+          "summary": "多空空间接近，不宜单边操作"
+        }
+      },
+      "Q3_中性_G1_大降": {
+        "qGrade": 3,
+        "gGrade": 1,
+        "nTriggers": 6,
+        "longSpace": {
+          "n": 6,
+          "upsideMean": 23.3314,
+          "upsideMedian": 15.032,
+          "adverseMean": -7.9704,
+          "upsideAdverseRatio": 2.9273,
+          "std": 19.9561,
+          "p25": 9.5849,
+          "p75": 38.8421,
+          "skew": 0.7994,
+          "maxUpside": 50.8442,
+          "maxAdverse": -12.6399
+        },
+        "shortSpace": {
+          "n": 6,
+          "upsideMean": 7.9704,
+          "upsideMedian": 6.5087,
+          "adverseMean": -23.3314,
+          "upsideAdverseRatio": 0.3416,
+          "std": 3.0582,
+          "p25": 5.9513,
+          "p75": 9.9515,
+          "skew": 0.9748,
+          "maxUpside": 12.6399,
+          "maxAdverse": -50.8442
+        },
+        "longReturn": {
+          "retMean": 4.548,
+          "retMedian": 0.5044,
+          "winRate": 0.5,
+          "profitFactor": 3.7558,
+          "var95": -5.3041,
+          "retentionMean": -0.1562,
+          "retentionMedian": 0.0276
+        },
+        "shortReturn": {
+          "retMean": -4.548,
+          "retMedian": -0.5044,
+          "winRate": 0.5,
+          "profitFactor": 0.2663,
+          "var95": -18.7839,
+          "retentionMean": -0.9541,
+          "retentionMedian": -0.0715
+        },
+        "longPath": {
+          "peakDayMedian": 16.0,
+          "peakDayMean": 16.5,
+          "medianDayMean": 8.3,
+          "medianDayMedian": 9.0,
+          "favorableFirstRate": 0.1667
+        },
+        "shortPath": {
+          "peakDayMedian": 7.0,
+          "peakDayMean": 8.3,
+          "medianDayMean": 8.3,
+          "medianDayMedian": 9.0,
+          "favorableFirstRate": 0.8333
+        },
+        "profile": {
+          "spaceBias": "偏多",
+          "shortCompetitiveness": 0.3416,
+          "normalPerformance": "正向",
+          "pathTag": "先不利",
+          "favorableFirstRate": 0.1667,
+          "confidence": "低",
+          "summary": "做多空间优势明显，中位数价格收益为正，但常先浮亏再反转，执行压力大"
+        }
+      },
+      "Q3_中性_G2_小降": {
+        "qGrade": 3,
+        "gGrade": 2,
+        "nTriggers": 11,
+        "longSpace": {
+          "n": 11,
+          "upsideMean": 19.1389,
+          "upsideMedian": 15.6145,
+          "adverseMean": -7.4313,
+          "upsideAdverseRatio": 2.5755,
+          "std": 13.6005,
+          "p25": 6.877,
+          "p75": 28.7154,
+          "skew": 0.1838,
+          "maxUpside": 39.4111,
+          "maxAdverse": -18.7343
+        },
+        "shortSpace": {
+          "n": 11,
+          "upsideMean": 7.4313,
+          "upsideMedian": 6.3251,
+          "adverseMean": -19.1389,
+          "upsideAdverseRatio": 0.3883,
+          "std": 6.7352,
+          "p25": 2.7646,
+          "p75": 13.2291,
+          "skew": 0.3929,
+          "maxUpside": 18.7343,
+          "maxAdverse": -39.4111
+        },
+        "longReturn": {
+          "retMean": 4.8311,
+          "retMedian": 5.5684,
+          "winRate": 0.6364,
+          "profitFactor": 3.2347,
+          "var95": -7.7336,
+          "retentionMean": -0.2228,
+          "retentionMedian": 0.2944
+        },
+        "shortReturn": {
+          "retMean": -4.8311,
+          "retMedian": -5.5684,
+          "winRate": 0.3636,
+          "profitFactor": 0.3091,
+          "var95": -15.54,
+          "retentionMean": -2.2001,
+          "retentionMedian": -0.5508
+        },
+        "longPath": {
+          "peakDayMedian": 15.0,
+          "peakDayMean": 12.7,
+          "medianDayMean": 9.7,
+          "medianDayMedian": 9.0,
+          "favorableFirstRate": 0.4545
+        },
+        "shortPath": {
+          "peakDayMedian": 7.0,
+          "peakDayMean": 9.6,
+          "medianDayMean": 9.7,
+          "medianDayMedian": 9.0,
+          "favorableFirstRate": 0.5455
+        },
+        "profile": {
+          "spaceBias": "偏多",
+          "shortCompetitiveness": 0.3883,
+          "normalPerformance": "正向",
+          "pathTag": "路径拉锯",
+          "favorableFirstRate": 0.4545,
+          "confidence": "中",
+          "summary": "做多空间优势明显，中位数价格收益为正，路径拉锯"
+        }
+      },
+      "Q3_中性_G3_稳定": {
+        "qGrade": 3,
+        "gGrade": 3,
+        "nTriggers": 5,
+        "longSpace": {
+          "n": 5,
+          "upsideMean": 16.6908,
+          "upsideMedian": 17.6512,
+          "adverseMean": -6.6264,
+          "upsideAdverseRatio": 2.5188,
+          "std": 5.169,
+          "p25": 15.6408,
+          "p75": 19.9198,
+          "skew": -1.1941,
+          "maxUpside": 21.8104,
+          "maxAdverse": -11.7329
+        },
+        "shortSpace": {
+          "n": 5,
+          "upsideMean": 6.6264,
+          "upsideMedian": 6.6613,
+          "adverseMean": -16.6908,
+          "upsideAdverseRatio": 0.397,
+          "std": 3.5703,
+          "p25": 5.9493,
+          "p75": 7.0856,
+          "skew": 0.1245,
+          "maxUpside": 11.7329,
+          "maxAdverse": -21.8104
+        },
+        "longReturn": {
+          "retMean": 2.1662,
+          "retMedian": 2.0279,
+          "winRate": 0.8,
+          "profitFactor": 5.076,
+          "var95": -1.8704,
+          "retentionMean": 0.0878,
+          "retentionMedian": 0.093
+        },
+        "shortReturn": {
+          "retMean": -2.1662,
+          "retMedian": -2.0279,
+          "winRate": 0.2,
+          "profitFactor": 0.197,
+          "var95": -6.4935,
+          "retentionMean": -1.0167,
+          "retentionMedian": -0.3044
+        },
+        "longPath": {
+          "peakDayMedian": 16.0,
+          "peakDayMean": 14.6,
+          "medianDayMean": 10.0,
+          "medianDayMedian": 11.0,
+          "favorableFirstRate": 0.6
+        },
+        "shortPath": {
+          "peakDayMedian": 17.0,
+          "peakDayMean": 13.4,
+          "medianDayMean": 10.0,
+          "medianDayMedian": 11.0,
+          "favorableFirstRate": 0.4
+        },
+        "profile": {
+          "spaceBias": "偏多",
+          "shortCompetitiveness": 0.397,
+          "normalPerformance": "正向",
+          "pathTag": "路径拉锯",
+          "favorableFirstRate": 0.6,
+          "confidence": "低",
+          "summary": "做多空间优势明显，中位数价格收益为正，路径拉锯"
+        }
+      },
+      "Q3_中性_G4_小升": {
+        "qGrade": 3,
+        "gGrade": 4,
+        "nTriggers": 16,
+        "longSpace": {
+          "n": 16,
+          "upsideMean": 20.0804,
+          "upsideMedian": 12.1966,
+          "adverseMean": -7.733,
+          "upsideAdverseRatio": 2.5967,
+          "std": 17.0712,
+          "p25": 10.5382,
+          "p75": 23.2874,
+          "skew": 1.5067,
+          "maxUpside": 59.1265,
+          "maxAdverse": -15.3343
+        },
+        "shortSpace": {
+          "n": 16,
+          "upsideMean": 7.733,
+          "upsideMedian": 7.3861,
+          "adverseMean": -20.0804,
+          "upsideAdverseRatio": 0.3851,
+          "std": 3.6609,
+          "p25": 5.7698,
+          "p75": 10.5889,
+          "skew": 0.167,
+          "maxUpside": 15.3343,
+          "maxAdverse": -59.1265
+        },
+        "longReturn": {
+          "retMean": 3.1861,
+          "retMedian": 1.1175,
+          "winRate": 0.6875,
+          "profitFactor": 4.0812,
+          "var95": -4.2008,
+          "retentionMean": -0.0614,
+          "retentionMedian": 0.0558
+        },
+        "shortReturn": {
+          "retMean": -3.1861,
+          "retMedian": -1.1175,
+          "winRate": 0.3125,
+          "profitFactor": 0.245,
+          "var95": -17.1136,
+          "retentionMean": -1.4033,
+          "retentionMedian": -0.1278
+        },
+        "longPath": {
+          "peakDayMedian": 15.5,
+          "peakDayMean": 13.5,
+          "medianDayMean": 11.9,
+          "medianDayMedian": 12.0,
+          "favorableFirstRate": 0.4375
+        },
+        "shortPath": {
+          "peakDayMedian": 8.5,
+          "peakDayMean": 9.9,
+          "medianDayMean": 11.9,
+          "medianDayMedian": 12.0,
+          "favorableFirstRate": 0.5625
+        },
+        "profile": {
+          "spaceBias": "偏多",
+          "shortCompetitiveness": 0.3851,
+          "normalPerformance": "正向",
+          "pathTag": "路径拉锯",
+          "favorableFirstRate": 0.4375,
+          "confidence": "中",
+          "summary": "做多空间优势明显，中位数价格收益为正，路径拉锯"
+        }
+      },
+      "Q3_中性_G5_大升": {
+        "qGrade": 3,
+        "gGrade": 5,
+        "nTriggers": 6,
+        "longSpace": {
+          "n": 6,
+          "upsideMean": 23.9369,
+          "upsideMedian": 22.3679,
+          "adverseMean": -7.2986,
+          "upsideAdverseRatio": 3.2797,
+          "std": 14.0421,
+          "p25": 11.8262,
+          "p75": 34.0992,
+          "skew": 0.2275,
+          "maxUpside": 42.2667,
+          "maxAdverse": -20.979
+        },
+        "shortSpace": {
+          "n": 6,
+          "upsideMean": 7.2986,
+          "upsideMedian": 5.29,
+          "adverseMean": -23.9369,
+          "upsideAdverseRatio": 0.3049,
+          "std": 7.7863,
+          "p25": 2.4481,
+          "p75": 9.8313,
+          "skew": 1.2149,
+          "maxUpside": 20.979,
+          "maxAdverse": -42.2667
+        },
+        "longReturn": {
+          "retMean": 5.0165,
+          "retMedian": 6.4279,
+          "winRate": 0.6667,
+          "profitFactor": 4.5818,
+          "var95": -5.7296,
+          "retentionMean": 0.082,
+          "retentionMedian": 0.29
+        },
+        "shortReturn": {
+          "retMean": -5.0165,
+          "retMedian": -6.4279,
+          "winRate": 0.3333,
+          "profitFactor": 0.2183,
+          "var95": -13.5042,
+          "retentionMean": 2.8894,
+          "retentionMedian": -0.2918
+        },
+        "longPath": {
+          "peakDayMedian": 13.0,
+          "peakDayMean": 11.7,
+          "medianDayMean": 11.8,
+          "medianDayMedian": 12.0,
+          "favorableFirstRate": 0.3333
+        },
+        "shortPath": {
+          "peakDayMedian": 8.0,
+          "peakDayMean": 10.2,
+          "medianDayMean": 11.8,
+          "medianDayMedian": 12.0,
+          "favorableFirstRate": 0.6667
+        },
+        "profile": {
+          "spaceBias": "偏多",
+          "shortCompetitiveness": 0.3049,
+          "normalPerformance": "正向",
+          "pathTag": "先不利",
+          "favorableFirstRate": 0.3333,
+          "confidence": "低",
+          "summary": "做多空间优势明显，中位数价格收益为正，但常先浮亏再反转，执行压力大"
+        }
+      },
+      "Q4_偏热_G1_大降": {
+        "qGrade": 4,
+        "gGrade": 1,
+        "nTriggers": 6,
+        "longSpace": {
+          "n": 6,
+          "upsideMean": 14.2404,
+          "upsideMedian": 4.766,
+          "adverseMean": -13.1589,
+          "upsideAdverseRatio": 1.0822,
+          "std": 18.3753,
+          "p25": 3.3499,
+          "p75": 22.0123,
+          "skew": 1.3233,
+          "maxUpside": 45.8108,
+          "maxAdverse": -25.6388
+        },
+        "shortSpace": {
+          "n": 6,
+          "upsideMean": 13.1589,
+          "upsideMedian": 13.4782,
+          "adverseMean": -14.2404,
+          "upsideAdverseRatio": 0.9241,
+          "std": 7.5367,
+          "p25": 9.9274,
+          "p75": 14.4919,
+          "skew": 0.5338,
+          "maxUpside": 25.6388,
+          "maxAdverse": -45.8108
+        },
+        "longReturn": {
+          "retMean": -1.5222,
+          "retMedian": -6.3982,
+          "winRate": 0.3333,
+          "profitFactor": 0.7587,
+          "var95": -14.2374,
+          "retentionMean": -0.8188,
+          "retentionMedian": -0.9342
+        },
+        "shortReturn": {
+          "retMean": 1.5222,
+          "retMedian": 6.3982,
+          "winRate": 0.6667,
+          "profitFactor": 1.318,
+          "var95": -14.3961,
+          "retentionMean": -0.761,
+          "retentionMedian": 0.4734
+        },
+        "longPath": {
+          "peakDayMedian": 5.5,
+          "peakDayMean": 6.8,
+          "medianDayMean": 13.5,
+          "medianDayMedian": 12.0,
+          "favorableFirstRate": 0.5
+        },
+        "shortPath": {
+          "peakDayMedian": 9.0,
+          "peakDayMean": 9.0,
+          "medianDayMean": 13.5,
+          "medianDayMedian": 12.0,
+          "favorableFirstRate": 0.5
+        },
+        "profile": {
+          "spaceBias": "偏空",
+          "shortCompetitiveness": 0.9241,
+          "normalPerformance": "负向",
+          "pathTag": "路径拉锯",
+          "favorableFirstRate": 0.5,
+          "confidence": "低",
+          "summary": "做空空间优势明显，中位数价格收益为负，路径拉锯"
+        }
+      },
+      "Q4_偏热_G2_小降": {
+        "qGrade": 4,
+        "gGrade": 2,
+        "nTriggers": 8,
+        "longSpace": {
+          "n": 8,
+          "upsideMean": 13.1975,
+          "upsideMedian": 9.2622,
+          "adverseMean": -7.922,
+          "upsideAdverseRatio": 1.6659,
+          "std": 10.7994,
+          "p25": 6.4053,
+          "p75": 16.2047,
+          "skew": 1.9478,
+          "maxUpside": 37.4793,
+          "maxAdverse": -12.1985
+        },
+        "shortSpace": {
+          "n": 8,
+          "upsideMean": 7.922,
+          "upsideMedian": 7.4057,
+          "adverseMean": -13.1975,
+          "upsideAdverseRatio": 0.6003,
+          "std": 3.4371,
+          "p25": 5.6224,
+          "p75": 11.3307,
+          "skew": 0.0053,
+          "maxUpside": 12.1985,
+          "maxAdverse": -37.4793
+        },
+        "longReturn": {
+          "retMean": 0.7858,
+          "retMedian": -0.1207,
+          "winRate": 0.5,
+          "profitFactor": 1.5363,
+          "var95": -3.8305,
+          "retentionMean": -0.1298,
+          "retentionMedian": -0.1078
+        },
+        "shortReturn": {
+          "retMean": -0.7858,
+          "retMedian": 0.1207,
+          "winRate": 0.5,
+          "profitFactor": 0.6509,
+          "var95": -8.0294,
+          "retentionMean": -0.2558,
+          "retentionMedian": 0.0223
+        },
+        "longPath": {
+          "peakDayMedian": 17.5,
+          "peakDayMean": 12.8,
+          "medianDayMean": 9.5,
+          "medianDayMedian": 9.0,
+          "favorableFirstRate": 0.375
+        },
+        "shortPath": {
+          "peakDayMedian": 11.5,
+          "peakDayMean": 11.4,
+          "medianDayMean": 9.5,
+          "medianDayMedian": 9.0,
+          "favorableFirstRate": 0.625
+        },
+        "profile": {
+          "spaceBias": "多空拉扯偏空",
+          "shortCompetitiveness": 0.6003,
+          "normalPerformance": "中性",
+          "pathTag": "先有利",
+          "favorableFirstRate": 0.625,
+          "confidence": "低",
+          "summary": "做空竞争力上升，路径先有利"
+        }
+      },
+      "Q4_偏热_G3_稳定": {
+        "qGrade": 4,
+        "gGrade": 3,
+        "nTriggers": 15,
+        "longSpace": {
+          "n": 15,
+          "upsideMean": 15.3249,
+          "upsideMedian": 11.958,
+          "adverseMean": -8.5675,
+          "upsideAdverseRatio": 1.7887,
+          "std": 10.4073,
+          "p25": 7.8672,
+          "p75": 22.0542,
+          "skew": 0.9293,
+          "maxUpside": 35.9358,
+          "maxAdverse": -14.9942
+        },
+        "shortSpace": {
+          "n": 15,
+          "upsideMean": 8.5675,
+          "upsideMedian": 8.4755,
+          "adverseMean": -15.3249,
+          "upsideAdverseRatio": 0.5591,
+          "std": 3.7926,
+          "p25": 5.9054,
+          "p75": 11.3272,
+          "skew": 0.0606,
+          "maxUpside": 14.9942,
+          "maxAdverse": -35.9358
+        },
+        "longReturn": {
+          "retMean": 1.2753,
+          "retMedian": 1.348,
+          "winRate": 0.6,
+          "profitFactor": 2.0376,
+          "var95": -5.5192,
+          "retentionMean": -0.1373,
+          "retentionMedian": 0.1127
+        },
+        "shortReturn": {
+          "retMean": -1.2753,
+          "retMedian": -1.348,
+          "winRate": 0.4,
+          "profitFactor": 0.4908,
+          "var95": -9.8315,
+          "retentionMean": -0.3743,
+          "retentionMedian": -0.1938
+        },
+        "longPath": {
+          "peakDayMedian": 11.0,
+          "peakDayMean": 11.6,
+          "medianDayMean": 11.0,
+          "medianDayMedian": 11.0,
+          "favorableFirstRate": 0.4
+        },
+        "shortPath": {
+          "peakDayMedian": 11.0,
+          "peakDayMean": 10.1,
+          "medianDayMean": 11.0,
+          "medianDayMedian": 11.0,
+          "favorableFirstRate": 0.6
+        },
+        "profile": {
+          "spaceBias": "多空拉扯偏空",
+          "shortCompetitiveness": 0.5591,
+          "normalPerformance": "正向",
+          "pathTag": "路径拉锯",
+          "favorableFirstRate": 0.6,
+          "confidence": "中",
+          "summary": "做空竞争力上升，中位数价格收益为正，路径拉锯"
+        }
+      },
+      "Q4_偏热_G4_小升": {
+        "qGrade": 4,
+        "gGrade": 4,
+        "nTriggers": 7,
+        "longSpace": {
+          "n": 7,
+          "upsideMean": 19.0424,
+          "upsideMedian": 12.7192,
+          "adverseMean": -8.4302,
+          "upsideAdverseRatio": 2.2588,
+          "std": 15.2187,
+          "p25": 6.7645,
+          "p75": 33.4383,
+          "skew": 0.2023,
+          "maxUpside": 37.5196,
+          "maxAdverse": -15.4295
+        },
+        "shortSpace": {
+          "n": 7,
+          "upsideMean": 8.4302,
+          "upsideMedian": 6.5542,
+          "adverseMean": -19.0424,
+          "upsideAdverseRatio": 0.4427,
+          "std": 4.4695,
+          "p25": 5.7519,
+          "p75": 10.6402,
+          "skew": 1.0811,
+          "maxUpside": 15.4295,
+          "maxAdverse": -37.5196
+        },
+        "longReturn": {
+          "retMean": 2.787,
+          "retMedian": 2.7625,
+          "winRate": 0.7143,
+          "profitFactor": 2.2433,
+          "var95": -8.2216,
+          "retentionMean": -0.398,
+          "retentionMedian": 0.268
+        },
+        "shortReturn": {
+          "retMean": -2.787,
+          "retMedian": -2.7625,
+          "winRate": 0.2857,
+          "profitFactor": 0.4458,
+          "var95": -11.9778,
+          "retentionMean": -0.6696,
+          "retentionMedian": -0.651
+        },
+        "longPath": {
+          "peakDayMedian": 13.0,
+          "peakDayMean": 13.3,
+          "medianDayMean": 12.7,
+          "medianDayMedian": 14.0,
+          "favorableFirstRate": 0.1429
+        },
+        "shortPath": {
+          "peakDayMedian": 4.0,
+          "peakDayMean": 6.0,
+          "medianDayMean": 12.7,
+          "medianDayMedian": 14.0,
+          "favorableFirstRate": 0.8571
+        },
+        "profile": {
+          "spaceBias": "多空拉扯偏空",
+          "shortCompetitiveness": 0.4427,
+          "normalPerformance": "正向",
+          "pathTag": "先有利",
+          "favorableFirstRate": 0.8571,
+          "confidence": "低",
+          "summary": "做空竞争力上升，中位数价格收益为正，路径先有利"
+        }
+      },
+      "Q4_偏热_G5_大升": {
+        "qGrade": 4,
+        "gGrade": 5,
+        "nTriggers": 8,
+        "longSpace": {
+          "n": 8,
+          "upsideMean": 19.1593,
+          "upsideMedian": 18.2576,
+          "adverseMean": -8.4083,
+          "upsideAdverseRatio": 2.2786,
+          "std": 12.1883,
+          "p25": 8.2743,
+          "p75": 29.8604,
+          "skew": 0.1254,
+          "maxUpside": 35.419,
+          "maxAdverse": -12.8448
+        },
+        "shortSpace": {
+          "n": 8,
+          "upsideMean": 8.4083,
+          "upsideMedian": 8.8789,
+          "adverseMean": -19.1593,
+          "upsideAdverseRatio": 0.4389,
+          "std": 3.6543,
+          "p25": 5.096,
+          "p75": 11.5869,
+          "skew": -0.1754,
+          "maxUpside": 12.8448,
+          "maxAdverse": -35.419
+        },
+        "longReturn": {
+          "retMean": 2.5755,
+          "retMedian": 4.1236,
+          "winRate": 0.625,
+          "profitFactor": 2.3912,
+          "var95": -6.1832,
+          "retentionMean": -0.1859,
+          "retentionMedian": 0.1831
+        },
+        "shortReturn": {
+          "retMean": -2.5755,
+          "retMedian": -4.1236,
+          "winRate": 0.375,
+          "profitFactor": 0.4182,
+          "var95": -10.5342,
+          "retentionMean": -0.6788,
+          "retentionMedian": -0.4922
+        },
+        "longPath": {
+          "peakDayMedian": 12.5,
+          "peakDayMean": 12.6,
+          "medianDayMean": 9.4,
+          "medianDayMedian": 8.5,
+          "favorableFirstRate": 0.25
+        },
+        "shortPath": {
+          "peakDayMedian": 7.0,
+          "peakDayMean": 9.1,
+          "medianDayMean": 9.4,
+          "medianDayMedian": 8.5,
+          "favorableFirstRate": 0.75
+        },
+        "profile": {
+          "spaceBias": "多空拉扯偏空",
+          "shortCompetitiveness": 0.4389,
+          "normalPerformance": "正向",
+          "pathTag": "先有利",
+          "favorableFirstRate": 0.75,
+          "confidence": "低",
+          "summary": "做空竞争力上升，中位数价格收益为正，路径先有利"
+        }
+      },
+      "Q5_极热_G1_大降": {
+        "qGrade": 5,
+        "gGrade": 1,
+        "nTriggers": 5,
+        "longSpace": {
+          "n": 5,
+          "upsideMean": 9.1805,
+          "upsideMedian": 11.026,
+          "adverseMean": -11.4464,
+          "upsideAdverseRatio": 0.802,
+          "std": 4.6323,
+          "p25": 5.9799,
+          "p75": 11.3078,
+          "skew": -0.3982,
+          "maxUpside": 14.5979,
+          "maxAdverse": -15.1508
+        },
+        "shortSpace": {
+          "n": 5,
+          "upsideMean": 11.4464,
+          "upsideMedian": 12.6884,
+          "adverseMean": -9.1805,
+          "upsideAdverseRatio": 1.2468,
+          "std": 3.2134,
+          "p25": 9.7403,
+          "p75": 12.816,
+          "skew": -0.5979,
+          "maxUpside": 15.1508,
+          "maxAdverse": -14.5979
+        },
+        "longReturn": {
+          "retMean": -3.3888,
+          "retMedian": -4.1457,
+          "winRate": 0.2,
+          "profitFactor": 0.1505,
+          "var95": -8.0401,
+          "retentionMean": -0.6282,
+          "retentionMedian": -0.5709
+        },
+        "shortReturn": {
+          "retMean": 3.3888,
+          "retMedian": 4.1457,
+          "winRate": 0.8,
+          "profitFactor": 6.643,
+          "var95": -2.2203,
+          "retentionMean": 0.2083,
+          "retentionMedian": 0.3267
+        },
+        "longPath": {
+          "peakDayMedian": 3.0,
+          "peakDayMean": 7.6,
+          "medianDayMean": 13.2,
+          "medianDayMedian": 16.0,
+          "favorableFirstRate": 0.6
+        },
+        "shortPath": {
+          "peakDayMedian": 12.0,
+          "peakDayMean": 11.2,
+          "medianDayMean": 13.2,
+          "medianDayMedian": 16.0,
+          "favorableFirstRate": 0.4
+        },
+        "profile": {
+          "spaceBias": "偏空",
+          "shortCompetitiveness": 1.2468,
+          "normalPerformance": "负向",
+          "pathTag": "路径拉锯",
+          "favorableFirstRate": 0.4,
+          "confidence": "低",
+          "summary": "做空空间优势明显，中位数价格收益为负，路径拉锯"
+        }
+      },
+      "Q5_极热_G2_小降": {
+        "qGrade": 5,
+        "gGrade": 2,
+        "nTriggers": 7,
+        "longSpace": {
+          "n": 7,
+          "upsideMean": 8.69,
+          "upsideMedian": 8.7075,
+          "adverseMean": -8.9888,
+          "upsideAdverseRatio": 0.9668,
+          "std": 4.5609,
+          "p25": 7.2052,
+          "p75": 9.2036,
+          "skew": 0.8106,
+          "maxUpside": 17.3045,
+          "maxAdverse": -20.0
+        },
+        "shortSpace": {
+          "n": 7,
+          "upsideMean": 8.9888,
+          "upsideMedian": 7.3333,
+          "adverseMean": -8.69,
+          "upsideAdverseRatio": 1.0344,
+          "std": 5.6226,
+          "p25": 5.8611,
+          "p75": 10.6021,
+          "skew": 1.344,
+          "maxUpside": 20.0,
+          "maxAdverse": -17.3045
+        },
+        "longReturn": {
+          "retMean": -1.9269,
+          "retMedian": -0.6088,
+          "winRate": 0.2857,
+          "profitFactor": 0.2914,
+          "var95": -10.6437,
+          "retentionMean": -0.3126,
+          "retentionMedian": -0.0847
+        },
+        "shortReturn": {
+          "retMean": 1.9269,
+          "retMedian": 0.6088,
+          "winRate": 0.7143,
+          "profitFactor": 3.4312,
+          "var95": -3.2551,
+          "retentionMean": -0.0795,
+          "retentionMedian": 0.0969
+        },
+        "longPath": {
+          "peakDayMedian": 19.0,
+          "peakDayMean": 16.6,
+          "medianDayMean": 15.4,
+          "medianDayMedian": 15.0,
+          "favorableFirstRate": 0.1429
+        },
+        "shortPath": {
+          "peakDayMedian": 14.0,
+          "peakDayMean": 13.6,
+          "medianDayMean": 15.4,
+          "medianDayMedian": 15.0,
+          "favorableFirstRate": 0.8571
+        },
+        "profile": {
+          "spaceBias": "偏空",
+          "shortCompetitiveness": 1.0344,
+          "normalPerformance": "负向",
+          "pathTag": "先有利",
+          "favorableFirstRate": 0.8571,
+          "confidence": "低",
+          "summary": "做空空间优势明显，中位数价格收益为负，路径先有利"
+        }
+      },
+      "Q5_极热_G3_稳定": {
+        "qGrade": 5,
+        "gGrade": 3,
+        "nTriggers": 5,
+        "longSpace": {
+          "n": 5,
+          "upsideMean": 5.2161,
+          "upsideMedian": 5.2311,
+          "adverseMean": -15.3513,
+          "upsideAdverseRatio": 0.3398,
+          "std": 2.1078,
+          "p25": 3.3263,
+          "p75": 6.6498,
+          "skew": 0.1865,
+          "maxUpside": 7.891,
+          "maxAdverse": -26.2193
+        },
+        "shortSpace": {
+          "n": 5,
+          "upsideMean": 15.3513,
+          "upsideMedian": 14.3382,
+          "adverseMean": -5.2161,
+          "upsideAdverseRatio": 2.943,
+          "std": 6.521,
+          "p25": 12.1365,
+          "p75": 15.0787,
+          "skew": 1.4894,
+          "maxUpside": 26.2193,
+          "maxAdverse": -7.891
+        },
+        "longReturn": {
+          "retMean": -6.8803,
+          "retMedian": -5.1313,
+          "winRate": 0.0,
+          "profitFactor": 0.0,
+          "var95": -14.0839,
+          "retentionMean": -1.0336,
+          "retentionMedian": -0.7601
+        },
+        "shortReturn": {
+          "retMean": 6.8803,
+          "retMedian": 5.1313,
+          "winRate": 1.0,
+          "profitFactor": 9.9,
+          "var95": 2.828,
+          "retentionMean": 0.4055,
+          "retentionMedian": 0.3978
+        },
+        "longPath": {
+          "peakDayMedian": 5.0,
+          "peakDayMean": 8.8,
+          "medianDayMean": 12.2,
+          "medianDayMedian": 11.0,
+          "favorableFirstRate": 0.6
+        },
+        "shortPath": {
+          "peakDayMedian": 16.0,
+          "peakDayMean": 13.6,
+          "medianDayMean": 12.2,
+          "medianDayMedian": 11.0,
+          "favorableFirstRate": 0.4
+        },
+        "profile": {
+          "spaceBias": "偏空",
+          "shortCompetitiveness": 2.9431,
+          "normalPerformance": "负向",
+          "pathTag": "路径拉锯",
+          "favorableFirstRate": 0.4,
+          "confidence": "低",
+          "summary": "做空空间优势明显，中位数价格收益为负，路径拉锯"
+        }
+      },
+      "Q5_极热_G4_小升": {
+        "qGrade": 5,
+        "gGrade": 4,
+        "nTriggers": 7,
+        "longSpace": {
+          "n": 7,
+          "upsideMean": 11.0498,
+          "upsideMedian": 11.3646,
+          "adverseMean": -8.6273,
+          "upsideAdverseRatio": 1.2808,
+          "std": 8.0872,
+          "p25": 4.8021,
+          "p75": 16.3161,
+          "skew": 0.4508,
+          "maxUpside": 22.0937,
+          "maxAdverse": -17.4129
+        },
+        "shortSpace": {
+          "n": 7,
+          "upsideMean": 8.6273,
+          "upsideMedian": 7.9836,
+          "adverseMean": -11.0498,
+          "upsideAdverseRatio": 0.7808,
+          "std": 6.1858,
+          "p25": 4.6027,
+          "p75": 12.4877,
+          "skew": 0.2961,
+          "maxUpside": 17.4129,
+          "maxAdverse": -22.0937
+        },
+        "longReturn": {
+          "retMean": -0.8306,
+          "retMedian": -0.5608,
+          "winRate": 0.4286,
+          "profitFactor": 0.7407,
+          "var95": -10.3646,
+          "retentionMean": -0.4983,
+          "retentionMedian": -0.0488
+        },
+        "shortReturn": {
+          "retMean": 0.8306,
+          "retMedian": 0.5608,
+          "winRate": 0.5714,
+          "profitFactor": 1.35,
+          "var95": -8.7967,
+          "retentionMean": -1.5201,
+          "retentionMedian": 0.0599
+        },
+        "longPath": {
+          "peakDayMedian": 5.0,
+          "peakDayMean": 9.7,
+          "medianDayMean": 8.9,
+          "medianDayMedian": 8.0,
+          "favorableFirstRate": 0.4286
+        },
+        "shortPath": {
+          "peakDayMedian": 13.0,
+          "peakDayMean": 11.6,
+          "medianDayMean": 8.9,
+          "medianDayMedian": 8.0,
+          "favorableFirstRate": 0.5714
+        },
+        "profile": {
+          "spaceBias": "多空拉扯偏空",
+          "shortCompetitiveness": 0.7808,
+          "normalPerformance": "中性",
+          "pathTag": "路径拉锯",
+          "favorableFirstRate": 0.5714,
+          "confidence": "低",
+          "summary": "做空竞争力上升，路径拉锯"
+        }
+      },
+      "Q5_极热_G5_大升": {
+        "qGrade": 5,
+        "gGrade": 5,
+        "nTriggers": 17,
+        "longSpace": {
+          "n": 17,
+          "upsideMean": 13.2549,
+          "upsideMedian": 12.8153,
+          "adverseMean": -10.3926,
+          "upsideAdverseRatio": 1.2754,
+          "std": 11.2662,
+          "p25": 5.7364,
+          "p75": 16.9974,
+          "skew": 1.4038,
+          "maxUpside": 44.8322,
+          "maxAdverse": -25.1957
+        },
+        "shortSpace": {
+          "n": 17,
+          "upsideMean": 10.3926,
+          "upsideMedian": 10.0639,
+          "adverseMean": -13.2549,
+          "upsideAdverseRatio": 0.7841,
+          "std": 5.4855,
+          "p25": 8.1052,
+          "p75": 12.7652,
+          "skew": 1.0494,
+          "maxUpside": 25.1957,
+          "maxAdverse": -44.8322
+        },
+        "longReturn": {
+          "retMean": -0.9681,
+          "retMedian": -3.503,
+          "winRate": 0.3529,
+          "profitFactor": 0.7288,
+          "var95": -10.21,
+          "retentionMean": -0.4827,
+          "retentionMedian": -0.2762
+        },
+        "shortReturn": {
+          "retMean": 0.9681,
+          "retMedian": 3.503,
+          "winRate": 0.6471,
+          "profitFactor": 1.3721,
+          "var95": -11.6014,
+          "retentionMean": -0.3306,
+          "retentionMedian": 0.3481
+        },
+        "longPath": {
+          "peakDayMedian": 5.0,
+          "peakDayMean": 8.2,
+          "medianDayMean": 10.9,
+          "medianDayMedian": 11.0,
+          "favorableFirstRate": 0.5882
+        },
+        "shortPath": {
+          "peakDayMedian": 15.0,
+          "peakDayMean": 13.0,
+          "medianDayMean": 10.9,
+          "medianDayMedian": 11.0,
+          "favorableFirstRate": 0.4118
+        },
+        "profile": {
+          "spaceBias": "多空拉扯偏空",
+          "shortCompetitiveness": 0.7841,
+          "normalPerformance": "中性",
+          "pathTag": "路径拉锯",
+          "favorableFirstRate": 0.4118,
+          "confidence": "中",
+          "summary": "做空竞争力上升，路径拉锯"
+        }
+      },
+      "_trends": {
+        "q": {
+          "longColdMean": 19.6168,
+          "longHotMean": 13.4466,
+          "longSpread": 6.1701,
+          "longSpreadPct": 0.3145,
+          "shortColdMean": 7.3857,
+          "shortHotMean": 9.7776,
+          "shortSpread": 2.3919,
+          "shortSpreadPct": 0.3239,
+          "longRho": -0.7,
+          "shortRho": 0.9,
+          "retSpread": 4.3303,
+          "retSpreadPct": 1.091,
+          "retRho": -0.9
+        },
+        "g": {
+          "longDownMean": 18.7029,
+          "longUpMean": 17.5997,
+          "longSpread": 1.1032,
+          "longSpreadPct": 0.059,
+          "shortDownMean": 8.2439,
+          "shortUpMean": 8.4168,
+          "shortSpread": 0.173,
+          "shortSpreadPct": 0.021,
+          "longRho": 0.3,
+          "shortRho": -0.5,
+          "retSpread": 0.8215,
+          "retSpreadPct": 0.2795,
+          "retRho": 0.2
+        },
+        "conditionalG": {
+          "1": {
+            "n": 46,
+            "longDownMean": 22.3171,
+            "longUpMean": 15.4735,
+            "longSpread": 6.8437,
+            "longSpreadPct": 0.3067,
+            "shortDownMean": 7.2829,
+            "shortUpMean": 7.2852,
+            "shortSpread": 0.0023,
+            "shortSpreadPct": 0.0003,
+            "longRho": -0.7,
+            "shortRho": 0.2,
+            "retSpread": 3.0196,
+            "retSpreadPct": 0.5922,
+            "retRho": -0.9
+          },
+          "2": {
+            "n": 48,
+            "longDownMean": 21.7819,
+            "longUpMean": 20.5408,
+            "longSpread": 1.2412,
+            "longSpreadPct": 0.057,
+            "shortDownMean": 7.5753,
+            "shortUpMean": 8.2464,
+            "shortSpread": 0.6712,
+            "shortSpreadPct": 0.0886,
+            "longRho": -0.3,
+            "shortRho": 0.7,
+            "retSpread": 0.2025,
+            "retSpreadPct": 0.0477,
+            "retRho": -0.3
+          },
+          "3": {
+            "n": 44,
+            "longDownMean": 20.6186,
+            "longUpMean": 21.1322,
+            "longSpread": -0.5136,
+            "longSpreadPct": -0.0249,
+            "shortDownMean": 7.6216,
+            "shortUpMean": 7.6146,
+            "shortSpread": -0.007,
+            "shortSpreadPct": -0.0009,
+            "longRho": 0.3,
+            "shortRho": -0.5,
+            "retSpread": 1.0458,
+            "retSpreadPct": 0.2211,
+            "retRho": 0.2
+          },
+          "4": {
+            "n": 44,
+            "longDownMean": 13.6444,
+            "longUpMean": 19.1048,
+            "longSpread": -5.4603,
+            "longSpreadPct": -0.4002,
+            "shortDownMean": 10.1664,
+            "shortUpMean": 8.4185,
+            "shortSpread": -1.7479,
+            "shortSpreadPct": -0.1719,
+            "longRho": 0.9,
+            "shortRho": -0.4,
+            "retSpread": -2.8776,
+            "retSpreadPct": -14.1504,
+            "retRho": 0.9
+          },
+          "5": {
+            "n": 41,
+            "longDownMean": 8.8944,
+            "longUpMean": 12.6118,
+            "longSpread": -3.7174,
+            "longSpreadPct": -0.4179,
+            "shortDownMean": 10.0128,
+            "shortUpMean": 9.8777,
+            "shortSpread": -0.1351,
+            "shortSpreadPct": -0.0135,
+            "longRho": 0.6,
+            "shortRho": -0.3,
+            "retSpread": -1.6081,
+            "retSpreadPct": -0.6341,
+            "retRho": 0.6
+          }
+        },
+        "conditionalQ": {
+          "1": {
+            "n": 46,
+            "longColdMean": 22.0553,
+            "longHotMean": 11.9405,
+            "longSpread": 10.1148,
+            "longSpreadPct": 0.4586,
+            "shortColdMean": 6.8066,
+            "shortHotMean": 12.3805,
+            "shortSpread": 5.5739,
+            "shortSpreadPct": 0.8189,
+            "longRho": -0.7,
+            "shortRho": 0.8,
+            "retSpread": 7.732,
+            "retSpreadPct": 1.4422,
+            "retRho": -1.0
+          },
+          "2": {
+            "n": 44,
+            "longColdMean": 21.966,
+            "longHotMean": 11.094,
+            "longSpread": 10.872,
+            "longSpreadPct": 0.4949,
+            "shortColdMean": 8.4726,
+            "shortHotMean": 8.4199,
+            "shortSpread": -0.0527,
+            "shortSpreadPct": -0.0062,
+            "longRho": -0.9,
+            "shortRho": 0.2,
+            "retSpread": 3.9188,
+            "retSpreadPct": 1.1396,
+            "retRho": -0.6
+          },
+          "3": {
+            "n": 42,
+            "longColdMean": 15.9089,
+            "longHotMean": 12.7977,
+            "longSpread": 3.1112,
+            "longSpreadPct": 0.1956,
+            "shortColdMean": 6.5615,
+            "shortHotMean": 10.2634,
+            "shortSpread": 3.7019,
+            "shortSpreadPct": 0.5642,
+            "longRho": -0.7,
+            "shortRho": 0.9,
+            "retSpread": 4.5428,
+            "retSpreadPct": 1.2021,
+            "retRho": -0.9
+          },
+          "4": {
+            "n": 47,
+            "longColdMean": 18.427,
+            "longHotMean": 15.0461,
+            "longSpread": 3.3808,
+            "longSpreadPct": 0.1835,
+            "shortColdMean": 7.0047,
+            "shortHotMean": 8.5288,
+            "shortSpread": 1.5241,
+            "shortSpreadPct": 0.2176,
+            "longRho": -0.4,
+            "shortRho": 1.0,
+            "retSpread": 2.9083,
+            "retSpreadPct": 0.7483,
+            "retRho": -0.4
+          },
+          "5": {
+            "n": 43,
+            "longColdMean": 18.0458,
+            "longHotMean": 15.1443,
+            "longSpread": 2.9014,
+            "longSpreadPct": 0.1608,
+            "shortColdMean": 8.9643,
+            "shortHotMean": 9.7576,
+            "shortSpread": 0.7933,
+            "shortSpreadPct": 0.0885,
+            "longRho": -0.1,
+            "shortRho": 0.5,
+            "retSpread": 1.9671,
+            "retSpreadPct": 0.9222,
+            "retRho": -0.3
+          }
+        },
+        "quadrants": {
+          "cold_down": {
+            "n": 47,
+            "longUpsideMean": 22.0211,
+            "shortUpsideMean": 7.4446,
+            "medianReturnMean": 4.625,
+            "shortCompetitiveness": 0.3381
+          },
+          "cold_up": {
+            "n": 29,
+            "longUpsideMean": 18.2692,
+            "shortUpsideMean": 7.8156,
+            "medianReturnMean": 3.1609,
+            "shortCompetitiveness": 0.4278
+          },
+          "hot_down": {
+            "n": 26,
+            "longUpsideMean": 11.4521,
+            "shortUpsideMean": 10.0955,
+            "medianReturnMean": -1.28,
+            "shortCompetitiveness": 0.8815
+          },
+          "hot_up": {
+            "n": 39,
+            "longUpsideMean": 15.1091,
+            "shortUpsideMean": 9.3165,
+            "medianReturnMean": 0.4575,
+            "shortCompetitiveness": 0.6166
+          }
+        },
+        "interaction": {
+          "long": 7.4089,
+          "short": -1.15,
+          "ret": 3.2016
+        }
+      }
+    },
+    "daily_excess": {
+      "Q1_极冷_G1_大降": {
+        "qGrade": 1,
+        "gGrade": 1,
+        "nTriggers": 26,
+        "longSpace": {
+          "n": 26,
+          "upsideMean": 18.1356,
+          "upsideMedian": 11.2994,
+          "adverseMean": -8.4947,
+          "upsideAdverseRatio": 2.1349,
+          "std": 16.1111,
+          "p25": 6.2182,
+          "p75": 28.557,
+          "skew": 1.0599,
+          "maxUpside": 57.6067,
+          "maxAdverse": -25.6388
+        },
+        "shortSpace": {
+          "n": 26,
+          "upsideMean": 8.4947,
+          "upsideMedian": 8.022,
+          "adverseMean": -18.1356,
+          "upsideAdverseRatio": 0.4684,
+          "std": 5.4595,
+          "p25": 5.5048,
+          "p75": 11.0841,
+          "skew": 1.1642,
+          "maxUpside": 25.6388,
+          "maxAdverse": -57.6067
+        },
+        "longReturn": {
+          "retMean": 2.2021,
+          "retMedian": -0.4151,
+          "winRate": 0.4231,
+          "profitFactor": 1.95,
+          "var95": -8.4329,
+          "retentionMean": -0.2197,
+          "retentionMedian": -0.0259
+        },
+        "shortReturn": {
+          "retMean": -2.2021,
+          "retMedian": 0.4151,
+          "winRate": 0.5769,
+          "profitFactor": 0.5128,
+          "var95": -16.3849,
+          "retentionMean": -0.2305,
+          "retentionMedian": 0.0827
+        },
+        "longPath": {
+          "peakDayMedian": 14.0,
+          "peakDayMean": 13.2,
+          "medianDayMean": 12.2,
+          "medianDayMedian": 12.0,
+          "favorableFirstRate": 0.1923
+        },
+        "shortPath": {
+          "peakDayMedian": 4.5,
+          "peakDayMean": 7.3,
+          "medianDayMean": 12.2,
+          "medianDayMedian": 12.0,
+          "favorableFirstRate": 0.8077
+        },
+        "profile": {
+          "spaceBias": "偏多",
+          "shortCompetitiveness": 0.4684,
+          "normalPerformance": "正向",
+          "pathTag": "先不利",
+          "favorableFirstRate": 0.1923,
+          "confidence": "高",
+          "summary": "做多空间优势明显，中位数价格收益为正，但常先浮亏再反转，执行压力大"
+        }
+      },
+      "Q1_极冷_G2_小降": {
+        "qGrade": 1,
+        "gGrade": 2,
+        "nTriggers": 8,
+        "longSpace": {
+          "n": 8,
+          "upsideMean": 14.4217,
+          "upsideMedian": 10.7066,
+          "adverseMean": -6.9626,
+          "upsideAdverseRatio": 2.0713,
+          "std": 10.043,
+          "p25": 8.4216,
+          "p75": 17.3912,
+          "skew": 1.9054,
+          "maxUpside": 36.8935,
+          "maxAdverse": -12.6399
+        },
+        "shortSpace": {
+          "n": 8,
+          "upsideMean": 6.9626,
+          "upsideMedian": 6.5427,
+          "adverseMean": -14.4217,
+          "upsideAdverseRatio": 0.4828,
+          "std": 4.0772,
+          "p25": 3.7422,
+          "p75": 10.4805,
+          "skew": 0.1408,
+          "maxUpside": 12.6399,
+          "maxAdverse": -36.8935
+        },
+        "longReturn": {
+          "retMean": 2.2424,
+          "retMedian": 1.1064,
+          "winRate": 0.625,
+          "profitFactor": 3.0781,
+          "var95": -3.9379,
+          "retentionMean": -0.0066,
+          "retentionMedian": 0.1004
+        },
+        "shortReturn": {
+          "retMean": -2.2424,
+          "retMedian": -1.1064,
+          "winRate": 0.375,
+          "profitFactor": 0.3249,
+          "var95": -11.0202,
+          "retentionMean": -0.9542,
+          "retentionMedian": -0.2529
+        },
+        "longPath": {
+          "peakDayMedian": 12.5,
+          "peakDayMean": 10.9,
+          "medianDayMean": 11.9,
+          "medianDayMedian": 11.5,
+          "favorableFirstRate": 0.75
+        },
+        "shortPath": {
+          "peakDayMedian": 15.0,
+          "peakDayMean": 13.9,
+          "medianDayMean": 11.9,
+          "medianDayMedian": 11.5,
+          "favorableFirstRate": 0.25
+        },
+        "profile": {
+          "spaceBias": "偏多",
+          "shortCompetitiveness": 0.4828,
+          "normalPerformance": "正向",
+          "pathTag": "先有利",
+          "favorableFirstRate": 0.75,
+          "confidence": "低",
+          "summary": "做多空间优势明显，中位数价格收益为正，路径先有利"
+        }
+      },
+      "Q1_极冷_G3_稳定": {
+        "qGrade": 1,
+        "gGrade": 3,
+        "nTriggers": 7,
+        "longSpace": {
+          "n": 7,
+          "upsideMean": 25.8087,
+          "upsideMedian": 18.1088,
+          "adverseMean": -6.6853,
+          "upsideAdverseRatio": 3.8605,
+          "std": 19.7259,
+          "p25": 9.8312,
+          "p75": 39.5531,
+          "skew": 0.642,
+          "maxUpside": 57.424,
+          "maxAdverse": -14.4048
+        },
+        "shortSpace": {
+          "n": 7,
+          "upsideMean": 6.6853,
+          "upsideMedian": 7.0686,
+          "adverseMean": -25.8087,
+          "upsideAdverseRatio": 0.259,
+          "std": 5.4677,
+          "p25": 2.092,
+          "p75": 10.5699,
+          "skew": 0.0879,
+          "maxUpside": 14.4048,
+          "maxAdverse": -57.424
+        },
+        "longReturn": {
+          "retMean": 7.61,
+          "retMedian": 7.7609,
+          "winRate": 0.5714,
+          "profitFactor": 6.2049,
+          "var95": -5.1775,
+          "retentionMean": 0.0375,
+          "retentionMedian": 0.3332
+        },
+        "shortReturn": {
+          "retMean": -7.61,
+          "retMedian": -7.7609,
+          "winRate": 0.4286,
+          "profitFactor": 0.1612,
+          "var95": -22.6555,
+          "retentionMean": -2.3878,
+          "retentionMedian": -0.8206
+        },
+        "longPath": {
+          "peakDayMedian": 13.0,
+          "peakDayMean": 13.3,
+          "medianDayMean": 14.3,
+          "medianDayMedian": 14.0,
+          "favorableFirstRate": 0.2857
+        },
+        "shortPath": {
+          "peakDayMedian": 2.0,
+          "peakDayMean": 7.1,
+          "medianDayMean": 14.3,
+          "medianDayMedian": 14.0,
+          "favorableFirstRate": 0.7143
+        },
+        "profile": {
+          "spaceBias": "偏多",
+          "shortCompetitiveness": 0.259,
+          "normalPerformance": "正向",
+          "pathTag": "先不利",
+          "favorableFirstRate": 0.2857,
+          "confidence": "低",
+          "summary": "做多空间优势明显，中位数价格收益为正，但常先浮亏再反转，执行压力大"
+        }
+      },
+      "Q1_极冷_G4_小升": {
+        "qGrade": 1,
+        "gGrade": 4,
+        "nTriggers": 4,
+        "longSpace": {
+          "n": 4,
+          "upsideMean": 31.8198,
+          "upsideMedian": 35.0433,
+          "adverseMean": -5.2817,
+          "upsideAdverseRatio": 6.0245,
+          "std": 14.1206,
+          "p25": 26.7323,
+          "p75": 40.1309,
+          "skew": -1.1626,
+          "maxUpside": 44.9086,
+          "maxAdverse": -7.1556
+        },
+        "shortSpace": {
+          "n": 4,
+          "upsideMean": 5.2817,
+          "upsideMedian": 6.3931,
+          "adverseMean": -31.8198,
+          "upsideAdverseRatio": 0.166,
+          "std": 2.7727,
+          "p25": 4.8002,
+          "p75": 6.8746,
+          "skew": -1.827,
+          "maxUpside": 7.1556,
+          "maxAdverse": -44.9086
+        },
+        "longReturn": {
+          "retMean": 9.7911,
+          "retMedian": 10.4742,
+          "winRate": 1.0,
+          "profitFactor": 9.9,
+          "var95": 2.3057,
+          "retentionMean": 0.2685,
+          "retentionMedian": 0.2937
+        },
+        "shortReturn": {
+          "retMean": -9.7911,
+          "retMedian": -10.4742,
+          "winRate": 0.0,
+          "profitFactor": 0.0,
+          "var95": -16.3202,
+          "retentionMean": -3.8303,
+          "retentionMedian": -1.9348
+        },
+        "longPath": {
+          "peakDayMedian": 8.5,
+          "peakDayMean": 9.8,
+          "medianDayMean": 12.2,
+          "medianDayMedian": 11.5,
+          "favorableFirstRate": 0.0
+        },
+        "shortPath": {
+          "peakDayMedian": 1.0,
+          "peakDayMean": 1.8,
+          "medianDayMean": 12.2,
+          "medianDayMedian": 11.5,
+          "favorableFirstRate": 1.0
+        },
+        "profile": {
+          "spaceBias": "样本不足",
+          "shortCompetitiveness": null,
+          "normalPerformance": "-",
+          "pathTag": "-",
+          "favorableFirstRate": null,
+          "confidence": "无效",
+          "summary": "仅4个样本，不足以生成画像"
+        }
+      },
+      "Q1_极冷_G5_大升": {
+        "qGrade": 1,
+        "gGrade": 5,
+        "nTriggers": 2,
+        "longSpace": {
+          "n": 2,
+          "upsideMean": 40.5995,
+          "upsideMedian": 40.5995,
+          "adverseMean": -3.2184,
+          "upsideAdverseRatio": 12.6148,
+          "std": 37.0383,
+          "p25": 27.5044,
+          "p75": 53.6945,
+          "skew": NaN,
+          "maxUpside": 66.7895,
+          "maxAdverse": -5.8423
+        },
+        "shortSpace": {
+          "n": 2,
+          "upsideMean": 3.2184,
+          "upsideMedian": 3.2184,
+          "adverseMean": -40.5995,
+          "upsideAdverseRatio": 0.0793,
+          "std": 3.7108,
+          "p25": 1.9064,
+          "p75": 4.5304,
+          "skew": NaN,
+          "maxUpside": 5.8423,
+          "maxAdverse": -66.7895
+        },
+        "longReturn": {
+          "retMean": 13.7977,
+          "retMedian": 13.7977,
+          "winRate": 1.0,
+          "profitFactor": 9.9,
+          "var95": 3.4373,
+          "retentionMean": 0.2688,
+          "retentionMedian": 0.2688
+        },
+        "shortReturn": {
+          "retMean": -13.7977,
+          "retMedian": -13.7977,
+          "winRate": 0.0,
+          "profitFactor": 0.0,
+          "var95": -24.158,
+          "retentionMean": -21.4818,
+          "retentionMedian": -21.4818
+        },
+        "longPath": {
+          "peakDayMedian": 14.5,
+          "peakDayMean": 14.5,
+          "medianDayMean": 13.5,
+          "medianDayMedian": 13.5,
+          "favorableFirstRate": 0.0
+        },
+        "shortPath": {
+          "peakDayMedian": 2.0,
+          "peakDayMean": 2.0,
+          "medianDayMean": 13.5,
+          "medianDayMedian": 13.5,
+          "favorableFirstRate": 1.0
+        },
+        "profile": {
+          "spaceBias": "样本不足",
+          "shortCompetitiveness": null,
+          "normalPerformance": "-",
+          "pathTag": "-",
+          "favorableFirstRate": null,
+          "confidence": "无效",
+          "summary": "仅2个样本，不足以生成画像"
+        }
+      },
+      "Q2_偏冷_G1_大降": {
+        "qGrade": 2,
+        "gGrade": 1,
+        "nTriggers": 10,
+        "longSpace": {
+          "n": 10,
+          "upsideMean": 19.7162,
+          "upsideMedian": 11.7842,
+          "adverseMean": -8.5466,
+          "upsideAdverseRatio": 2.3069,
+          "std": 18.4752,
+          "p25": 8.6123,
+          "p75": 21.1617,
+          "skew": 1.455,
+          "maxUpside": 55.8382,
+          "maxAdverse": -17.9287
+        },
+        "shortSpace": {
+          "n": 10,
+          "upsideMean": 8.5466,
+          "upsideMedian": 7.1726,
+          "adverseMean": -19.7162,
+          "upsideAdverseRatio": 0.4335,
+          "std": 5.1186,
+          "p25": 6.3212,
+          "p75": 10.94,
+          "skew": 0.3557,
+          "maxUpside": 17.9287,
+          "maxAdverse": -55.8382
+        },
+        "longReturn": {
+          "retMean": 2.099,
+          "retMedian": 0.5192,
+          "winRate": 0.5,
+          "profitFactor": 2.1168,
+          "var95": -8.2072,
+          "retentionMean": -0.2533,
+          "retentionMedian": 0.0263
+        },
+        "shortReturn": {
+          "retMean": -2.099,
+          "retMedian": -0.5192,
+          "winRate": 0.5,
+          "profitFactor": 0.4724,
+          "var95": -16.9313,
+          "retentionMean": 5.7186,
+          "retentionMedian": 0.0548
+        },
+        "longPath": {
+          "peakDayMedian": 13.5,
+          "peakDayMean": 12.8,
+          "medianDayMean": 11.7,
+          "medianDayMedian": 13.0,
+          "favorableFirstRate": 0.3
+        },
+        "shortPath": {
+          "peakDayMedian": 8.5,
+          "peakDayMean": 10.2,
+          "medianDayMean": 11.7,
+          "medianDayMedian": 13.0,
+          "favorableFirstRate": 0.7
+        },
+        "profile": {
+          "spaceBias": "偏多",
+          "shortCompetitiveness": 0.4335,
+          "normalPerformance": "正向",
+          "pathTag": "先不利",
+          "favorableFirstRate": 0.3,
+          "confidence": "中",
+          "summary": "做多空间优势明显，中位数价格收益为正，但常先浮亏再反转，执行压力大"
+        }
+      },
+      "Q2_偏冷_G2_小降": {
+        "qGrade": 2,
+        "gGrade": 2,
+        "nTriggers": 17,
+        "longSpace": {
+          "n": 17,
+          "upsideMean": 13.9531,
+          "upsideMedian": 12.7192,
+          "adverseMean": -7.1766,
+          "upsideAdverseRatio": 1.9442,
+          "std": 8.9133,
+          "p25": 8.726,
+          "p75": 19.4816,
+          "skew": 0.7173,
+          "maxUpside": 34.3126,
+          "maxAdverse": -17.6603
+        },
+        "shortSpace": {
+          "n": 17,
+          "upsideMean": 7.1766,
+          "upsideMedian": 6.1575,
+          "adverseMean": -13.9531,
+          "upsideAdverseRatio": 0.5143,
+          "std": 4.9626,
+          "p25": 3.338,
+          "p75": 11.1733,
+          "skew": 0.4542,
+          "maxUpside": 17.6603,
+          "maxAdverse": -34.3126
+        },
+        "longReturn": {
+          "retMean": 1.867,
+          "retMedian": 3.4003,
+          "winRate": 0.5882,
+          "profitFactor": 1.9764,
+          "var95": -7.0845,
+          "retentionMean": -0.1846,
+          "retentionMedian": 0.2485
+        },
+        "shortReturn": {
+          "retMean": -1.867,
+          "retMedian": -3.4003,
+          "winRate": 0.4118,
+          "profitFactor": 0.506,
+          "var95": -10.4222,
+          "retentionMean": -8.1822,
+          "retentionMedian": -0.5508
+        },
+        "longPath": {
+          "peakDayMedian": 9.0,
+          "peakDayMean": 10.4,
+          "medianDayMean": 13.5,
+          "medianDayMedian": 13.0,
+          "favorableFirstRate": 0.4118
+        },
+        "shortPath": {
+          "peakDayMedian": 10.0,
+          "peakDayMean": 10.2,
+          "medianDayMean": 13.5,
+          "medianDayMedian": 13.0,
+          "favorableFirstRate": 0.5882
+        },
+        "profile": {
+          "spaceBias": "偏多",
+          "shortCompetitiveness": 0.5143,
+          "normalPerformance": "正向",
+          "pathTag": "路径拉锯",
+          "favorableFirstRate": 0.4118,
+          "confidence": "中",
+          "summary": "做多空间优势明显，中位数价格收益为正，路径拉锯"
+        }
+      },
+      "Q2_偏冷_G3_稳定": {
+        "qGrade": 2,
+        "gGrade": 3,
+        "nTriggers": 14,
+        "longSpace": {
+          "n": 14,
+          "upsideMean": 20.7928,
+          "upsideMedian": 16.2626,
+          "adverseMean": -6.0428,
+          "upsideAdverseRatio": 3.4409,
+          "std": 16.1383,
+          "p25": 11.3163,
+          "p75": 25.993,
+          "skew": 1.1381,
+          "maxUpside": 57.7237,
+          "maxAdverse": -20.0
+        },
+        "shortSpace": {
+          "n": 14,
+          "upsideMean": 6.0428,
+          "upsideMedian": 4.5557,
+          "adverseMean": -20.7928,
+          "upsideAdverseRatio": 0.2906,
+          "std": 6.1888,
+          "p25": 1.4977,
+          "p75": 8.3907,
+          "skew": 0.9983,
+          "maxUpside": 20.0,
+          "maxAdverse": -57.7237
+        },
+        "longReturn": {
+          "retMean": 6.0184,
+          "retMedian": 6.0213,
+          "winRate": 0.7857,
+          "profitFactor": 4.2104,
+          "var95": -9.1814,
+          "retentionMean": -0.0306,
+          "retentionMedian": 0.292
+        },
+        "shortReturn": {
+          "retMean": -6.0184,
+          "retMedian": -6.0213,
+          "winRate": 0.2143,
+          "profitFactor": 0.2375,
+          "var95": -23.297,
+          "retentionMean": -4.8847,
+          "retentionMedian": -0.6065
+        },
+        "longPath": {
+          "peakDayMedian": 10.0,
+          "peakDayMean": 9.5,
+          "medianDayMean": 11.4,
+          "medianDayMedian": 13.5,
+          "favorableFirstRate": 0.2857
+        },
+        "shortPath": {
+          "peakDayMedian": 4.0,
+          "peakDayMean": 6.6,
+          "medianDayMean": 11.4,
+          "medianDayMedian": 13.5,
+          "favorableFirstRate": 0.6429
+        },
+        "profile": {
+          "spaceBias": "偏多",
+          "shortCompetitiveness": 0.2906,
+          "normalPerformance": "正向",
+          "pathTag": "先不利",
+          "favorableFirstRate": 0.2857,
+          "confidence": "中",
+          "summary": "做多空间优势明显，中位数价格收益为正，但常先浮亏再反转，执行压力大"
+        }
+      },
+      "Q2_偏冷_G4_小升": {
+        "qGrade": 2,
+        "gGrade": 4,
+        "nTriggers": 5,
+        "longSpace": {
+          "n": 5,
+          "upsideMean": 15.5937,
+          "upsideMedian": 6.5333,
+          "adverseMean": -9.412,
+          "upsideAdverseRatio": 1.6568,
+          "std": 20.0249,
+          "p25": 5.9799,
+          "p75": 12.2795,
+          "skew": 2.0652,
+          "maxUpside": 50.8442,
+          "maxAdverse": -13.9896
+        },
+        "shortSpace": {
+          "n": 5,
+          "upsideMean": 9.412,
+          "upsideMedian": 8.05,
+          "adverseMean": -15.5937,
+          "upsideAdverseRatio": 0.6036,
+          "std": 3.6998,
+          "p25": 6.4281,
+          "p75": 12.6884,
+          "skew": 0.484,
+          "maxUpside": 13.9896,
+          "maxAdverse": -50.8442
+        },
+        "longReturn": {
+          "retMean": 1.2286,
+          "retMedian": -2.1,
+          "winRate": 0.2,
+          "profitFactor": 1.4584,
+          "var95": -6.1607,
+          "retentionMean": -0.5341,
+          "retentionMedian": -0.3214
+        },
+        "shortReturn": {
+          "retMean": -1.2286,
+          "retMedian": 2.1,
+          "winRate": 0.8,
+          "profitFactor": 0.6857,
+          "var95": -15.5377,
+          "retentionMean": -0.434,
+          "retentionMedian": 0.2609
+        },
+        "longPath": {
+          "peakDayMedian": 13.0,
+          "peakDayMean": 12.8,
+          "medianDayMean": 12.0,
+          "medianDayMedian": 11.0,
+          "favorableFirstRate": 0.4
+        },
+        "shortPath": {
+          "peakDayMedian": 10.0,
+          "peakDayMean": 10.6,
+          "medianDayMean": 12.0,
+          "medianDayMedian": 11.0,
+          "favorableFirstRate": 0.6
+        },
+        "profile": {
+          "spaceBias": "偏多",
+          "shortCompetitiveness": 0.6036,
+          "normalPerformance": "正向",
+          "pathTag": "路径拉锯",
+          "favorableFirstRate": 0.4,
+          "confidence": "低",
+          "summary": "做多空间优势明显，中位数价格收益为正，路径拉锯"
+        }
+      },
+      "Q2_偏冷_G5_大升": {
+        "qGrade": 2,
+        "gGrade": 5,
+        "nTriggers": 1,
+        "longSpace": {
+          "n": 1,
+          "upsideMean": null,
+          "upsideMedian": null,
+          "adverseMean": null,
+          "upsideAdverseRatio": null,
+          "std": null,
+          "p25": null,
+          "p75": null,
+          "skew": null,
+          "maxUpside": null,
+          "maxAdverse": null
+        },
+        "shortSpace": {
+          "n": 1,
+          "upsideMean": null,
+          "upsideMedian": null,
+          "adverseMean": null,
+          "upsideAdverseRatio": null,
+          "std": null,
+          "p25": null,
+          "p75": null,
+          "skew": null,
+          "maxUpside": null,
+          "maxAdverse": null
+        },
+        "longReturn": {
+          "retMean": null,
+          "retMedian": null,
+          "winRate": null,
+          "profitFactor": null,
+          "var95": null,
+          "retentionMean": null,
+          "retentionMedian": null
+        },
+        "shortReturn": {
+          "retMean": null,
+          "retMedian": null,
+          "winRate": null,
+          "profitFactor": null,
+          "var95": null,
+          "retentionMean": null,
+          "retentionMedian": null
+        },
+        "longPath": {
+          "peakDayMedian": 1.0,
+          "peakDayMean": 1.0,
+          "medianDayMean": 2.0,
+          "medianDayMedian": 2.0,
+          "favorableFirstRate": 1.0
+        },
+        "shortPath": {
+          "peakDayMedian": 19.0,
+          "peakDayMean": 19.0,
+          "medianDayMean": 2.0,
+          "medianDayMedian": 2.0,
+          "favorableFirstRate": 0.0
+        },
+        "profile": {
+          "spaceBias": "样本不足",
+          "shortCompetitiveness": null,
+          "normalPerformance": "-",
+          "pathTag": "-",
+          "favorableFirstRate": null,
+          "confidence": "无效",
+          "summary": "仅1个样本，不足以生成画像"
+        }
+      },
+      "Q3_中性_G1_大降": {
+        "qGrade": 3,
+        "gGrade": 1,
+        "nTriggers": 6,
+        "longSpace": {
+          "n": 6,
+          "upsideMean": 12.7301,
+          "upsideMedian": 9.7259,
+          "adverseMean": -10.2492,
+          "upsideAdverseRatio": 1.2421,
+          "std": 12.5354,
+          "p25": 3.8341,
+          "p75": 14.472,
+          "skew": 1.5972,
+          "maxUpside": 36.0223,
+          "maxAdverse": -26.2193
+        },
+        "shortSpace": {
+          "n": 6,
+          "upsideMean": 10.2492,
+          "upsideMedian": 7.9101,
+          "adverseMean": -12.7301,
+          "upsideAdverseRatio": 0.8051,
+          "std": 9.4333,
+          "p25": 5.6678,
+          "p75": 13.6544,
+          "skew": 0.9271,
+          "maxUpside": 26.2193,
+          "maxAdverse": -36.0223
+        },
+        "longReturn": {
+          "retMean": 0.7795,
+          "retMedian": 0.3391,
+          "winRate": 0.5,
+          "profitFactor": 1.1887,
+          "var95": -13.6663,
+          "retentionMean": -0.4605,
+          "retentionMedian": -0.2465
+        },
+        "shortReturn": {
+          "retMean": -0.7795,
+          "retMedian": -0.3391,
+          "winRate": 0.5,
+          "profitFactor": 0.8412,
+          "var95": -17.743,
+          "retentionMean": 3.5966,
+          "retentionMedian": 0.3381
+        },
+        "longPath": {
+          "peakDayMedian": 11.0,
+          "peakDayMean": 10.2,
+          "medianDayMean": 9.7,
+          "medianDayMedian": 10.0,
+          "favorableFirstRate": 0.5
+        },
+        "shortPath": {
+          "peakDayMedian": 15.0,
+          "peakDayMean": 11.5,
+          "medianDayMean": 9.7,
+          "medianDayMedian": 10.0,
+          "favorableFirstRate": 0.5
+        },
+        "profile": {
+          "spaceBias": "多空拉扯偏空",
+          "shortCompetitiveness": 0.8051,
+          "normalPerformance": "中性",
+          "pathTag": "路径拉锯",
+          "favorableFirstRate": 0.5,
+          "confidence": "低",
+          "summary": "做空竞争力上升，路径拉锯"
+        }
+      },
+      "Q3_中性_G2_小降": {
+        "qGrade": 3,
+        "gGrade": 2,
+        "nTriggers": 16,
+        "longSpace": {
+          "n": 16,
+          "upsideMean": 16.2111,
+          "upsideMedian": 13.198,
+          "adverseMean": -9.2113,
+          "upsideAdverseRatio": 1.7599,
+          "std": 12.6107,
+          "p25": 8.3508,
+          "p75": 20.2593,
+          "skew": 0.8346,
+          "maxUpside": 39.4111,
+          "maxAdverse": -17.5586
+        },
+        "shortSpace": {
+          "n": 16,
+          "upsideMean": 9.2113,
+          "upsideMedian": 9.7209,
+          "adverseMean": -16.2111,
+          "upsideAdverseRatio": 0.5682,
+          "std": 5.4635,
+          "p25": 6.6418,
+          "p75": 12.5019,
+          "skew": -0.4113,
+          "maxUpside": 17.5586,
+          "maxAdverse": -39.4111
+        },
+        "longReturn": {
+          "retMean": 1.5219,
+          "retMedian": 0.1326,
+          "winRate": 0.5625,
+          "profitFactor": 1.6939,
+          "var95": -8.3123,
+          "retentionMean": -0.3491,
+          "retentionMedian": 0.0104
+        },
+        "shortReturn": {
+          "retMean": -1.5219,
+          "retMedian": -0.1326,
+          "winRate": 0.4375,
+          "profitFactor": 0.5904,
+          "var95": -11.8954,
+          "retentionMean": -1.0987,
+          "retentionMedian": 0.0351
+        },
+        "longPath": {
+          "peakDayMedian": 6.0,
+          "peakDayMean": 10.1,
+          "medianDayMean": 11.2,
+          "medianDayMedian": 10.5,
+          "favorableFirstRate": 0.5625
+        },
+        "shortPath": {
+          "peakDayMedian": 7.5,
+          "peakDayMean": 10.1,
+          "medianDayMean": 11.2,
+          "medianDayMedian": 10.5,
+          "favorableFirstRate": 0.4375
+        },
+        "profile": {
+          "spaceBias": "多空拉扯",
+          "shortCompetitiveness": 0.5682,
+          "normalPerformance": "正向",
+          "pathTag": "路径拉锯",
+          "favorableFirstRate": 0.5,
+          "confidence": "中",
+          "summary": "多空空间接近，不宜单边操作"
+        }
+      },
+      "Q3_中性_G3_稳定": {
+        "qGrade": 3,
+        "gGrade": 3,
+        "nTriggers": 11,
+        "longSpace": {
+          "n": 11,
+          "upsideMean": 15.3729,
+          "upsideMedian": 14.3244,
+          "adverseMean": -7.2729,
+          "upsideAdverseRatio": 2.1137,
+          "std": 9.9568,
+          "p25": 9.663,
+          "p75": 16.8121,
+          "skew": 1.8153,
+          "maxUpside": 41.2026,
+          "maxAdverse": -17.5392
+        },
+        "shortSpace": {
+          "n": 11,
+          "upsideMean": 7.2729,
+          "upsideMedian": 5.2876,
+          "adverseMean": -15.3729,
+          "upsideAdverseRatio": 0.4731,
+          "std": 6.3018,
+          "p25": 2.3226,
+          "p75": 11.8411,
+          "skew": 0.3255,
+          "maxUpside": 17.5392,
+          "maxAdverse": -41.2026
+        },
+        "longReturn": {
+          "retMean": 2.7881,
+          "retMedian": 1.7511,
+          "winRate": 0.6364,
+          "profitFactor": 3.094,
+          "var95": -5.1936,
+          "retentionMean": -0.0478,
+          "retentionMedian": 0.1283
+        },
+        "shortReturn": {
+          "retMean": -2.7881,
+          "retMedian": -1.7511,
+          "winRate": 0.3636,
+          "profitFactor": 0.3232,
+          "var95": -12.849,
+          "retentionMean": -0.8189,
+          "retentionMedian": -0.1516
+        },
+        "longPath": {
+          "peakDayMedian": 6.0,
+          "peakDayMean": 9.5,
+          "medianDayMean": 14.0,
+          "medianDayMedian": 15.0,
+          "favorableFirstRate": 0.3636
+        },
+        "shortPath": {
+          "peakDayMedian": 10.0,
+          "peakDayMean": 9.2,
+          "medianDayMean": 14.0,
+          "medianDayMedian": 15.0,
+          "favorableFirstRate": 0.6364
+        },
+        "profile": {
+          "spaceBias": "多空拉扯",
+          "shortCompetitiveness": 0.4731,
+          "normalPerformance": "正向",
+          "pathTag": "路径拉锯",
+          "favorableFirstRate": 0.5,
+          "confidence": "中",
+          "summary": "多空空间接近，不宜单边操作"
+        }
+      },
+      "Q3_中性_G4_小升": {
+        "qGrade": 3,
+        "gGrade": 4,
+        "nTriggers": 11,
+        "longSpace": {
+          "n": 11,
+          "upsideMean": 14.3638,
+          "upsideMedian": 12.95,
+          "adverseMean": -7.2681,
+          "upsideAdverseRatio": 1.9763,
+          "std": 8.8331,
+          "p25": 7.7142,
+          "p75": 21.4145,
+          "skew": 0.2194,
+          "maxUpside": 27.5589,
+          "maxAdverse": -14.857
+        },
+        "shortSpace": {
+          "n": 11,
+          "upsideMean": 7.2681,
+          "upsideMedian": 6.4599,
+          "adverseMean": -14.3638,
+          "upsideAdverseRatio": 0.506,
+          "std": 4.7045,
+          "p25": 4.2328,
+          "p75": 10.7156,
+          "skew": -0.0699,
+          "maxUpside": 14.857,
+          "maxAdverse": -27.5589
+        },
+        "longReturn": {
+          "retMean": 1.6935,
+          "retMedian": 0.273,
+          "winRate": 0.5455,
+          "profitFactor": 1.8846,
+          "var95": -6.6456,
+          "retentionMean": -0.2931,
+          "retentionMedian": 0.0211
+        },
+        "shortReturn": {
+          "retMean": -1.6935,
+          "retMedian": -0.273,
+          "winRate": 0.4545,
+          "profitFactor": 0.5306,
+          "var95": -12.0338,
+          "retentionMean": -3.2992,
+          "retentionMedian": -0.0465
+        },
+        "longPath": {
+          "peakDayMedian": 11.0,
+          "peakDayMean": 12.2,
+          "medianDayMean": 11.6,
+          "medianDayMedian": 13.0,
+          "favorableFirstRate": 0.3636
+        },
+        "shortPath": {
+          "peakDayMedian": 9.0,
+          "peakDayMean": 8.8,
+          "medianDayMean": 11.6,
+          "medianDayMedian": 13.0,
+          "favorableFirstRate": 0.6364
+        },
+        "profile": {
+          "spaceBias": "多空拉扯",
+          "shortCompetitiveness": 0.506,
+          "normalPerformance": "正向",
+          "pathTag": "路径拉锯",
+          "favorableFirstRate": 0.5,
+          "confidence": "中",
+          "summary": "多空空间接近，不宜单边操作"
+        }
+      },
+      "Q3_中性_G5_大升": {
+        "qGrade": 3,
+        "gGrade": 5,
+        "nTriggers": 3,
+        "longSpace": {
+          "n": 3,
+          "upsideMean": 5.1843,
+          "upsideMedian": 2.6364,
+          "adverseMean": -13.9141,
+          "upsideAdverseRatio": 0.3726,
+          "std": 4.6994,
+          "p25": 2.4728,
+          "p75": 6.6219,
+          "skew": 1.7226,
+          "maxUpside": 10.6074,
+          "maxAdverse": -18.7343
+        },
+        "shortSpace": {
+          "n": 3,
+          "upsideMean": 13.9141,
+          "upsideMedian": 18.4744,
+          "adverseMean": -5.1843,
+          "upsideAdverseRatio": 2.6839,
+          "std": 8.1247,
+          "p25": 11.504,
+          "p75": 18.6044,
+          "skew": -1.7301,
+          "maxUpside": 18.7343,
+          "maxAdverse": -10.6074
+        },
+        "longReturn": {
+          "retMean": -5.9383,
+          "retMedian": -8.9034,
+          "winRate": 0.3333,
+          "profitFactor": 0.0787,
+          "var95": -10.2811,
+          "retentionMean": -1.2855,
+          "retentionMedian": -2.0
+        },
+        "shortReturn": {
+          "retMean": 5.9383,
+          "retMedian": 8.9034,
+          "winRate": 0.6667,
+          "profitFactor": 9.9,
+          "var95": -0.4802,
+          "retentionMean": 0.2347,
+          "retentionMedian": 0.4752
+        },
+        "longPath": {
+          "peakDayMedian": 3.0,
+          "peakDayMean": 3.0,
+          "medianDayMean": 13.0,
+          "medianDayMedian": 12.0,
+          "favorableFirstRate": 1.0
+        },
+        "shortPath": {
+          "peakDayMedian": 13.0,
+          "peakDayMean": 13.7,
+          "medianDayMean": 13.0,
+          "medianDayMedian": 12.0,
+          "favorableFirstRate": 0.0
+        },
+        "profile": {
+          "spaceBias": "样本不足",
+          "shortCompetitiveness": null,
+          "normalPerformance": "-",
+          "pathTag": "-",
+          "favorableFirstRate": null,
+          "confidence": "无效",
+          "summary": "仅3个样本，不足以生成画像"
+        }
+      },
+      "Q4_偏热_G1_大降": {
+        "qGrade": 4,
+        "gGrade": 1,
+        "nTriggers": 2,
+        "longSpace": {
+          "n": 2,
+          "upsideMean": 23.6594,
+          "upsideMedian": 23.6594,
+          "adverseMean": -8.2365,
+          "upsideAdverseRatio": 2.8725,
+          "std": 22.2999,
+          "p25": 15.7752,
+          "p75": 31.5436,
+          "skew": NaN,
+          "maxUpside": 39.4278,
+          "maxAdverse": -15.0787
+        },
+        "shortSpace": {
+          "n": 2,
+          "upsideMean": 8.2365,
+          "upsideMedian": 8.2365,
+          "adverseMean": -23.6594,
+          "upsideAdverseRatio": 0.3481,
+          "std": 9.6763,
+          "p25": 4.8155,
+          "p75": 11.6576,
+          "skew": NaN,
+          "maxUpside": 15.0787,
+          "maxAdverse": -39.4278
+        },
+        "longReturn": {
+          "retMean": 3.9188,
+          "retMedian": 3.9188,
+          "winRate": 0.5,
+          "profitFactor": 2.3067,
+          "var95": -5.0065,
+          "retentionMean": -0.2046,
+          "retentionMedian": -0.2046
+        },
+        "shortReturn": {
+          "retMean": -3.9188,
+          "retMedian": -3.9188,
+          "winRate": 0.5,
+          "profitFactor": 0.4335,
+          "var95": -12.8441,
+          "retentionMean": -4.7623,
+          "retentionMedian": -4.7623
+        },
+        "longPath": {
+          "peakDayMedian": 9.0,
+          "peakDayMean": 9.0,
+          "medianDayMean": 11.5,
+          "medianDayMedian": 11.5,
+          "favorableFirstRate": 0.5
+        },
+        "shortPath": {
+          "peakDayMedian": 8.5,
+          "peakDayMean": 8.5,
+          "medianDayMean": 11.5,
+          "medianDayMedian": 11.5,
+          "favorableFirstRate": 0.5
+        },
+        "profile": {
+          "spaceBias": "样本不足",
+          "shortCompetitiveness": null,
+          "normalPerformance": "-",
+          "pathTag": "-",
+          "favorableFirstRate": null,
+          "confidence": "无效",
+          "summary": "仅2个样本，不足以生成画像"
+        }
+      },
+      "Q4_偏热_G2_小降": {
+        "qGrade": 4,
+        "gGrade": 2,
+        "nTriggers": 7,
+        "longSpace": {
+          "n": 7,
+          "upsideMean": 17.3873,
+          "upsideMedian": 21.4347,
+          "adverseMean": -8.5379,
+          "upsideAdverseRatio": 2.0365,
+          "std": 12.5992,
+          "p25": 6.2997,
+          "p75": 26.1716,
+          "skew": -0.0336,
+          "maxUpside": 33.6794,
+          "maxAdverse": -17.0331
+        },
+        "shortSpace": {
+          "n": 7,
+          "upsideMean": 8.5379,
+          "upsideMedian": 7.886,
+          "adverseMean": -17.3873,
+          "upsideAdverseRatio": 0.491,
+          "std": 5.8252,
+          "p25": 4.7686,
+          "p75": 11.7695,
+          "skew": 0.5635,
+          "maxUpside": 17.0331,
+          "maxAdverse": -33.6794
+        },
+        "longReturn": {
+          "retMean": 1.2689,
+          "retMedian": 1.1465,
+          "winRate": 0.5714,
+          "profitFactor": 1.4059,
+          "var95": -10.1199,
+          "retentionMean": -0.395,
+          "retentionMedian": 0.0503
+        },
+        "shortReturn": {
+          "retMean": -1.2689,
+          "retMedian": -1.1465,
+          "winRate": 0.4286,
+          "profitFactor": 0.7113,
+          "var95": -10.4453,
+          "retentionMean": -1.2655,
+          "retentionMedian": -0.1454
+        },
+        "longPath": {
+          "peakDayMedian": 8.0,
+          "peakDayMean": 11.1,
+          "medianDayMean": 10.3,
+          "medianDayMedian": 11.0,
+          "favorableFirstRate": 0.4286
+        },
+        "shortPath": {
+          "peakDayMedian": 4.0,
+          "peakDayMean": 8.7,
+          "medianDayMean": 10.3,
+          "medianDayMedian": 11.0,
+          "favorableFirstRate": 0.5714
+        },
+        "profile": {
+          "spaceBias": "多空拉扯偏空",
+          "shortCompetitiveness": 0.491,
+          "normalPerformance": "正向",
+          "pathTag": "路径拉锯",
+          "favorableFirstRate": 0.5714,
+          "confidence": "低",
+          "summary": "做空竞争力上升，中位数价格收益为正，路径拉锯"
+        }
+      },
+      "Q4_偏热_G3_稳定": {
+        "qGrade": 4,
+        "gGrade": 3,
+        "nTriggers": 14,
+        "longSpace": {
+          "n": 14,
+          "upsideMean": 17.5211,
+          "upsideMedian": 13.8184,
+          "adverseMean": -7.491,
+          "upsideAdverseRatio": 2.339,
+          "std": 8.1384,
+          "p25": 12.1343,
+          "p75": 19.7055,
+          "skew": 1.4129,
+          "maxUpside": 35.419,
+          "maxAdverse": -13.6157
+        },
+        "shortSpace": {
+          "n": 14,
+          "upsideMean": 7.491,
+          "upsideMedian": 7.7492,
+          "adverseMean": -17.5211,
+          "upsideAdverseRatio": 0.4275,
+          "std": 3.7371,
+          "p25": 5.1662,
+          "p75": 9.7699,
+          "skew": -0.2397,
+          "maxUpside": 13.6157,
+          "maxAdverse": -35.419
+        },
+        "longReturn": {
+          "retMean": 1.966,
+          "retMedian": 2.2229,
+          "winRate": 0.6429,
+          "profitFactor": 3.4361,
+          "var95": -3.3434,
+          "retentionMean": 0.0742,
+          "retentionMedian": 0.1341
+        },
+        "shortReturn": {
+          "retMean": -1.966,
+          "retMedian": -2.2229,
+          "winRate": 0.3571,
+          "profitFactor": 0.291,
+          "var95": -8.2366,
+          "retentionMean": -1.4692,
+          "retentionMedian": -0.3492
+        },
+        "longPath": {
+          "peakDayMedian": 8.0,
+          "peakDayMean": 9.0,
+          "medianDayMean": 13.8,
+          "medianDayMedian": 15.0,
+          "favorableFirstRate": 0.7143
+        },
+        "shortPath": {
+          "peakDayMedian": 14.5,
+          "peakDayMean": 13.1,
+          "medianDayMean": 13.8,
+          "medianDayMedian": 15.0,
+          "favorableFirstRate": 0.2857
+        },
+        "profile": {
+          "spaceBias": "多空拉扯偏空",
+          "shortCompetitiveness": 0.4275,
+          "normalPerformance": "正向",
+          "pathTag": "先不利",
+          "favorableFirstRate": 0.2857,
+          "confidence": "中",
+          "summary": "做空竞争力上升，中位数价格收益为正，但常先浮亏再反转，执行压力大"
+        }
+      },
+      "Q4_偏热_G4_小升": {
+        "qGrade": 4,
+        "gGrade": 4,
+        "nTriggers": 16,
+        "longSpace": {
+          "n": 16,
+          "upsideMean": 16.718,
+          "upsideMedian": 11.2424,
+          "adverseMean": -9.3782,
+          "upsideAdverseRatio": 1.7826,
+          "std": 15.1369,
+          "p25": 8.665,
+          "p75": 16.2039,
+          "skew": 1.8445,
+          "maxUpside": 59.1265,
+          "maxAdverse": -20.979
+        },
+        "shortSpace": {
+          "n": 16,
+          "upsideMean": 9.3782,
+          "upsideMedian": 8.6465,
+          "adverseMean": -16.718,
+          "upsideAdverseRatio": 0.561,
+          "std": 4.8993,
+          "p25": 5.3513,
+          "p75": 12.2259,
+          "skew": 0.8026,
+          "maxUpside": 20.979,
+          "maxAdverse": -59.1265
+        },
+        "longReturn": {
+          "retMean": 0.8644,
+          "retMedian": -0.4384,
+          "winRate": 0.4375,
+          "profitFactor": 1.4484,
+          "var95": -7.2709,
+          "retentionMean": -0.0735,
+          "retentionMedian": -0.0053
+        },
+        "shortReturn": {
+          "retMean": -0.8644,
+          "retMedian": 0.4384,
+          "winRate": 0.5625,
+          "profitFactor": 0.6904,
+          "var95": -12.3285,
+          "retentionMean": -0.4612,
+          "retentionMedian": 0.0617
+        },
+        "longPath": {
+          "peakDayMedian": 11.5,
+          "peakDayMean": 11.9,
+          "medianDayMean": 10.7,
+          "medianDayMedian": 11.0,
+          "favorableFirstRate": 0.4375
+        },
+        "shortPath": {
+          "peakDayMedian": 7.5,
+          "peakDayMean": 10.8,
+          "medianDayMean": 10.7,
+          "medianDayMedian": 11.0,
+          "favorableFirstRate": 0.5625
+        },
+        "profile": {
+          "spaceBias": "多空拉扯偏空",
+          "shortCompetitiveness": 0.561,
+          "normalPerformance": "中性",
+          "pathTag": "路径拉锯",
+          "favorableFirstRate": 0.5625,
+          "confidence": "中",
+          "summary": "做空竞争力上升，路径拉锯"
+        }
+      },
+      "Q4_偏热_G5_大升": {
+        "qGrade": 4,
+        "gGrade": 5,
+        "nTriggers": 8,
+        "longSpace": {
+          "n": 8,
+          "upsideMean": 18.6547,
+          "upsideMedian": 15.8345,
+          "adverseMean": -8.7013,
+          "upsideAdverseRatio": 2.1439,
+          "std": 17.6462,
+          "p25": 5.1116,
+          "p75": 20.094,
+          "skew": 1.5618,
+          "maxUpside": 55.7863,
+          "maxAdverse": -16.7632
+        },
+        "shortSpace": {
+          "n": 8,
+          "upsideMean": 8.7013,
+          "upsideMedian": 7.5746,
+          "adverseMean": -18.6547,
+          "upsideAdverseRatio": 0.4664,
+          "std": 5.7844,
+          "p25": 3.5932,
+          "p75": 13.195,
+          "skew": 0.313,
+          "maxUpside": 16.7632,
+          "maxAdverse": -55.7863
+        },
+        "longReturn": {
+          "retMean": 2.8404,
+          "retMedian": 3.0835,
+          "winRate": 0.625,
+          "profitFactor": 2.0972,
+          "var95": -8.0986,
+          "retentionMean": -0.407,
+          "retentionMedian": 0.1917
+        },
+        "shortReturn": {
+          "retMean": -2.8404,
+          "retMedian": -3.0835,
+          "winRate": 0.375,
+          "profitFactor": 0.4768,
+          "var95": -18.1944,
+          "retentionMean": -1.367,
+          "retentionMedian": -0.7352
+        },
+        "longPath": {
+          "peakDayMedian": 11.5,
+          "peakDayMean": 11.4,
+          "medianDayMean": 12.8,
+          "medianDayMedian": 13.0,
+          "favorableFirstRate": 0.375
+        },
+        "shortPath": {
+          "peakDayMedian": 8.0,
+          "peakDayMean": 9.0,
+          "medianDayMean": 12.8,
+          "medianDayMedian": 13.0,
+          "favorableFirstRate": 0.625
+        },
+        "profile": {
+          "spaceBias": "多空拉扯偏空",
+          "shortCompetitiveness": 0.4664,
+          "normalPerformance": "正向",
+          "pathTag": "先有利",
+          "favorableFirstRate": 0.625,
+          "confidence": "低",
+          "summary": "做空竞争力上升，中位数价格收益为正，路径先有利"
+        }
+      },
+      "Q5_极热_G1_大降": {
+        "qGrade": 5,
+        "gGrade": 1,
+        "nTriggers": 0,
+        "longSpace": {
+          "n": 0,
+          "upsideMean": null,
+          "upsideMedian": null,
+          "adverseMean": null,
+          "upsideAdverseRatio": null,
+          "std": null,
+          "p25": null,
+          "p75": null,
+          "skew": null,
+          "maxUpside": null,
+          "maxAdverse": null
+        },
+        "shortSpace": {
+          "n": 0,
+          "upsideMean": null,
+          "upsideMedian": null,
+          "adverseMean": null,
+          "upsideAdverseRatio": null,
+          "std": null,
+          "p25": null,
+          "p75": null,
+          "skew": null,
+          "maxUpside": null,
+          "maxAdverse": null
+        },
+        "longReturn": {
+          "retMean": null,
+          "retMedian": null,
+          "winRate": null,
+          "profitFactor": null,
+          "var95": null,
+          "retentionMean": null,
+          "retentionMedian": null
+        },
+        "shortReturn": {
+          "retMean": null,
+          "retMedian": null,
+          "winRate": null,
+          "profitFactor": null,
+          "var95": null,
+          "retentionMean": null,
+          "retentionMedian": null
+        },
+        "longPath": {
+          "peakDayMedian": null,
+          "peakDayMean": null,
+          "medianDayMean": null,
+          "medianDayMedian": null,
+          "favorableFirstRate": null
+        },
+        "shortPath": {
+          "peakDayMedian": null,
+          "peakDayMean": null,
+          "medianDayMean": null,
+          "medianDayMedian": null,
+          "favorableFirstRate": null
+        },
+        "profile": {
+          "spaceBias": "无样本",
+          "shortCompetitiveness": null,
+          "normalPerformance": "-",
+          "pathTag": "-",
+          "favorableFirstRate": null,
+          "confidence": "无效",
+          "summary": "无触发样本"
+        }
+      },
+      "Q5_极热_G2_小降": {
+        "qGrade": 5,
+        "gGrade": 2,
+        "nTriggers": 0,
+        "longSpace": {
+          "n": 0,
+          "upsideMean": null,
+          "upsideMedian": null,
+          "adverseMean": null,
+          "upsideAdverseRatio": null,
+          "std": null,
+          "p25": null,
+          "p75": null,
+          "skew": null,
+          "maxUpside": null,
+          "maxAdverse": null
+        },
+        "shortSpace": {
+          "n": 0,
+          "upsideMean": null,
+          "upsideMedian": null,
+          "adverseMean": null,
+          "upsideAdverseRatio": null,
+          "std": null,
+          "p25": null,
+          "p75": null,
+          "skew": null,
+          "maxUpside": null,
+          "maxAdverse": null
+        },
+        "longReturn": {
+          "retMean": null,
+          "retMedian": null,
+          "winRate": null,
+          "profitFactor": null,
+          "var95": null,
+          "retentionMean": null,
+          "retentionMedian": null
+        },
+        "shortReturn": {
+          "retMean": null,
+          "retMedian": null,
+          "winRate": null,
+          "profitFactor": null,
+          "var95": null,
+          "retentionMean": null,
+          "retentionMedian": null
+        },
+        "longPath": {
+          "peakDayMedian": null,
+          "peakDayMean": null,
+          "medianDayMean": null,
+          "medianDayMedian": null,
+          "favorableFirstRate": null
+        },
+        "shortPath": {
+          "peakDayMedian": null,
+          "peakDayMean": null,
+          "medianDayMean": null,
+          "medianDayMedian": null,
+          "favorableFirstRate": null
+        },
+        "profile": {
+          "spaceBias": "无样本",
+          "shortCompetitiveness": null,
+          "normalPerformance": "-",
+          "pathTag": "-",
+          "favorableFirstRate": null,
+          "confidence": "无效",
+          "summary": "无触发样本"
+        }
+      },
+      "Q5_极热_G3_稳定": {
+        "qGrade": 5,
+        "gGrade": 3,
+        "nTriggers": 2,
+        "longSpace": {
+          "n": 2,
+          "upsideMean": 9.9476,
+          "upsideMedian": 9.9476,
+          "adverseMean": -10.0909,
+          "upsideAdverseRatio": 0.9858,
+          "std": 12.0313,
+          "p25": 5.6939,
+          "p75": 14.2013,
+          "skew": NaN,
+          "maxUpside": 18.455,
+          "maxAdverse": -12.2208
+        },
+        "shortSpace": {
+          "n": 2,
+          "upsideMean": 10.0909,
+          "upsideMedian": 10.0909,
+          "adverseMean": -9.9476,
+          "upsideAdverseRatio": 1.0144,
+          "std": 3.0121,
+          "p25": 9.0259,
+          "p75": 11.1559,
+          "skew": NaN,
+          "maxUpside": 12.2208,
+          "maxAdverse": -18.455
+        },
+        "longReturn": {
+          "retMean": -2.7834,
+          "retMedian": -2.7834,
+          "winRate": 0.0,
+          "profitFactor": 0.0,
+          "var95": -4.5097,
+          "retentionMean": -1.0234,
+          "retentionMedian": -1.0234
+        },
+        "shortReturn": {
+          "retMean": 2.7834,
+          "retMedian": 2.7834,
+          "winRate": 1.0,
+          "profitFactor": 9.9,
+          "var95": 1.0571,
+          "retentionMean": 0.2467,
+          "retentionMedian": 0.2467
+        },
+        "longPath": {
+          "peakDayMedian": 10.5,
+          "peakDayMean": 10.5,
+          "medianDayMean": 5.0,
+          "medianDayMedian": 5.0,
+          "favorableFirstRate": 0.5
+        },
+        "shortPath": {
+          "peakDayMedian": 9.0,
+          "peakDayMean": 9.0,
+          "medianDayMean": 5.0,
+          "medianDayMedian": 5.0,
+          "favorableFirstRate": 0.5
+        },
+        "profile": {
+          "spaceBias": "样本不足",
+          "shortCompetitiveness": null,
+          "normalPerformance": "-",
+          "pathTag": "-",
+          "favorableFirstRate": null,
+          "confidence": "无效",
+          "summary": "仅2个样本，不足以生成画像"
+        }
+      },
+      "Q5_极热_G4_小升": {
+        "qGrade": 5,
+        "gGrade": 4,
+        "nTriggers": 10,
+        "longSpace": {
+          "n": 10,
+          "upsideMean": 9.2555,
+          "upsideMedian": 6.6859,
+          "adverseMean": -11.9423,
+          "upsideAdverseRatio": 0.775,
+          "std": 8.9126,
+          "p25": 4.7549,
+          "p75": 10.951,
+          "skew": 2.2537,
+          "maxUpside": 32.5254,
+          "maxAdverse": -25.1957
+        },
+        "shortSpace": {
+          "n": 10,
+          "upsideMean": 11.9423,
+          "upsideMedian": 11.2225,
+          "adverseMean": -9.2555,
+          "upsideAdverseRatio": 1.2903,
+          "std": 5.8134,
+          "p25": 8.3286,
+          "p75": 12.6632,
+          "skew": 1.383,
+          "maxUpside": 25.1957,
+          "maxAdverse": -32.5254
+        },
+        "longReturn": {
+          "retMean": -3.7575,
+          "retMedian": -4.7701,
+          "winRate": 0.2,
+          "profitFactor": 0.2388,
+          "var95": -12.0886,
+          "retentionMean": -0.6678,
+          "retentionMedian": -0.4942
+        },
+        "shortReturn": {
+          "retMean": 3.7575,
+          "retMedian": 4.7701,
+          "winRate": 0.8,
+          "profitFactor": 4.1874,
+          "var95": -6.4563,
+          "retentionMean": 0.1061,
+          "retentionMedian": 0.4216
+        },
+        "longPath": {
+          "peakDayMedian": 10.5,
+          "peakDayMean": 10.0,
+          "medianDayMean": 10.9,
+          "medianDayMedian": 11.5,
+          "favorableFirstRate": 0.5
+        },
+        "shortPath": {
+          "peakDayMedian": 11.5,
+          "peakDayMean": 11.3,
+          "medianDayMean": 10.9,
+          "medianDayMedian": 11.5,
+          "favorableFirstRate": 0.5
+        },
+        "profile": {
+          "spaceBias": "偏空",
+          "shortCompetitiveness": 1.2903,
+          "normalPerformance": "负向",
+          "pathTag": "路径拉锯",
+          "favorableFirstRate": 0.5,
+          "confidence": "中",
+          "summary": "做空空间优势明显，中位数价格收益为负，路径拉锯"
+        }
+      },
+      "Q5_极热_G5_大升": {
+        "qGrade": 5,
+        "gGrade": 5,
+        "nTriggers": 32,
+        "longSpace": {
+          "n": 32,
+          "upsideMean": 16.4803,
+          "upsideMedian": 11.7539,
+          "adverseMean": -8.9149,
+          "upsideAdverseRatio": 1.8486,
+          "std": 15.593,
+          "p25": 3.8186,
+          "p75": 25.8339,
+          "skew": 1.2852,
+          "maxUpside": 64.6362,
+          "maxAdverse": -27.2902
+        },
+        "shortSpace": {
+          "n": 32,
+          "upsideMean": 8.9149,
+          "upsideMedian": 8.0756,
+          "adverseMean": -16.4803,
+          "upsideAdverseRatio": 0.5409,
+          "std": 5.8543,
+          "p25": 4.4672,
+          "p75": 12.424,
+          "skew": 0.9247,
+          "maxUpside": 27.2902,
+          "maxAdverse": -64.6362
+        },
+        "longReturn": {
+          "retMean": 1.5163,
+          "retMedian": 0.4394,
+          "winRate": 0.5625,
+          "profitFactor": 1.5201,
+          "var95": -9.8455,
+          "retentionMean": -0.2974,
+          "retentionMedian": 0.1016
+        },
+        "shortReturn": {
+          "retMean": -1.5163,
+          "retMedian": -0.4394,
+          "winRate": 0.4375,
+          "profitFactor": 0.6578,
+          "var95": -18.9145,
+          "retentionMean": -1.118,
+          "retentionMedian": -0.0479
+        },
+        "longPath": {
+          "peakDayMedian": 11.0,
+          "peakDayMean": 10.8,
+          "medianDayMean": 11.2,
+          "medianDayMedian": 11.5,
+          "favorableFirstRate": 0.3438
+        },
+        "shortPath": {
+          "peakDayMedian": 9.5,
+          "peakDayMean": 9.1,
+          "medianDayMean": 11.2,
+          "medianDayMedian": 11.5,
+          "favorableFirstRate": 0.6562
+        },
+        "profile": {
+          "spaceBias": "多空拉扯偏空",
+          "shortCompetitiveness": 0.5409,
+          "normalPerformance": "正向",
+          "pathTag": "先有利",
+          "favorableFirstRate": 0.6562,
+          "confidence": "高",
+          "summary": "做空竞争力上升，中位数价格收益为正，路径先有利"
+        }
+      },
+      "_trends": {
+        "q": {
+          "longColdMean": 19.0029,
+          "longHotMean": 16.1634,
+          "longSpread": 2.8394,
+          "longSpreadPct": 0.1494,
+          "shortColdMean": 7.3879,
+          "shortHotMean": 9.0731,
+          "shortSpread": 1.6853,
+          "shortSpreadPct": 0.2281,
+          "longRho": -0.9,
+          "shortRho": 0.9,
+          "retSpread": 2.6668,
+          "retSpreadPct": 0.7379,
+          "retRho": -1.0
+        },
+        "g": {
+          "longDownMean": 16.5875,
+          "longUpMean": 16.3418,
+          "longSpread": 0.2457,
+          "longSpreadPct": 0.0148,
+          "shortDownMean": 8.3603,
+          "shortUpMean": 8.9684,
+          "shortSpread": 0.6081,
+          "shortSpreadPct": 0.0727,
+          "longRho": -0.4,
+          "shortRho": 0.0,
+          "retSpread": 0.5555,
+          "retSpreadPct": 0.2943,
+          "retRho": -0.1
+        },
+        "conditionalG": {
+          "1": {
+            "n": 47,
+            "longDownMean": 17.2618,
+            "longUpMean": 34.7464,
+            "longSpread": -17.4846,
+            "longSpreadPct": -1.0129,
+            "shortDownMean": 8.1342,
+            "shortUpMean": 4.594,
+            "shortSpread": -3.5402,
+            "shortSpreadPct": -0.4352,
+            "longRho": 0.9,
+            "shortRho": -1.0,
+            "retSpread": -8.915,
+            "retSpreadPct": -4.031,
+            "retRho": 1.0
+          },
+          "2": {
+            "n": 47,
+            "longDownMean": 16.0876,
+            "longUpMean": 14.1277,
+            "longSpread": 1.9599,
+            "longSpreadPct": 0.1218,
+            "shortDownMean": 7.684,
+            "shortUpMean": 8.5786,
+            "shortSpread": 0.8946,
+            "shortSpreadPct": 0.1164,
+            "longRho": -0.5,
+            "shortRho": -0.4,
+            "retSpread": 0.7044,
+            "retSpreadPct": 0.3607,
+            "retRho": -0.6
+          },
+          "3": {
+            "n": 48,
+            "longDownMean": 15.2617,
+            "longUpMean": 12.3968,
+            "longSpread": 2.865,
+            "longSpreadPct": 0.1877,
+            "shortDownMean": 9.4943,
+            "shortUpMean": 8.6922,
+            "shortSpread": -0.8021,
+            "shortSpreadPct": -0.0845,
+            "longRho": -0.4,
+            "shortRho": 0.0,
+            "retSpread": 1.2613,
+            "retSpreadPct": 0.956,
+            "retRho": -0.1
+          },
+          "4": {
+            "n": 47,
+            "longDownMean": 18.7811,
+            "longUpMean": 17.3636,
+            "longSpread": 1.4175,
+            "longSpreadPct": 0.0755,
+            "shortDownMean": 8.471,
+            "shortUpMean": 9.1526,
+            "shortSpread": 0.6816,
+            "shortSpreadPct": 0.0805,
+            "longRho": -0.3,
+            "shortRho": 0.6,
+            "retSpread": 0.3347,
+            "retSpreadPct": 0.1802,
+            "retRho": -0.3
+          },
+          "5": {
+            "n": 44,
+            "longDownMean": 0.0,
+            "longUpMean": 14.7601,
+            "longSpread": -14.7601,
+            "longSpreadPct": 0,
+            "shortDownMean": 0.0,
+            "shortUpMean": 9.6357,
+            "shortSpread": 9.6357,
+            "shortSpreadPct": 0,
+            "longRho": 0.5,
+            "shortRho": -0.5,
+            "retSpread": -0.2607,
+            "retSpreadPct": 0,
+            "retRho": 0.5
+          }
+        },
+        "conditionalQ": {
+          "1": {
+            "n": 44,
+            "longColdMean": 18.5747,
+            "longHotMean": 23.6594,
+            "longSpread": -5.0847,
+            "longSpreadPct": -0.2737,
+            "shortColdMean": 8.5091,
+            "shortHotMean": 8.2365,
+            "shortSpread": -0.2725,
+            "shortSpreadPct": -0.032,
+            "longRho": 0.4,
+            "shortRho": -0.2,
+            "retSpread": -1.7453,
+            "retSpreadPct": -0.803,
+            "retRho": 0.2
+          },
+          "2": {
+            "n": 48,
+            "longColdMean": 14.103,
+            "longHotMean": 17.3873,
+            "longSpread": -3.2842,
+            "longSpreadPct": -0.2329,
+            "shortColdMean": 7.1081,
+            "shortHotMean": 8.5379,
+            "shortSpread": 1.4298,
+            "shortSpreadPct": 0.2012,
+            "longRho": 0.8,
+            "shortRho": 0.8,
+            "retSpread": 0.7182,
+            "retSpreadPct": 0.3614,
+            "retRho": -1.0
+          },
+          "3": {
+            "n": 48,
+            "longColdMean": 22.4648,
+            "longHotMean": 16.5744,
+            "longSpread": 5.8904,
+            "longSpreadPct": 0.2622,
+            "shortColdMean": 6.257,
+            "shortHotMean": 7.816,
+            "shortSpread": 1.559,
+            "shortSpreadPct": 0.2492,
+            "longRho": -0.9,
+            "shortRho": 0.9,
+            "retSpread": 5.1766,
+            "retSpreadPct": 0.7905,
+            "retRho": -1.0
+          },
+          "4": {
+            "n": 46,
+            "longColdMean": 22.8053,
+            "longHotMean": 13.8478,
+            "longSpread": 8.9575,
+            "longSpreadPct": 0.3928,
+            "shortColdMean": 7.5763,
+            "shortHotMean": 10.3644,
+            "shortSpread": 2.7881,
+            "shortSpreadPct": 0.368,
+            "longRho": -0.7,
+            "shortRho": 0.7,
+            "retSpread": 5.9474,
+            "retSpreadPct": 1.1814,
+            "retRho": -0.9
+          },
+          "5": {
+            "n": 46,
+            "longColdMean": 29.3321,
+            "longHotMean": 16.9152,
+            "longSpread": 12.4169,
+            "longSpreadPct": 0.4233,
+            "shortColdMean": 3.6162,
+            "shortHotMean": 8.8722,
+            "shortSpread": 5.256,
+            "shortSpreadPct": 1.4535,
+            "longRho": -0.2,
+            "shortRho": 0.7,
+            "retSpread": 7.8666,
+            "retSpreadPct": 0.8154,
+            "retRho": -0.2
+          }
+        },
+        "quadrants": {
+          "cold_down": {
+            "n": 61,
+            "longUpsideMean": 16.742,
+            "shortUpsideMean": 7.9349,
+            "medianReturnMean": 2.0971,
+            "shortCompetitiveness": 0.474
+          },
+          "cold_up": {
+            "n": 12,
+            "longUpsideMean": 24.437,
+            "shortUpsideMean": 6.5863,
+            "medianReturnMean": 6.1876,
+            "shortCompetitiveness": 0.2695
+          },
+          "hot_down": {
+            "n": 9,
+            "longUpsideMean": 18.7811,
+            "shortUpsideMean": 8.471,
+            "medianReturnMean": 1.8578,
+            "shortCompetitiveness": 0.451
+          },
+          "hot_up": {
+            "n": 66,
+            "longUpsideMean": 15.7068,
+            "shortUpsideMean": 9.46,
+            "medianReturnMean": 0.7197,
+            "shortCompetitiveness": 0.6023
+          }
+        },
+        "interaction": {
+          "long": -10.7693,
+          "short": 2.3376,
+          "ret": -5.2286
+        }
+      }
+    }
+  },
+  "monthly": {
+    "excess_5d": {
+      "202505": {
+        "nDays": 11,
+        "longUpsideMean": 5.4536,
+        "shortUpsideMean": 8.3923,
+        "medianReturnMean": -3.1955
+      },
+      "202506": {
+        "nDays": 20,
+        "longUpsideMean": 12.9021,
+        "shortUpsideMean": 5.1891,
+        "medianReturnMean": 2.0
+      },
+      "202507": {
+        "nDays": 23,
+        "longUpsideMean": 22.465,
+        "shortUpsideMean": 5.1061,
+        "medianReturnMean": 5.9238
+      },
+      "202508": {
+        "nDays": 21,
+        "longUpsideMean": 16.8027,
+        "shortUpsideMean": 7.0065,
+        "medianReturnMean": 4.7796
+      },
+      "202509": {
+        "nDays": 22,
+        "longUpsideMean": 9.4648,
+        "shortUpsideMean": 10.6383,
+        "medianReturnMean": -2.3701
+      },
+      "202510": {
+        "nDays": 17,
+        "longUpsideMean": 11.9309,
+        "shortUpsideMean": 5.2753,
+        "medianReturnMean": 3.2135
+      },
+      "202511": {
+        "nDays": 20,
+        "longUpsideMean": 23.2049,
+        "shortUpsideMean": 5.6155,
+        "medianReturnMean": 5.4103
+      },
+      "202512": {
+        "nDays": 23,
+        "longUpsideMean": 47.0803,
+        "shortUpsideMean": 5.1085,
+        "medianReturnMean": 15.8226
+      },
+      "202601": {
+        "nDays": 20,
+        "longUpsideMean": 12.3216,
+        "shortUpsideMean": 12.8666,
+        "medianReturnMean": -4.5494
+      },
+      "202602": {
+        "nDays": 14,
+        "longUpsideMean": 10.5657,
+        "shortUpsideMean": 15.4149,
+        "medianReturnMean": -4.5535
+      },
+      "202603": {
+        "nDays": 22,
+        "longUpsideMean": 6.3173,
+        "shortUpsideMean": 12.536,
+        "medianReturnMean": -3.8416
+      },
+      "202604": {
+        "nDays": 20,
+        "longUpsideMean": 12.9083,
+        "shortUpsideMean": 8.9293,
+        "medianReturnMean": 0.1468
+      }
+    },
+    "excess_10d": {
+      "202505": {
+        "nDays": 11,
+        "longUpsideMean": 5.4536,
+        "shortUpsideMean": 8.3923,
+        "medianReturnMean": -3.1955
+      },
+      "202506": {
+        "nDays": 20,
+        "longUpsideMean": 12.9021,
+        "shortUpsideMean": 5.1891,
+        "medianReturnMean": 2.0
+      },
+      "202507": {
+        "nDays": 23,
+        "longUpsideMean": 22.465,
+        "shortUpsideMean": 5.1061,
+        "medianReturnMean": 5.9238
+      },
+      "202508": {
+        "nDays": 21,
+        "longUpsideMean": 16.8027,
+        "shortUpsideMean": 7.0065,
+        "medianReturnMean": 4.7796
+      },
+      "202509": {
+        "nDays": 22,
+        "longUpsideMean": 9.4648,
+        "shortUpsideMean": 10.6383,
+        "medianReturnMean": -2.3701
+      },
+      "202510": {
+        "nDays": 17,
+        "longUpsideMean": 11.9309,
+        "shortUpsideMean": 5.2753,
+        "medianReturnMean": 3.2135
+      },
+      "202511": {
+        "nDays": 20,
+        "longUpsideMean": 23.2049,
+        "shortUpsideMean": 5.6155,
+        "medianReturnMean": 5.4103
+      },
+      "202512": {
+        "nDays": 23,
+        "longUpsideMean": 47.0803,
+        "shortUpsideMean": 5.1085,
+        "medianReturnMean": 15.8226
+      },
+      "202601": {
+        "nDays": 20,
+        "longUpsideMean": 12.3216,
+        "shortUpsideMean": 12.8666,
+        "medianReturnMean": -4.5494
+      },
+      "202602": {
+        "nDays": 14,
+        "longUpsideMean": 10.5657,
+        "shortUpsideMean": 15.4149,
+        "medianReturnMean": -4.5535
+      },
+      "202603": {
+        "nDays": 22,
+        "longUpsideMean": 6.3173,
+        "shortUpsideMean": 12.536,
+        "medianReturnMean": -3.8416
+      },
+      "202604": {
+        "nDays": 20,
+        "longUpsideMean": 12.9083,
+        "shortUpsideMean": 8.9293,
+        "medianReturnMean": 0.1468
+      }
+    },
+    "daily_excess": {
+      "202505": {
+        "nDays": 11,
+        "longUpsideMean": 5.4536,
+        "shortUpsideMean": 8.3923,
+        "medianReturnMean": -3.1955
+      },
+      "202506": {
+        "nDays": 20,
+        "longUpsideMean": 12.9021,
+        "shortUpsideMean": 5.1891,
+        "medianReturnMean": 2.0
+      },
+      "202507": {
+        "nDays": 23,
+        "longUpsideMean": 22.465,
+        "shortUpsideMean": 5.1061,
+        "medianReturnMean": 5.9238
+      },
+      "202508": {
+        "nDays": 21,
+        "longUpsideMean": 16.8027,
+        "shortUpsideMean": 7.0065,
+        "medianReturnMean": 4.7796
+      },
+      "202509": {
+        "nDays": 22,
+        "longUpsideMean": 9.4648,
+        "shortUpsideMean": 10.6383,
+        "medianReturnMean": -2.3701
+      },
+      "202510": {
+        "nDays": 17,
+        "longUpsideMean": 11.9309,
+        "shortUpsideMean": 5.2753,
+        "medianReturnMean": 3.2135
+      },
+      "202511": {
+        "nDays": 20,
+        "longUpsideMean": 23.2049,
+        "shortUpsideMean": 5.6155,
+        "medianReturnMean": 5.4103
+      },
+      "202512": {
+        "nDays": 23,
+        "longUpsideMean": 47.0803,
+        "shortUpsideMean": 5.1085,
+        "medianReturnMean": 15.8226
+      },
+      "202601": {
+        "nDays": 20,
+        "longUpsideMean": 12.3216,
+        "shortUpsideMean": 12.8666,
+        "medianReturnMean": -4.5494
+      },
+      "202602": {
+        "nDays": 14,
+        "longUpsideMean": 10.5657,
+        "shortUpsideMean": 15.4149,
+        "medianReturnMean": -4.5535
+      },
+      "202603": {
+        "nDays": 22,
+        "longUpsideMean": 6.3173,
+        "shortUpsideMean": 12.536,
+        "medianReturnMean": -3.8416
+      },
+      "202604": {
+        "nDays": 20,
+        "longUpsideMean": 12.9083,
+        "shortUpsideMean": 8.9293,
+        "medianReturnMean": 0.1468
+      }
+    }
+  },
+  "buyAndHold": {
+    "totalReturnPct": 54.79,
+    "maxDrawdown": 41.24,
+    "nDays": 253
+  }
+}
