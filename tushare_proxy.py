@@ -73,14 +73,41 @@ class TushareProxyAPI:
 
         data = resp.json()
 
-        # 错误响应检测
+        if not data:
+            return pd.DataFrame()
+
+        # 处理 {code, data, msg} 格式（代理服务标准响应）
+        if isinstance(data, dict) and "code" in data:
+            code = data.get("code")
+            msg = str(data.get("msg", ""))
+            inner = data.get("data")
+            if code != 0:
+                raise RuntimeError(f"API 错误 (code={code}): {msg}")
+            if inner is None:
+                return pd.DataFrame()
+            # 嵌套 {fields, items} 结构
+            if isinstance(inner, dict) and "items" in inner:
+                items = inner["items"]
+                if not items:
+                    return pd.DataFrame()
+                return pd.DataFrame(items)
+            # 扁平列表结构
+            if isinstance(inner, list):
+                return pd.DataFrame(inner) if inner else pd.DataFrame()
+            return pd.DataFrame()
+
+        # 处理旧版 {fields, items} 格式
+        if isinstance(data, dict) and "items" in data and "fields" in data:
+            items = data["items"]
+            if isinstance(items, list) and items:
+                return pd.DataFrame(items)
+            return pd.DataFrame()
+
+        # 处理旧版 token 错误格式
         if isinstance(data, dict) and "data" in data:
             msg = str(data["data"])
             if "TOKEN" in msg or "失效" in msg or "token" in msg.lower():
                 raise PermissionError(f"Token 无效或已过期: {msg}")
-
-        if not data:
-            return pd.DataFrame()
 
         return pd.DataFrame(data)
 

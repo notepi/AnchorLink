@@ -208,6 +208,10 @@ export default function SignalAlphaScatter({ signals }: Props) {
       <div className="ql-hint">
         🎯 散点图把 31 个信号按「绝对 lift × 超额 lift」分到四象限：
         右上 = 真信号，左上 = Beta 环境掩盖的隐藏 Alpha，右下 = 看似涨实则跑输的 Beta 骑乘陷阱，左下 = 全面负向。
+        <br />
+        ⚠️ <strong>这里的 lift 与分类都是样本内历史统计，不是样本外验证。</strong>
+        在同一段数据上测 30+ 个信号，纯靠运气也会有几个"高 lift"幸存下来（多重比较问题），
+        且未做胜率显著性 / 多重检验校正。请当作"历史上哪些信号曾经好看"的线索，不要当作可靠的未来 Alpha。
       </div>
     </section>
   );

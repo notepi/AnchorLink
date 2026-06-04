@@ -1,6 +1,6 @@
 # 铂力特个股研判 - 基本面 × 统计交叉分析
 
-> 配套文档：[analysis_242d_answers.md](./analysis_242d_answers.md)（242 天统计分析）
+> 配套文档：[analysis_framework.md](./analysis_framework.md)（整合版统计分析框架）
 > 当前分析日：20260520
 
 ---

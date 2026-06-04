@@ -1,9 +1,9 @@
 """
 数据获取模块
-使用 Tushare 获取股票市场数据
+使用 Tushare 获取股票前复权行情数据
 
+使用 pro_bar(adj="qfq") 获取前复权数据，自动处理除权除息。
 适配 120 积分账号限制：
-- 使用 daily 接口（120 积分可用）
 - 逐只股票查询，避免批量限制
 - 请求间隔 0.5 秒，避免频次限制
 - 简单重试机制，提高稳定性
@@ -161,7 +161,9 @@ def fetch_single_stock_daily(
     retries: int = MAX_RETRIES
 ) -> Optional[pd.DataFrame]:
     """
-    获取单只股票的日线数据（带重试机制）
+    获取单只股票的前复权日线数据（带重试机制）
+
+    使用 pro_bar(adj="qfq") 获取前复权数据，自动处理除权除息。
 
     Args:
         pro: Tushare Pro API 实例
@@ -175,10 +177,11 @@ def fetch_single_stock_daily(
     """
     for attempt in range(retries):
         try:
-            df = pro.daily(
+            df = pro.pro_bar(
                 ts_code=ts_code,
                 start_date=start_date,
-                end_date=end_date
+                end_date=end_date,
+                adj="qfq"
             )
 
             if df is not None and not df.empty:
@@ -211,10 +214,9 @@ def fetch_daily_data(
     end_date: str
 ) -> Optional[pd.DataFrame]:
     """
-    逐只股票获取日线数据（适配 120 积分账号）
+    逐只股票获取前复权日线数据（适配 120 积分账号）
 
-    注意：120 积分账号批量查询可能有限制，
-    因此采用逐只查询 + 节流的方式，更稳定。
+    使用 pro_bar(adj="qfq") 获取前复权数据，自动处理除权除息。
 
     Args:
         pro: Tushare Pro API 实例
@@ -226,7 +228,7 @@ def fetch_daily_data(
         DataFrame 包含 ts_code, trade_date, open, high, low, close, vol, amount
     """
     all_dfs = []
-    required_cols = ["ts_code", "trade_date", "open", "high", "low", "close", "vol", "amount"]
+    required_cols = ["ts_code", "trade_date", "open", "high", "low", "close", "vol", "amount"]  # pro_bar 兼容
 
     total = len(ts_codes)
     success_count = 0
@@ -240,6 +242,16 @@ def fetch_daily_data(
         if df is not None and not df.empty:
             # 选取需要的列
             df = df[[c for c in required_cols if c in df.columns]]
+            # pro_bar(adj="qfq") 对有除权事件的股票可能返回未复权+前复权两行
+            # 前复权行在后面，keep="last" 保留前复权数据
+            before = len(df)
+            df = df.drop_duplicates(subset=["ts_code", "trade_date"], keep="last")
+            if len(df) < before:
+                print(f"[INFO] {ts_code}: 去重 {before} → {len(df)}（pro_bar 返回了重复日期）")
+            # pro_bar 返回的数值列可能是字符串，转为 float
+            for col in ["open", "high", "low", "close", "vol", "amount"]:
+                if col in df.columns:
+                    df[col] = pd.to_numeric(df[col], errors="coerce")
             all_dfs.append(df)
             success_count += 1
         else:

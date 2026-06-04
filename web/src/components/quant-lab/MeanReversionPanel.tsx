@@ -34,23 +34,26 @@ export default function MeanReversionPanel({
             <td>{ds5.n}</td>
             <td className="ql-neu">{ds5.mean >= 0 ? '+' : ''}{ds5.mean.toFixed(3)}%</td>
             <td>{ds5.std.toFixed(3)}%</td>
-            <td>{ds5.t_stat.toFixed(2)}</td>
-            <td className={ds5.significant_vs_zero ? 'ql-warn' : 'ql-pos'}>
-              {ds5.significant_vs_zero ? '❗ 显著偏离零' : '✓ 接近零'}
-            </td>
+            <td>{ds5.t_stat.toFixed(2)} <span style={{ color: 'var(--ql-text-muted)', fontSize: 10 }}>(名义)</span></td>
+            <td className="ql-neu">修正后不显著 *</td>
           </tr>
           <tr>
             <td>excess_10d</td>
             <td>{ds10.n}</td>
             <td className="ql-neu">{ds10.mean >= 0 ? '+' : ''}{ds10.mean.toFixed(3)}%</td>
             <td>{ds10.std.toFixed(3)}%</td>
-            <td>{ds10.t_stat.toFixed(2)}</td>
-            <td className={ds10.significant_vs_zero ? 'ql-warn' : 'ql-pos'}>
-              {ds10.significant_vs_zero ? '❗ 显著偏离零' : '✓ 接近零'}
-            </td>
+            <td>{ds10.t_stat.toFixed(2)} <span style={{ color: 'var(--ql-text-muted)', fontSize: 10 }}>(名义)</span></td>
+            <td className="ql-neu">修正后不显著 *</td>
           </tr>
         </tbody>
       </table>
+
+      <div className="ql-hint" style={{ marginBottom: 14 }}>
+        ⚠️ * <strong>名义 t 值高估了显著性。</strong>excess_5d / excess_10d 是滚动窗口，
+        相邻两天共享 4–9 天数据，lag-1 自相关高达 0.74–0.85，把它们当独立样本会严重低估标准误。
+        按重叠折算有效样本（≈ n / 窗口长度）后，真实 t 值降到约 0.8，<strong>两者都不显著</strong>。
+        即"产业链就是均值 / 均值回归有效"这一结论，统计上并不成立。
+      </div>
 
       {/* 4.1 自相关 */}
       <AutocorrChart data={data.autocorrelationDecay} />

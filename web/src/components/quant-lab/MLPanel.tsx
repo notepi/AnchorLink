@@ -49,7 +49,8 @@ function QuintileBars({ model, name }: { model: MLModelResult; name: string }) {
             const val = q.actual_exc1d.avg;
             const pct = (Math.abs(val) / max) * 100;
             const hit = q.direction_hit_rate ?? 0;
-            const highlight = hit >= 0.65 ? 'ql-highlight' : hit <= 0.4 ? 'ql-highlight-neg' : '';
+            // 不给高命中档着"利好"色：分档样本量小（n≈20+），高命中多为噪声，避免误导
+            const highlight = '';
             return (
               <tr key={q.quintile} className={highlight}>
                 <td>Q{q.quintile}</td>
@@ -153,9 +154,10 @@ export default function MLPanel({ data }: { data: MLAnalysis }) {
       </div>
 
       <div className="ql-hint">
-        💡 <strong>GBR 的 Q4 档命中率 71%</strong>（预测 +0.34% ~ +0.97% 时）是最稳定的操作区间。
-        预测过高（Q5）反而失效，说明模型对极端值不稳定。
-        <strong>excess_5d 是两个树模型的 No.1 特征</strong>，呼应 M 维「极端档反转」发现。
+        ⚠️ <strong>诚实结论：模型没有样本外预测力。</strong>
+        三个模型 walk-forward 整体方向命中率仅约 48–53%（50% = 抛硬币），Pearson r ≈ -0.04 ~ -0.08（几乎为零、甚至反向）。
+        分档表里某一档（如 GBR Q4）看着命中率高，是 n≈24 的小样本噪声、事后挑桶的结果，<strong>不可作为操作依据</strong>。
+        特征重要性（如 excess_5d 排第一）只说明模型在训练集里更看重它，<strong>不等于它能预测未来</strong>。
       </div>
     </section>
   );

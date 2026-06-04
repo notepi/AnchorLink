@@ -42,9 +42,12 @@ export default async function HistoryPage() {
       <ScoreCalendar daily={view.backtest.daily_results} />
       <SignalWeightTable weights={view.backtest.signal_weights} />
 
-      <footer style={{ textAlign: 'center', padding: '20px 0', fontSize: 11, color: 'var(--ql-text-muted)' }}>
-        ⚠️ 本页所有分析为历史统计描述，<strong>不构成投资建议</strong>。
-        阈值使用 in-sample 数据，存在前视偏差。
+      <footer style={{ textAlign: 'center', padding: '20px 0', fontSize: 11, color: 'var(--ql-text-muted)', lineHeight: 1.7 }}>
+        ⚠️ <strong>本页是复盘 / 盘感工具，不是经过验证的策略，更不是预测。</strong><br />
+        所有数字均为单票（688333.SH）、~243 天、单一市场环境下的<strong>样本内统计</strong>：
+        信号、阈值、权重都在同一段数据上挑选又回测（"开卷考"），跑赢与高胜率是结构性必然，<strong>不代表未来</strong>。<br />
+        同一份数据用诚实方法（样本外 walk-forward）实测：ML 方向命中率 48–53%（≈抛硬币）、均值回归修正重叠后不显著。<br />
+        <strong>不构成投资建议，请勿据此下单。</strong>
       </footer>
     </div>
   );

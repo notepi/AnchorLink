@@ -30,7 +30,11 @@ export default function CompositeScoreEngine({
 
   return (
     <section id="engine" className="ql-section">
-      <h2>综合评分系统 · 阈值切换 <span className="ql-section-tag">SECTION 2</span></h2>
+      <h2>历史分档描述 · 阈值切换 <span className="ql-section-tag">SECTION 2</span></h2>
+
+      <div className="ql-disclaimer" style={{ marginBottom: 12 }}>
+        ⚠️ 以下为<strong>样本内统计描述</strong>（阈值用全样本算，含前视偏差），仅说明"历史上这些分档事后回看是这样"，非未来预测。留意各档样本量 n。
+      </div>
 
       <div className="ql-threshold-tabs">
         {[1, 2, 3, 4, 5].map((t) => (
@@ -144,8 +148,9 @@ export default function CompositeScoreEngine({
       </div>
 
       <div className="ql-hint">
-        💡 <strong>阈值越严格 → 操作越少 → 单次平均收益越高</strong>。±1 触发频繁，累计绝对收益最大；
-        ±5 触发稀疏，单次精度最高（59.6% 胜率，T+1 平均 +1.42%）。
+        💡 阈值越严格触发越少：±1 触发频繁，±5 触发稀疏。但<strong>"越严格越准"是样本内假象</strong>——
+        ±5 只有 ~49 个样本，胜率的 95% 置信区间约 [45%, 73%]，跨过 50%，统计上与抛硬币无法区分。
+        样本越少，单档数字越不可信，别把高胜率当确定性。
       </div>
     </section>
   );

@@ -128,7 +128,39 @@ def normalize(
     other_cols = [c for c in df.columns if c not in base_cols + meta_cols]
     df = df[base_cols + other_cols + meta_cols]
 
-    # ── 6. 保存 ──
+    # ── 6. 停牌/缺失日补全 ──
+    # 用全量交易日索引 reindex，缺失日用前一日 OHLCV 前向填充
+    all_dates = sorted(df["trade_date"].unique())
+    codes = df["ts_code"].unique()
+    filled_parts = []
+    for code in codes:
+        stock = df[df["ts_code"] == code].set_index("trade_date").sort_index()
+        missing_dates = set(all_dates) - set(stock.index)
+        if not missing_dates:
+            filled_parts.append(stock.reset_index())
+            continue
+        # reindex 到全量交易日，OHLCV 前向填充
+        stock = stock.reindex(all_dates)
+        ohlcv_cols = [c for c in ["open", "high", "low", "close", "vol", "amount"] if c in stock.columns]
+        stock[ohlcv_cols] = stock[ohlcv_cols].ffill()
+        # 停牌日 vol=0, amount=0
+        filled_mask = stock.index.isin(missing_dates)
+        if "vol" in stock.columns:
+            stock.loc[filled_mask, "vol"] = 0
+        if "amount" in stock.columns:
+            stock.loc[filled_mask, "amount"] = 0
+        stock["ts_code"] = code
+        # 补全元数据
+        for col in ["amount_unit", "vol_unit", "data_source"]:
+            if col in df.columns:
+                stock[col] = stock[col].ffill()
+        filled_count = filled_mask.sum()
+        if filled_count > 0:
+            print(f"[INFO] normalizer: {code} 补全 {filled_count} 个停牌/缺失日")
+        filled_parts.append(stock.reset_index().rename(columns={"index": "trade_date"}))
+    df = pd.concat(filled_parts, ignore_index=True)
+
+    # ── 7. 保存 ──
     output_file = Path(output_path)
     output_file.parent.mkdir(parents=True, exist_ok=True)
     df.to_parquet(output_file, index=False)
