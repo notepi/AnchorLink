@@ -457,3 +457,248 @@ WHERE label LIKE '%交易池%'
 SELECT * FROM history_extreme_divergences 
 ORDER BY ABS(divergence) DESC
 ```
+
+---
+
+# 第二部分：前后端数据契约（DashboardView）
+
+> 本部分定义 DashboardView 数据层的标准规范和字段映射，是前后端数据交互的唯一依据。
+> TypeScript 类型定义：`web/src/types/dashboard-view.ts`｜JSON Schema：`data/schema/dashboard_view.schema.json`
+
+## 十、命名规范
+
+所有标识符使用小驼峰（camelCase）。
+
+| 类型 | 规则 | 示例 |
+|------|------|------|
+| 普通字段 | 描述性名词/名词短语 | `tradingDate`, `signalName` |
+| 布尔字段 | `is`/`has`/`should`/`can`前缀 | `isValid`, `hasSignal` |
+| 数组字段 | 复数形式 | `similarCases`, `signals` |
+| 日期字段 | `Date`后缀，格式 `YYYY-MM-DD` | `tradingDate` |
+
+枚举类型用 PascalCase + Enum 后缀，枚举值用 UPPER_SNAKE_CASE。
+
+---
+
+## 十一、数据类型约定
+
+| 类型 | 说明 | 示例 |
+|------|------|------|
+| `string` | 文本、日期、枚举值 | `"2026-05-11"`, `"dominantLeader"` |
+| `number` | 整数、浮点数、百分比 | `0.85`, `120`, `3.14` |
+| `boolean` | 逻辑值 | `true`, `false` |
+| `null` | 数据缺失 | `null`，前端显示为 `--` |
+| 数组 | 同类型元素集合 | `SimilarCaseRecord[]` |
+| 枚举 | 有限取值字符串集合 | `QuadrantEnum` |
+
+**特殊约定**：
+- 百分比存储为小数（85% → `0.85`），前端显示时乘100加 `%`
+- 日期统一 `YYYY-MM-DD` 字符串
+- 空值统一 `null`，禁止 `""`、`0`、`NaN`
+- 数值精度：百分比保留2位小数，绝对数值保留2位小数，整数无小数
+
+---
+
+## 十二、DashboardView 结构
+
+```typescript
+interface DashboardView {
+  meta: Meta                 // 元数据
+  filter: Filter             // 筛选条件
+  summary: SummaryInfo       // 核心摘要
+  cards: CardInfo[]          // 15张指标卡片
+  mapData: MapDataInfo       // 矩阵/热力图
+  trends: TrendsInfo         // 趋势/时间轴
+  tableData: TableDataInfo   // 表格/列表
+  personality: PersonalityInfo // 历史性格档案
+  operator: OperatorInfo     // 交易员视角
+  aiInsight: AiInsightInfo   // AI研判/建议
+}
+```
+
+---
+
+## 十三、校验规则
+
+三层校验确保数据100%合规：
+
+1. **格式校验**（JSON Schema）：必填字段存在、类型正确、枚举值合法
+2. **类型校验**（TypeScript）：字段访问安全、类型使用正确
+3. **业务规则校验**：数值范围合理、逻辑一致、与旧页面显示一致
+
+校验脚本：`scripts/validate_data.py`
+
+---
+
+## 十四、v2 页面字段映射
+
+以下为 `/history-v2` 页面 110 个显示字段与 `dashboard_view.json` 的映射关系。
+
+### 1. TopBar 组件
+
+| 序号 | 页面位置 | 数据路径 | 格式 |
+|------|---------|----------|------|
+| 1 | 页面主标题 | 固定「历史分析」 | 直接显示 |
+| 2 | 日期范围说明 | `meta.dateRange` | 「X个交易日 · YYYYMMDD ~ YYYYMMDD」 |
+| 3 | 筛选-起始日期 | `filter.startDate` | YYYY-MM-DD |
+| 4 | 筛选-结束日期 | `filter.endDate` | YYYY-MM-DD |
+| 5 | 筛选-信号类别 | `filter.signalCategory` | 全部/偏好/规避/反直觉/陷阱 |
+
+### 2. TradingView 组件
+
+#### 2.1 顶部三张卡片
+
+| 序号 | 页面位置 | 数据路径 | 格式 |
+|------|---------|----------|------|
+| 6 | 卡片1标题 | `cards[0].title` | 固定「历史规律可信度」 |
+| 7 | 卡片1值 | `cards[0].value` | high→高(红)，medium→中(黄)，low→低(灰) |
+| 8 | 卡片1badge | `cards[0].badge` | stable→稳定，deteriorating→下降，concerning→警告，insufficient→不足 |
+| 9 | 卡片1描述 | `cards[0].description` | 直接显示 |
+| 10 | 卡片2标题 | `cards[1].title` | 固定「当前操作倾向」 |
+| 11 | 卡片2值 | `cards[1].value` | 积极观察/谨慎观察/观望 |
+| 12 | 卡片2描述 | `cards[1].description` | 直接显示 |
+| 13 | 卡片3标题 | `cards[2].title` | 固定「主要失效点」 |
+| 14 | 卡片3值 | `cards[2].value` | 直接显示 |
+| 15 | 卡片3描述 | `cards[2].description` | 直接显示 |
+
+#### 2.2 四个建议模块
+
+| 序号 | 页面位置 | 数据路径 | 格式 |
+|------|---------|----------|------|
+| 16 | 看什么 | `aiInsight.advice.watch` | 直接显示 |
+| 17 | 用什么确认 | `aiInsight.advice.confirm` | 直接显示 |
+| 18 | 什么会失效 | `aiInsight.advice.failure` | 直接显示 |
+| 19 | 样本约束 | `aiInsight.advice.constraint` | 直接显示 |
+
+### 3. HistoryMapping 组件
+
+#### 3.1 头部与当前状态
+
+| 序号 | 页面位置 | 数据路径 | 格式 |
+|------|---------|----------|------|
+| 20 | 模块标题 | 固定「今日历史映射」 | 直接显示 |
+| 21 | 模块说明 | 固定文本 | 直接显示 |
+| 22 | 相似样本数 | `summary.currentMapping.similarSampleCount` | 「相似样本 X个」 |
+| 23 | 当前日期 | `summary.currentMapping.date` | YYYYMMDD，等宽 |
+| 24 | 当前状态 | `summary.currentMapping.state` | 直接显示 |
+| 25 | 状态标签 | `summary.currentMapping.tags` | 循环显示，带边框 |
+| 26 | 路径标签 | `summary.pathLabel` | strong_rise→强势延续(红)，continue_fall→继续走弱(绿)，其他→灰色 |
+
+#### 3.2 历史路径统计
+
+| 序号 | 页面位置 | 数据路径 | 格式 |
+|------|---------|----------|------|
+| 27-29 | T+1 收益/胜率/超额 | `tableData.windowStats[0].avgReturn/winRate/avgExcess` | 收益超额：2位小数+%/pp，正红↑负绿↓；胜率：×100+%，0位小数 |
+| 30-32 | T+3 收益/胜率/超额 | `tableData.windowStats[1].*` | 同上 |
+| 33-35 | T+5 收益/胜率/超额 | `tableData.windowStats[2].*` | 同上 |
+
+#### 3.3 最相似历史案例
+
+| 序号 | 页面位置 | 数据路径 | 格式 |
+|------|---------|----------|------|
+| 36 | 案例日期 | `tableData.similarCases[N].date` | YYYYMMDD，等宽 |
+| 37 | 相似度 | `tableData.similarCases[N].similarity` | 「相似度 X.XX」 |
+| 38 | 匹配状态标签 | `tableData.similarCases[N].matchingStates` | 蓝色badge |
+| 39 | 匹配信号标签 | `tableData.similarCases[N].matchingSignals` | 灰色标签 |
+| 40-42 | T+1/T+3/T+5收益 | `tableData.similarCases[N].next1dReturn/next3dReturn/next5dReturn` | 2位小数，正红负绿+% |
+
+### 4. TransitionHeatmap 组件
+
+#### 4.1 路径判断
+
+| 序号 | 页面位置 | 数据路径 | 格式 |
+|------|---------|----------|------|
+| 43 | 路径判断标题 | `summary.transitionVerdict.title` | 蓝色背景高亮 |
+| 44 | 路径判断描述 | `summary.transitionVerdict.description` | 直接显示 |
+| 45 | 观察要点 | `summary.transitionVerdict.watchPoints` | 橙色圆点标记 |
+
+#### 4.2 路径排名
+
+| 序号 | 页面位置 | 数据路径 | 格式 |
+|------|---------|----------|------|
+| 46 | 排名 | `tableData.rankedTransitionPaths[N].rank` | 灰色圆圈背景 |
+| 47 | 路径名称 | `tableData.rankedTransitionPaths[N].path` | 「转向 {toState}」 |
+| 48 | 路径说明 | 计算生成 | 「偏X修复」 |
+| 49 | 样本数 | `tableData.rankedTransitionPaths[N].count` | 「n=X」 |
+| 50 | 平均收益 | `tableData.rankedTransitionPaths[N].avgReturn` | 2位小数+pp，正红负绿 |
+| 51 | 星级 | 根据收益和样本量计算 | 1-5星 |
+
+#### 4.3 热力图矩阵
+
+| 序号 | 页面位置 | 数据路径 | 格式 |
+|------|---------|----------|------|
+| 52 | 单元格数值 | `mapData.transitionMatrix[from][to]` | 数值越大蓝色越深 |
+| 53 | 行列状态标签 | 状态名称简化 | 如「强+强」 |
+| 54 | 当前状态高亮 | 比较当前状态 | 橙色边框 |
+| 55 | 最高概率路径 | 最高概率单元格 | 橙色边框 |
+
+### 5. StabilityPanel 组件
+
+| 序号 | 页面位置 | 数据路径 | 格式 |
+|------|---------|----------|------|
+| 56 | 稳定性结论 | `personality.stability.earlyVsRecentNotes[0]` | 橙色背景高亮 |
+| 57-58 | 5日超额 | `cards[3].value/description` | 偏弱/震荡/偏强 |
+| 59-60 | 10日超额 | `cards[4].value/description` | 同上 |
+| 61-62 | 今日偏离 | `cards[5].value/description` | 不强/中等/明显 |
+| 63 | 跑赢主线池图表 | `trends.excessReturn` | 紫(5日)/蓝(10日)/红(连胜)曲线 |
+| 64 | 跟随偏离图表 | `trends.followDeviation` | 红(个股)/蓝虚(板块)/紫(超额)曲线 |
+| 65-66 | 图表说明 | 固定文本 | 直接显示 |
+
+### 6. PersonalityProfile 组件
+
+| 序号 | 页面位置 | 数据路径 | 格式 |
+|------|---------|----------|------|
+| 67 | 性格环形图 | `summary.profile.donutData` | 偏好(红)/规避(绿)/反直觉(紫)/陷阱(橙) |
+| 68 | 性格标签 | `summary.profile.tags` | 三个标签 |
+| 69-70 | 性格标题/描述 | `summary.profile.title/description` | 直接显示 |
+| 71 | 样本数 | `cards[6].value` | 「X/Y」等宽 |
+| 72 | 置信度 | `cards[7].value` | high→高(绿)，medium→中，low→低 |
+| 73 | 基线胜率 | `cards[8].value` | 「X%」等宽绿 |
+| 74-75 | 胜率 | `cards[9].value` | ×100，1位小数+%，红 |
+| 76-77 | T+3超额 | `cards[10].value` | 2位小数+pp，绿 |
+| 78-79 | T+3不利 | `cards[11].value` | 2位小数+pp，绿 |
+| 80-81 | 盈亏比 | `cards[12].value` | 2位小数+x，红 |
+| 82-83 | 夏普 | `cards[13].value` | 2位小数，红 |
+| 84-85 | 信号覆盖 | `cards[14].value` | ×100，0位小数+%，红 |
+| 86 | 偏好环境列表 | `personality.habitPatterns[likes]` | 按收益降序，红边框 |
+| 87 | 规避环境列表 | `personality.habitPatterns[dislikes]` | 按收益升序，绿边框 |
+| 88 | 产业联动关系 | `personality.relationshipProfile` | 跟随/领先/滞后+相关系数 |
+| 89 | 反直觉机会 | `personality.counterIntuitivePatterns` | 紫边框 |
+| 90 | 信号陷阱 | `personality.trapPatterns` | 橙边框 |
+| 91 | 路径模式标签 | `personality.pathPatterns[*].eventLabel` | 名称+样本数 |
+| 92 | 路径图表 | `personality.pathPatterns[i].avgPath` | 红(个股)/灰虚(板块)/绿虚(超额) |
+| 93 | 路径总结 | `personality.pathPatterns[i].summary` | 直接显示 |
+
+### 7. SignalTimeline 组件
+
+| 序号 | 页面位置 | 数据路径 | 格式 |
+|------|---------|----------|------|
+| 94 | 价格曲线 | `trends.signalTimeline.price` | 红色实线 |
+| 95 | 信号标记点 | `mapData.signalMarks` | 偏好红/规避绿/反直觉紫/陷阱橙 |
+| 96 | 时间轴刻度 | `trends.signalTimeline.dates` | YYYY-MM |
+| 97-100 | 信号轨道 | `mapData.signalLanes.likes/dislikes/counter_intuitive/trap` | 彩色小点 |
+| 101 | 轨道样本量 | `mapData.signalLanes.*.count` | 「X次」灰色 |
+| 102-107 | 信号详情面板 | `tableData.signalDetail.*` | 日期/价格/涨跌幅/命中信号 |
+
+### 8. 底部研究明细
+
+| 序号 | 页面位置 | 数据路径 | 格式 |
+|------|---------|----------|------|
+| 108 | 标题 | 固定「研究明细」 | 折叠面板 |
+| 109 | 说明 | 固定文本 | 头部右侧灰色 |
+| 110 | 内容 | `aiInsight.researchDetails` | 直接显示 |
+
+---
+
+## 十五、格式化工具函数
+
+统一使用 `src/lib/history-v2/formatters.ts`：
+
+| 函数 | 用途 |
+|------|------|
+| `formatDate(value, format)` | 日期格式化 |
+| `formatPercent(value, decimals=2)` | 百分比格式化，自动正负颜色 |
+| `formatPp(value, decimals=2)` | pp单位格式化 |
+| `formatSignalBadge(type)` | 信号标签样式映射 |
+| `formatQuadrantName(value)` | 象限状态名称映射 |
+| `formatPathLabel(value)` | 路径标签映射和颜色 |

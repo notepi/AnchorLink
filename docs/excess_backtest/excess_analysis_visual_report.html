@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>铂力特超额信号建模方法图解报告</title>
+<style>
+:root{
+  --blue:#1d4ed8; --blue-dark:#1e3a8a; --blue-bg:#dbeafe;
+  --green:#15803d; --green-bg:#dcfce7;
+  --red:#b91c1c; --red-bg:#fee2e2;
+  --amber:#b45309; --amber-bg:#fef3c7;
+  --violet:#6d28d9; --violet-bg:#ede9fe;
+  --cyan:#0e7490; --cyan-bg:#cffafe;
+  --slate:#0f172a; --text:#334155; --muted:#64748b;
+  --line:#e2e8f0; --soft:#f8fafc; --paper:#fff;
+  --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",Arial,sans-serif;
+  --serif:"Songti SC","Noto Serif SC",Georgia,serif;
+  --mono:"SF Mono",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:#f1f5f9;color:var(--slate);font-family:var(--sans);line-height:1.72}
+.page{display:grid;grid-template-columns:286px minmax(0,1fr);max-width:1500px;margin:0 auto;background:var(--paper)}
+.toc{position:sticky;top:0;height:100vh;overflow:auto;padding:28px 18px;border-right:1px solid var(--line);background:#fff}
+.toc-kicker{font-family:var(--mono);font-size:11px;font-weight:800;letter-spacing:.16em;color:var(--muted);text-transform:uppercase}
+.toc-brand{font-family:var(--serif);font-size:18px;font-weight:800;line-height:1.35;color:var(--blue);padding:10px 0 12px;margin-bottom:10px;border-bottom:2px solid var(--blue)}
+.toc-sub{font-size:12px;color:var(--muted);line-height:1.55;margin-bottom:16px}
+.toc a{display:block;padding:7px 10px;border-radius:5px;border-left:2px solid transparent;color:#334155;text-decoration:none;font-size:13px}
+.toc a:hover{background:var(--blue-bg);color:var(--blue)}
+.toc .n{display:inline-block;width:25px;font-family:var(--mono);font-size:11px;color:var(--muted)}
+main{padding:42px 58px 80px;min-width:0}
+.hero{padding:30px 0 36px;margin-bottom:44px;border-bottom:3px solid var(--blue)}
+.eyebrow{display:inline-block;background:var(--blue);color:#fff;border-radius:999px;padding:4px 13px;font-family:var(--mono);font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}
+h1{font-family:var(--serif);font-size:39px;line-height:1.22;margin:18px 0 12px}
+.subtitle{max-width:900px;font-family:var(--serif);font-size:17px;color:#475569}
+.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:24px}
+.meta div{background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:11px 13px}
+.meta b{display:block;font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase}
+.meta span{font-weight:700;font-size:14px}
+section{margin:0 0 58px;scroll-margin-top:20px}
+h2{font-family:var(--serif);font-size:27px;line-height:1.35;margin:0 0 20px;padding-bottom:12px;border-bottom:2px solid var(--blue)}
+h2 .num{display:inline-block;background:var(--blue);color:#fff;border-radius:4px;padding:2px 9px;margin-right:10px;font-family:var(--mono);font-size:15px;vertical-align:3px}
+h3{font-family:var(--serif);font-size:20px;margin:28px 0 12px}
+p{color:var(--text);margin:12px 0}
+.lead{font-size:18px;color:#1e293b}
+.caption{font-size:13px;color:var(--muted);border-top:1px dashed var(--line);padding-top:10px;margin-top:12px}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.card{background:#fff;border:1px solid var(--line);border-radius:8px;padding:18px}
+.card h3,.card h4{margin-top:0}
+.callout{border-left:5px solid var(--blue);background:#eff6ff;border-radius:8px;padding:17px 19px;margin:18px 0}
+.callout strong{color:var(--blue-dark)}
+.chip{display:inline-block;border-radius:4px;padding:2px 8px;font-family:var(--mono);font-size:11px;font-weight:800;white-space:nowrap}
+.blue{background:var(--blue-bg);color:var(--blue-dark)}
+.green{background:var(--green-bg);color:var(--green)}
+.red{background:var(--red-bg);color:var(--red)}
+.amber{background:var(--amber-bg);color:var(--amber)}
+.violet{background:var(--violet-bg);color:var(--violet)}
+.cyan{background:var(--cyan-bg);color:var(--cyan)}
+.viz{background:#fff;border:1px solid var(--line);border-radius:9px;padding:16px;margin:18px 0;overflow:auto}
+table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:8px;overflow:hidden;margin:16px 0}
+th,td{padding:11px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;font-size:14px}
+th{background:#f1f5f9;color:#0f172a}
+tr:last-child td{border-bottom:0}
+code{font-family:var(--mono);font-size:12px;background:#f1f5f9;border:1px solid var(--line);border-radius:4px;padding:1px 5px}
+.matrix{display:grid;grid-template-columns:170px repeat(3,1fr);border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff;margin:16px 0}
+.matrix div{padding:12px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);font-size:14px}
+.matrix div:nth-child(4n){border-right:0}
+.matrix .head{background:#f1f5f9;font-weight:800}
+.matrix .row{background:#f8fafc;font-weight:800}
+.heat{display:grid;grid-template-columns:120px repeat(3,1fr);border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff;margin:16px 0}
+.heat div{min-height:82px;padding:12px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);font-size:14px}
+.heat div:nth-child(4n){border-right:0}
+.heat .axis{background:#f8fafc;font-weight:800;text-align:center;color:#475569}
+.h-green{background:var(--green-bg);color:#14532d}
+.h-red{background:var(--red-bg);color:#7f1d1d}
+.h-amber{background:var(--amber-bg);color:#78350f}
+.h-neutral{background:#f8fafc;color:#475569}
+.case{border-left:5px solid var(--line)}
+.case.a{border-left-color:var(--red)}
+.case.b{border-left-color:var(--green)}
+.case.c{border-left-color:var(--amber)}
+.case-title{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:12px}
+.case-title h3{margin:0}
+.evidence{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.ev{border:1px solid var(--line);border-radius:7px;padding:10px;background:#fff}
+.ev b{display:block;font-size:13px;margin-bottom:5px}
+.ev span{font-size:12px;color:#475569}
+.bars{display:grid;gap:10px;margin:14px 0}
+.barrow{display:grid;grid-template-columns:165px 1fr 82px;gap:10px;align-items:center}
+.barrow label{font-size:13px;color:#475569}
+.bar{height:12px;background:#e2e8f0;border-radius:999px;overflow:hidden}
+.bar span{display:block;height:100%;border-radius:999px}
+.bar.red span{background:var(--red)}
+.bar.green span{background:var(--green)}
+.bar.blue span{background:var(--blue)}
+.barrow em{font-style:normal;font-family:var(--mono);font-size:12px;text-align:right}
+.funnel{display:grid;grid-template-columns:repeat(7,1fr);gap:9px;margin:18px 0}
+.funnel .step{position:relative;border:1px solid var(--line);border-radius:8px;padding:12px;background:#fff;min-height:105px}
+.funnel .step:after{content:"";position:absolute;right:-10px;top:44px;border-left:10px solid #94a3b8;border-top:8px solid transparent;border-bottom:8px solid transparent}
+.funnel .step:last-child:after{display:none}
+.funnel b{display:block;font-size:14px;margin-bottom:6px}
+.funnel span{font-size:12px;color:#475569}
+.report-card{border:2px solid var(--blue);border-radius:10px;overflow:hidden;background:#fff;margin:16px 0}
+.report-card .top{background:var(--blue);color:#fff;padding:13px 16px;font-weight:800;display:flex;justify-content:space-between;gap:12px}
+.report-card .body{display:grid;grid-template-columns:repeat(4,1fr);gap:0}
+.report-card .body div{padding:14px;border-right:1px solid var(--line)}
+.report-card .body div:last-child{border-right:0}
+.report-card b{display:block;margin-bottom:6px}
+@media(max-width:1040px){
+  .page{grid-template-columns:1fr}
+  .toc{position:relative;height:auto;border-right:0;border-bottom:1px solid var(--line)}
+  main{padding:28px 18px 54px}
+  .g2,.g3,.g4,.evidence,.funnel,.report-card .body{grid-template-columns:1fr}
+  .funnel .step:after{display:none}
+  .matrix,.heat{grid-template-columns:1fr}
+  .matrix div,.heat div{border-right:0}
+  .barrow{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <aside class="toc">
+    <div class="toc-kicker">Model Guide</div>
+    <div class="toc-brand">铂力特超额信号建模方法图解报告</div>
+    <div class="toc-sub">独立说明：数据如何进入模型，信号如何生成，证据如何验证，执行度如何落地。</div>
+    <a href="#s0"><span class="n">00</span>执行摘要</a>
+    <a href="#s1"><span class="n">01</span>研究问题</a>
+    <a href="#s2"><span class="n">02</span>数据层</a>
+    <a href="#s3"><span class="n">03</span>指标层</a>
+    <a href="#s4"><span class="n">04</span>状态层</a>
+    <a href="#s5"><span class="n">05</span>标签层</a>
+    <a href="#s6"><span class="n">06</span>证据层</a>
+    <a href="#s7"><span class="n">07</span>置信度层</a>
+    <a href="#s8"><span class="n">08</span>执行度层</a>
+    <a href="#s9"><span class="n">09</span>结论层</a>
+    <a href="#s10"><span class="n">10</span>每日解释层</a>
+  </aside>
+
+  <main>
+    <header class="hero">
+      <span class="eyebrow">Excess Signal Modeling</span>
+      <h1>铂力特超额信号建模方法图解报告</h1>
+      <p class="subtitle">本报告用于说明铂力特相对强弱信号的建模方法。报告从数据层、指标层、状态层、标签层、证据层、置信度层和执行度层逐层展开，最终形成每日可读的信号解释。</p>
+      <div class="meta">
+        <div><b>Anchor</b><span>688333.SH 铂力特</span></div>
+        <div><b>Sample</b><span>2025-06-03 至 2026-06-02</span></div>
+        <div><b>Main Benchmark</b><span>industry_chain_index</span></div>
+        <div><b>Output</b><span>信号解释与执行度画像</span></div>
+      </div>
+    </header>
+
+    <section id="s0">
+      <h2><span class="num">00</span>执行摘要</h2>
+      <div class="callout">
+        <strong>建模目标：</strong>识别铂力特相对产业链基准的冷/热状态、状态变化方向、历史同类样本的未来表现，以及该状态在每日解释中的可执行程度。
+      </div>
+      <div class="grid g3">
+        <div class="card">
+          <h3>主判断</h3>
+          <p><span class="chip blue">ETF 标准超额</span></p>
+          <p>以 `industry_chain_index` 为主基准，判断铂力特相对产业链指数的正式超额状态。</p>
+        </div>
+        <div class="card">
+          <h3>辅助画像</h3>
+          <p><span class="chip amber">中位数温度计</span></p>
+          <p>用产业链中位数口径描述热冷、理论空间、路径压力和先有利/先不利。</p>
+        </div>
+        <div class="card">
+          <h3>最终输出</h3>
+          <p><span class="chip green">每日解释</span></p>
+          <p>输出“不追高、弱修复候选、接飞刀风险、信号降级”等解释，不直接输出买卖指令。</p>
+        </div>
+      </div>
+      <div class="viz">
+        <svg viewBox="0 0 1040 360" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg">
+          <defs><marker id="arr0" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#64748b"/></marker></defs>
+          <rect x="35" y="135" width="145" height="82" rx="8" fill="#f8fafc" stroke="#94a3b8"/>
+          <text x="108" y="168" text-anchor="middle" font-size="18" font-weight="700">数据层</text>
+          <text x="108" y="195" text-anchor="middle" font-size="13" fill="#475569">行情 + 股票池</text>
+          <path d="M185 176 L245 95" stroke="#64748b" stroke-width="2" marker-end="url(#arr0)"/>
+          <rect x="250" y="42" width="205" height="105" rx="8" fill="#fef3c7" stroke="#b45309"/>
+          <text x="353" y="76" text-anchor="middle" font-size="18" font-weight="700" fill="#78350f">中位数温度计</text>
+          <text x="353" y="104" text-anchor="middle" font-size="13" fill="#334155">温度 / 空间 / 路径</text>
+          <path d="M185 176 L245 257" stroke="#64748b" stroke-width="2" marker-end="url(#arr0)"/>
+          <rect x="250" y="205" width="205" height="105" rx="8" fill="#dbeafe" stroke="#1d4ed8"/>
+          <text x="353" y="239" text-anchor="middle" font-size="18" font-weight="700" fill="#1e3a8a">ETF 标准超额</text>
+          <text x="353" y="267" text-anchor="middle" font-size="13" fill="#334155">正式强弱 / Q×G</text>
+          <path d="M460 95 L535 176" stroke="#64748b" stroke-width="2" marker-end="url(#arr0)"/>
+          <path d="M460 257 L535 176" stroke="#64748b" stroke-width="2" marker-end="url(#arr0)"/>
+          <rect x="540" y="122" width="170" height="108" rx="8" fill="#ede9fe" stroke="#6d28d9"/>
+          <text x="625" y="157" text-anchor="middle" font-size="18" font-weight="700" fill="#4c1d95">历史验证</text>
+          <text x="625" y="185" text-anchor="middle" font-size="13" fill="#334155">T+5/T+10 标签</text>
+          <path d="M715 176 L790 176" stroke="#64748b" stroke-width="2" marker-end="url(#arr0)"/>
+          <rect x="795" y="122" width="205" height="108" rx="8" fill="#dcfce7" stroke="#15803d"/>
+          <text x="898" y="157" text-anchor="middle" font-size="18" font-weight="700" fill="#14532d">每日解释层</text>
+          <text x="898" y="185" text-anchor="middle" font-size="13" fill="#334155">动作倾向 + 执行度</text>
+        </svg>
+      </div>
+      <p class="caption">本模型采用双口径输入：ETF 标准超额提供主判断，中位数温度计提供辅助画像，二者共同进入历史验证和每日解释。</p>
+    </section>
+
+    <section id="s1">
+      <h2><span class="num">01</span>研究问题</h2>
+      <p class="lead">研究对象不是铂力特的绝对涨跌，而是铂力特相对基准体系的强弱状态。</p>
+      <div class="grid g4">
+        <div class="card"><h3>当前位置</h3><p>当前相对基准是冷端、中性还是热端。</p></div>
+        <div class="card"><h3>状态变化</h3><p>超额状态是在扩大、收敛还是稳定。</p></div>
+        <div class="card"><h3>历史后果</h3><p>历史同类状态后 T+5/T+10 如何表现。</p></div>
+        <div class="card"><h3>解释输出</h3><p>将状态翻译为不追高、弱修复、接飞刀或降级。</p></div>
+      </div>
+      <table>
+        <tr><th>问题</th><th>模型回答</th><th>输出形式</th></tr>
+        <tr><td>铂力特是否过热/过冷</td><td>Q 档、标准超额分位、中位数温度计</td><td>Q1/Q5、冷端/热端</td></tr>
+        <tr><td>状态是否正在变化</td><td>G 档、标准超额变化分位</td><td>G 下降 / 稳定 / 回升</td></tr>
+        <tr><td>历史上类似状态后面怎么走</td><td>未来标签聚合</td><td>T+5/T+10 中位数、胜率、路径</td></tr>
+        <tr><td>信号能不能落地解释</td><td>执行度门槛链</td><td>A/B/C/D、动作倾向</td></tr>
+      </table>
+    </section>
+
+    <section id="s2">
+      <h2><span class="num">02</span>数据层</h2>
+      <div class="viz">
+        <svg viewBox="0 0 980 275" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg">
+          <defs><marker id="arr2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#64748b"/></marker></defs>
+          <rect x="35" y="82" width="150" height="95" rx="8" fill="#f8fafc" stroke="#94a3b8"/>
+          <text x="110" y="118" text-anchor="middle" font-size="18" font-weight="700">行情数据</text>
+          <text x="110" y="146" text-anchor="middle" font-size="13" fill="#475569">前复权 close</text>
+          <path d="M190 130 L255 70" stroke="#64748b" stroke-width="2" marker-end="url(#arr2)"/>
+          <path d="M190 130 L255 130" stroke="#64748b" stroke-width="2" marker-end="url(#arr2)"/>
+          <path d="M190 130 L255 190" stroke="#64748b" stroke-width="2" marker-end="url(#arr2)"/>
+          <rect x="260" y="35" width="170" height="70" rx="8" fill="#dbeafe" stroke="#1d4ed8"/>
+          <text x="345" y="64" text-anchor="middle" font-size="16" font-weight="700">Anchor</text>
+          <text x="345" y="87" text-anchor="middle" font-size="13" fill="#334155">688333.SH</text>
+          <rect x="260" y="115" width="170" height="70" rx="8" fill="#fef3c7" stroke="#b45309"/>
+          <text x="345" y="144" text-anchor="middle" font-size="16" font-weight="700">股票池</text>
+          <text x="345" y="167" text-anchor="middle" font-size="13" fill="#334155">产业链 / 同业 / 主题 / 交易</text>
+          <rect x="260" y="195" width="170" height="70" rx="8" fill="#ede9fe" stroke="#6d28d9"/>
+          <text x="345" y="224" text-anchor="middle" font-size="16" font-weight="700">质量标记</text>
+          <text x="345" y="247" text-anchor="middle" font-size="13" fill="#334155">停牌 / stale / 覆盖率</text>
+          <path d="M435 150 L510 150" stroke="#64748b" stroke-width="2" marker-end="url(#arr2)"/>
+          <rect x="515" y="90" width="190" height="120" rx="8" fill="#dcfce7" stroke="#15803d"/>
+          <text x="610" y="124" text-anchor="middle" font-size="18" font-weight="700" fill="#14532d">四条指数产品</text>
+          <text x="610" y="153" text-anchor="middle" font-size="13" fill="#334155">industry_chain_index</text>
+          <text x="610" y="176" text-anchor="middle" font-size="13" fill="#334155">direct / theme / watchlist</text>
+          <path d="M710 150 L785 150" stroke="#64748b" stroke-width="2" marker-end="url(#arr2)"/>
+          <rect x="790" y="90" width="155" height="120" rx="8" fill="#cffafe" stroke="#0e7490"/>
+          <text x="868" y="124" text-anchor="middle" font-size="18" font-weight="700" fill="#155e75">分析数据集</text>
+          <text x="868" y="153" text-anchor="middle" font-size="13" fill="#334155">标准超额</text>
+          <text x="868" y="176" text-anchor="middle" font-size="13" fill="#334155">Q×G / 分歧 / 标签</text>
+        </svg>
+      </div>
+      <p class="caption">数据层要求保留质量信息。停牌、陈旧报价、覆盖率不足会进入后续置信度判断，而不是被静默忽略。</p>
+    </section>
+
+    <section id="s3">
+      <h2><span class="num">03</span>指标层：中位数温度计与 ETF 标准超额</h2>
+      <div class="grid g2">
+        <div class="card">
+          <h3>中位数温度计</h3>
+          <p><span class="chip amber">辅助指标</span></p>
+          <p><code>daily_excess = anchor_return_1d - median_pool_return_1d</code></p>
+          <p><code>excess_5d / excess_10d = daily_excess rolling sum</code></p>
+          <table>
+            <tr><th>用途</th><th>说明</th></tr>
+            <tr><td>热冷判断</td><td>观察 Anchor 相对板块中位成员的位置。</td></tr>
+            <tr><td>理论空间</td><td>记录未来 20 日最高/最低形成的空间边界。</td></tr>
+            <tr><td>路径压力</td><td>观察先有利、先不利、达峰/达谷天数。</td></tr>
+          </table>
+        </div>
+        <div class="card">
+          <h3>ETF 标准超额</h3>
+          <p><span class="chip blue">主判断指标</span></p>
+          <p><code>anchor_return_Nd = close(t) / close(t-N) - 1</code></p>
+          <p><code>index_return_Nd = nav(t) / nav(t-N) - 1</code></p>
+          <p><code>standard_excess_Nd = anchor_return_Nd - index_return_Nd</code></p>
+          <table>
+            <tr><th>用途</th><th>说明</th></tr>
+            <tr><td>正式超额</td><td>判断 Anchor 是否跑赢连续 NAV 基准。</td></tr>
+            <tr><td>Q/G 分档</td><td>将标准超额转成位置和变化状态。</td></tr>
+            <tr><td>四 ETF 分歧</td><td>评估主判断是否被其他参照系支持。</td></tr>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="s4">
+      <h2><span class="num">04</span>状态层：Q×G 状态空间</h2>
+      <p class="lead">每个交易日被映射到一个 Q×G 状态格子。Q 描述当前位置，G 描述状态变化。</p>
+      <div class="matrix">
+        <div class="head">变量</div><div class="head">含义</div><div class="head">分档</div><div class="head">作用</div>
+        <div class="row">Q</div><div>当前标准超额的历史分位位置</div><div>Q1 极冷、Q2 偏冷、Q3 中性、Q4 偏热、Q5 极热</div><div>判断相对位置</div>
+        <div class="row">G</div><div>标准超额变化量的历史分位</div><div>G1 大降、G2 小降、G3 稳定、G4 小升、G5 大升</div><div>判断状态方向</div>
+        <div class="row">Q×G</div><div>位置和变化的组合状态</div><div>例如 Q5-G4、Q1-G2</div><div>连接历史未来表现</div>
+      </div>
+      <div class="heat">
+        <div class="axis">状态空间</div><div class="axis">G 下降</div><div class="axis">G 稳定</div><div class="axis">G 回升</div>
+        <div class="axis">Q1/Q2 冷端</div><div class="h-amber"><b>接飞刀风险</b><br>冷端仍恶化</div><div class="h-neutral"><b>观察</b><br>缺少修复确认</div><div class="h-green"><b>弱修复候选</b><br>冷端开始修复</div>
+        <div class="axis">Q3 中性</div><div class="h-neutral"><b>无方向</b></div><div class="h-neutral"><b>无方向</b></div><div class="h-neutral"><b>无方向</b></div>
+        <div class="axis">Q4/Q5 热端</div><div class="h-amber"><b>转弱观察</b><br>高位走弱</div><div class="h-neutral"><b>观察</b></div><div class="h-red"><b>不追高</b><br>热端继续加速</div>
+      </div>
+    </section>
+
+    <section id="s5">
+      <h2><span class="num">05</span>标签层：未来表现如何连接</h2>
+      <div class="viz">
+        <svg viewBox="0 0 980 260" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg">
+          <defs><marker id="arr5" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#64748b"/></marker></defs>
+          <rect x="40" y="80" width="150" height="92" rx="8" fill="#dbeafe" stroke="#1d4ed8"/>
+          <text x="115" y="114" text-anchor="middle" font-size="17" font-weight="700">触发日 t</text>
+          <text x="115" y="142" text-anchor="middle" font-size="13" fill="#334155">Q×G 状态</text>
+          <path d="M195 126 L265 126" stroke="#64748b" stroke-width="2" marker-end="url(#arr5)"/>
+          <rect x="270" y="80" width="150" height="92" rx="8" fill="#ede9fe" stroke="#6d28d9"/>
+          <text x="345" y="114" text-anchor="middle" font-size="17" font-weight="700">未来窗口</text>
+          <text x="345" y="142" text-anchor="middle" font-size="13" fill="#334155">T+1 / 3 / 5 / 10</text>
+          <path d="M425 126 L495 126" stroke="#64748b" stroke-width="2" marker-end="url(#arr5)"/>
+          <rect x="500" y="80" width="170" height="92" rx="8" fill="#fef3c7" stroke="#b45309"/>
+          <text x="585" y="114" text-anchor="middle" font-size="17" font-weight="700">未来标签</text>
+          <text x="585" y="142" text-anchor="middle" font-size="13" fill="#334155">Anchor收益 / 标准超额</text>
+          <path d="M675 126 L745 126" stroke="#64748b" stroke-width="2" marker-end="url(#arr5)"/>
+          <rect x="750" y="80" width="180" height="92" rx="8" fill="#dcfce7" stroke="#15803d"/>
+          <text x="840" y="114" text-anchor="middle" font-size="17" font-weight="700">历史聚合</text>
+          <text x="840" y="142" text-anchor="middle" font-size="13" fill="#334155">中位数 / 胜率 / 路径</text>
+        </svg>
+      </div>
+      <p class="caption">未来标签只用于历史验证。每日实际解释只能使用触发日当时已知的 Q/G、基准状态和质量信息。</p>
+    </section>
+
+    <section id="s6">
+      <h2><span class="num">06</span>证据层：从历史样本推导结论</h2>
+      <div class="grid g3">
+        <div class="card case a">
+          <div class="case-title"><h3>Q5 + G 上升</h3><span class="chip red">不追高</span></div>
+          <div class="evidence">
+            <div class="ev"><b>位置</b><span>Q5 极热</span></div>
+            <div class="ev"><b>变化</b><span>G 上升</span></div>
+            <div class="ev"><b>T+5</b><span>-1.88%</span></div>
+            <div class="ev"><b>10D确认</b><span>-2.48%</span></div>
+            <div class="ev"><b>路径</b><span>指数涨更多/Anchor走弱</span></div>
+            <div class="ev"><b>结论</b><span>降权观察</span></div>
+          </div>
+        </div>
+        <div class="card case b">
+          <div class="case-title"><h3>Q1 + G 回升</h3><span class="chip green">弱修复</span></div>
+          <div class="evidence">
+            <div class="ev"><b>位置</b><span>Q1 极冷</span></div>
+            <div class="ev"><b>变化</b><span>G 回升</span></div>
+            <div class="ev"><b>T+5</b><span>+0.96%</span></div>
+            <div class="ev"><b>T+10</b><span>+2.79%</span></div>
+            <div class="ev"><b>路径</b><span>常先不利</span></div>
+            <div class="ev"><b>结论</b><span>候选，不是强买</span></div>
+          </div>
+        </div>
+        <div class="card case c">
+          <div class="case-title"><h3>Q1 + G 下降</h3><span class="chip amber">接飞刀</span></div>
+          <div class="evidence">
+            <div class="ev"><b>位置</b><span>Q1 极冷</span></div>
+            <div class="ev"><b>变化</b><span>G 下降</span></div>
+            <div class="ev"><b>短期</b><span>T+1/T+3易弱</span></div>
+            <div class="ev"><b>后续</b><span>T+5可能反弹</span></div>
+            <div class="ev"><b>路径</b><span>先不利压力</span></div>
+            <div class="ev"><b>结论</b><span>等待确认</span></div>
+          </div>
+        </div>
+      </div>
+      <table>
+        <tr><th>信号</th><th>主要证据</th><th>执行解释</th></tr>
+        <tr><td>Q5 热端回落</td><td>未来 5D/10D 标准超额中位数持续偏负</td><td>不追高、降权观察</td></tr>
+        <tr><td>Q1 冷端修复</td><td>G 回升时短期正超额，但稳定性弱于热端回落</td><td>弱均值回归候选</td></tr>
+        <tr><td>Q1 冷端下降</td><td>短期继续跑输风险高，路径常先不利</td><td>接飞刀风险</td></tr>
+      </table>
+    </section>
+
+    <section id="s7">
+      <h2><span class="num">07</span>置信度层：四 ETF 一致与分歧</h2>
+      <p class="lead">四 ETF 体系用于评估信号纯度。主基准负责方向判断，辅助基准负责确认或降级。</p>
+      <div class="matrix">
+        <div class="head">状态</div><div class="head">定义</div><div class="head">含义</div><div class="head">处理</div>
+        <div class="row">四 ETF 一致</div><div>四个参照系同向</div><div>信号纯度较高</div><div>置信度上调</div>
+        <div class="row">主辅分歧</div><div>industry_chain 与辅助基准方向相反</div><div>基准之间存在解释冲突</div><div>降级为解释型</div>
+        <div class="row">混合无多数</div><div>四个参照系方向混杂</div><div>市场状态复杂</div><div>观察</div>
+      </div>
+      <div class="grid g2">
+        <div class="card">
+          <h3>一致率与分歧率</h3>
+          <table>
+            <tr><th>窗口</th><th>四 ETF 一致率</th><th>主辅分歧率</th></tr>
+            <tr><td>1D</td><td>40.9%</td><td>8.3%</td></tr>
+            <tr><td>3D</td><td>41.7%</td><td>16.7%</td></tr>
+            <tr><td>5D</td><td>42.9%</td><td>18.1%</td></tr>
+            <tr><td>10D</td><td>45.1%</td><td>17.2%</td></tr>
+          </table>
+        </div>
+        <div class="card">
+          <h3>分歧样本的未来表现</h3>
+          <div class="bars">
+            <div class="barrow"><label>主弱辅强 T+5</label><div class="bar red"><span style="width:86%"></span></div><em>-4.88%</em></div>
+            <div class="barrow"><label>主强辅弱 T+5</label><div class="bar red"><span style="width:42%"></span></div><em>-0.94%</em></div>
+          </div>
+          <p class="caption">辅助基准用于解释分歧来源，不用于简单投票推翻主基准。</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="s8">
+      <h2><span class="num">08</span>执行度层：A/B/C/D 分级</h2>
+      <div class="funnel">
+        <div class="step"><b>样本数</b><span>n ≥ 5 才进入画像</span></div>
+        <div class="step"><b>方向</b><span>T+5/T+10 是否同向</span></div>
+        <div class="step"><b>胜率</b><span>是否偏离随机</span></div>
+        <div class="step"><b>路径</b><span>是否常先不利</span></div>
+        <div class="step"><b>稳健性</b><span>非重叠是否反转</span></div>
+        <div class="step"><b>置信度</b><span>四 ETF 是否一致</span></div>
+        <div class="step"><b>执行度</b><span>A/B/C/D</span></div>
+      </div>
+      <table>
+        <tr><th>等级</th><th>典型信号</th><th>每日解释</th></tr>
+        <tr><td>A</td><td>Q5 热端回落 / Q5 + G 上升 / 四 ETF 一致偏强</td><td>不追高、降权观察</td></tr>
+        <tr><td>B</td><td>Q1 + G 回升 / 四 ETF 一致偏弱后修复</td><td>弱修复候选</td></tr>
+        <tr><td>C</td><td>Q1 + G 下降 / 主辅分歧</td><td>风险提示或解释型观察</td></tr>
+        <tr><td>D</td><td>中性区 / 小样本 / 旧口径单独使用</td><td>不作为方向依据</td></tr>
+      </table>
+    </section>
+
+    <section id="s9">
+      <h2><span class="num">09</span>结论层：哪些信号有用</h2>
+      <div class="grid g3">
+        <div class="card">
+          <h3>最可靠</h3>
+          <p><span class="chip red">热端不追</span></p>
+          <p>Q5 极热后，相对超额更稳定偏负。这个信号是当前样本中最可用的结论。</p>
+        </div>
+        <div class="card">
+          <h3>有条件可用</h3>
+          <p><span class="chip green">冷端弱修复</span></p>
+          <p>Q1 只有叠加 G 回升和较好置信度时，才进入弱均值回归候选。</p>
+        </div>
+        <div class="card">
+          <h3>需要降级</h3>
+          <p><span class="chip amber">接飞刀 / 分歧</span></p>
+          <p>Q1 继续下降、主辅基准分歧、小样本网格，只做解释或风险提示。</p>
+        </div>
+      </div>
+      <div class="callout">
+        <strong>阶段判断：</strong>铂力特呈现相对均值回归特征，但不对称。热端回落强于冷端修复；不追高信号强于低吸信号。
+      </div>
+    </section>
+
+    <section id="s10">
+      <h2><span class="num">10</span>每日解释层：最终输出形态</h2>
+      <div class="report-card">
+        <div class="top"><span>Daily Signal Review</span><span>示例：signal_window = 5D</span></div>
+        <div class="body">
+          <div><b>ETF 主状态</b><span class="chip red">Q5-G4</span><p>热端上升</p></div>
+          <div><b>历史画像</b><p>T+5/T+10 相对超额中位数偏负</p></div>
+          <div><b>置信度</b><p>四 ETF 一致则上调；主辅分歧则降级</p></div>
+          <div><b>解释</b><span class="chip red">不追高</span><p>降权观察，不输出买卖指令</p></div>
+        </div>
+      </div>
+      <p class="caption">每日解释层把模型状态、历史证据、基准置信度和执行度合并成一条可读结论，供日报或前端展示。</p>
+    </section>
+  </main>
+</div>
+</body>
+</html>

@@ -16,15 +16,42 @@
 
 ## 数据管道
 
-十步必须按顺序执行，不可跳步：
+### 执行顺序
 
 ```
-src.price.run → src.dailyreport.run → build_history_analysis.py → build_v2_scoring.py → build_daily_report.py → analyze_2nd_order_signals.py → composite_signal_backtest.py → deep_quant_analysis.py → excess_grade_backtest.py → build_dashboard_view.py
+A链: price → dailyreport → history → v2 → daily_report → 二阶 → composite → deep_quant → excess_grade
+B链: custom_indexes → standard_excess_profile → decomposition → qg_profile → divergence
+汇合: A+B → dashboard_view → 漂移检测 → 自动校准
 ```
+
+任何步骤失败则管道失败（退出码 1），不可静默当成功。
+
+### 入口与参数
+
+```bash
+uv run python scripts/run_all.py                        # 轻量手动运行（--days 60）
+uv run python scripts/run_all.py --days 120             # 人工日更/cron 推荐
+uv run python scripts/run_all.py --days 365             # 新增股票或补历史
+uv run python scripts/run_all.py --skip-research        # 跳过B链
+uv run python scripts/run_all.py --force-research       # 强制重跑B链（规则变了但日期没变时用，A链必须成功）
+uv run python scripts/run_research_chain.py             # 仅B链
+uv run python scripts/run_research_chain.py --force     # 强制重跑B链
+uv run python scripts/run_research_chain.py --check-only # 只检测是否滞后
+```
+
+`--days` 是最低覆盖窗口，不是每天重拉 N 天。fetcher 增量补缺：已有数据到 max_date → 只拉之后的新数据。
+
+- `--days 60`（默认）：轻量手动运行
+- `--days 120`：人工日更 / cron 推荐
+- `--days 365`：新增股票或补历史
+
+`--allow-noncritical-fail`：漂移检测/校准失败不阻断管道。**仅开发调试用，生产日更禁止使用。**
 
 V2 评分脚本需用 `-m` 运行：`uv run python -m scripts.build_v2_scoring`
 
-统一入口：`uv run python scripts/run_all.py`
+### 定时任务
+
+`scripts/cron_update_data.sh` 调用 `run_all.py`，失败即停，校验通过才备份。不可自建管道绕过 `run_all.py`。
 
 ## 代码规范
 
