@@ -9,6 +9,7 @@
     uv run python scripts/run_all.py --only-report  # 只生成日报
     uv run python scripts/run_all.py --skip-research  # 跳过B链
     uv run python scripts/run_all.py --force-research  # 强制重跑B链（规则变了但日期没变时用）
+    uv run python scripts/run_all.py --force-normalize  # 强制重跑 normalizer 后再执行 B 链
     uv run python scripts/run_all.py --allow-noncritical-fail  # 漂移/校准失败不阻断
 
 --days 说明：
@@ -45,11 +46,16 @@ def main():
     parser.add_argument("--only-report", action="store_true", help="只生成日报")
     parser.add_argument("--skip-research", action="store_true", help="跳过标准超额研究链（B链）")
     parser.add_argument("--force-research", action="store_true", help="强制重跑B链（即使日期没落后）")
+    parser.add_argument("--force-normalize", action="store_true", help="强制重跑 normalizer 后再执行 B 链")
     parser.add_argument("--allow-noncritical-fail", action="store_true", help="漂移检测/校准失败时不阻断管道")
     args = parser.parse_args()
 
     if args.skip_research and args.force_research:
         print("[ERROR] --skip-research 和 --force-research 不可同时使用")
+        return 1
+
+    if args.skip_research and args.force_normalize:
+        print("[ERROR] --skip-research 和 --force-normalize 不可同时使用")
         return 1
 
     print("=" * 60)
@@ -145,6 +151,8 @@ def main():
                 research_cmd = [sys.executable, str(PROJECT_ROOT / "scripts" / "run_research_chain.py")]
                 if args.force_research:
                     research_cmd.append("--force")
+                if args.force_normalize:
+                    research_cmd.append("--force-normalize")
                 result = subprocess.run(research_cmd, cwd=PROJECT_ROOT)
                 if result.returncode != 0:
                     print("[ERROR] 标准超额研究链失败")

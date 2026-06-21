@@ -4,13 +4,13 @@ import TopBar from '@/components/history-v2/TopBar';
 import HistoryMapping from '@/components/history-v2/HistoryMapping';
 import TransitionHeatmap from '@/components/history-v2/TransitionHeatmap';
 import StabilityPanel from '@/components/history-v2/StabilityPanelClient';
+import ExcessComparisonChart from '@/components/history-v2/ExcessComparisonChartClient';
 import PersonalityProfile from '@/components/history-v2/PersonalityProfile';
 import SignalTimeline from '@/components/history-v2/SignalTimeline';
 import SignalLiftTable from '@/components/history-v2/SignalLiftTable';
 import QuadrantGrid from '@/components/history-v2/QuadrantGrid';
 import SignalCombinations from '@/components/history-v2/SignalCombinations';
 import DivergenceTimeline from '@/components/history-v2/DivergenceTimeline';
-import PredictionEvaluationPanel from '@/components/history-v2/PredictionEvaluationPanel';
 import type { DateEntry } from '@/types/dashboard-view';
 import '../../../styles/history-v2.css';
 
@@ -102,7 +102,9 @@ export default async function HistoryV2Page({ searchParams }: PageProps) {
           followDeviationData={filteredFollowDeviation}
           relationshipProfile={dashboard.tableData.relationshipProfile}
         />
-        <PredictionEvaluationPanel predictionEvaluation={dashboard.predictionEvaluation} />
+        <ExcessComparisonChart
+          excessReturnData={filteredExcessReturn}
+        />
         <PersonalityProfile personalityData={dashboard.personality} profile={dashboard.summary.profile} />
         <SignalTimeline signalData={filteredSignalTimeline} />
         <details className="research">

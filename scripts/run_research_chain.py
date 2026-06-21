@@ -8,6 +8,7 @@
     python scripts/run_research_chain.py              # 检测+执行+验证
     python scripts/run_research_chain.py --check-only # 只检测是否滞后
     python scripts/run_research_chain.py --force      # 跳过检测，强制全量重跑
+    python scripts/run_research_chain.py --force-normalize  # 强制重跑 normalizer 后再执行
 
 B 链步骤（严格顺序）：
     1. build_custom_indexes.py                  → 类ETF指数构建
@@ -29,7 +30,9 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).parent.parent
 CONFIG_PATH = PROJECT_ROOT / "config" / "pools.yaml"
 NORMALIZED_PATH = PROJECT_ROOT / "data" / "price" / "normalized" / "market_data_normalized.parquet"
+RAW_PATH = PROJECT_ROOT / "data" / "price" / "raw" / "market_data.parquet"
 ANALYTICS_BASE = PROJECT_ROOT / "data" / "price" / "analytics"
+DASHBOARD_VIEW_PATH = PROJECT_ROOT / "data" / "output" / "dashboard_view.json"
 
 # B 链步骤定义：(脚本文件名, 描述, 额外CLI参数)
 B_CHAIN: list[tuple[str, str, list[str]]] = [
@@ -63,6 +66,16 @@ def _read_pool_config_version() -> str:
     return str(version)
 
 
+def _read_anchor_symbol() -> str:
+    """从 config/pools.yaml 读取 anchor symbol"""
+    import yaml
+
+    with open(CONFIG_PATH) as f:
+        cfg = yaml.safe_load(f)
+    anchor = cfg.get("anchor", {})
+    return anchor.get("symbol") or anchor.get("code", "688333.SH")
+
+
 def _get_normalized_latest() -> str:
     """读取标准化行情数据的最新交易日期，返回 YYYYMMDD 字符串"""
     import pandas as pd
@@ -73,6 +86,114 @@ def _get_normalized_latest() -> str:
     if hasattr(latest, "strftime"):
         return latest.strftime("%Y%m%d")
     return str(latest).replace("-", "")[:8]
+
+
+def _get_normalized_anchor_latest() -> tuple[str, float]:
+    """读取 normalized 数据中 anchor 的最新日期和收盘价"""
+    import pandas as pd
+
+    anchor_symbol = _read_anchor_symbol()
+    df = pd.read_parquet(NORMALIZED_PATH, columns=["ts_code", "trade_date", "close"])
+    anchor_df = df[df["ts_code"] == anchor_symbol].sort_values("trade_date")
+    if anchor_df.empty:
+        raise ValueError(f"normalized 数据中找不到 anchor {anchor_symbol}")
+    latest_row = anchor_df.iloc[-1]
+    latest_date = latest_row["trade_date"]
+    if hasattr(latest_date, "strftime"):
+        latest_date_str = latest_date.strftime("%Y%m%d")
+    else:
+        latest_date_str = str(latest_date).replace("-", "")[:8]
+    latest_close = float(latest_row["close"])
+    return latest_date_str, latest_close
+
+
+def _get_raw_anchor_latest() -> tuple[str, float]:
+    """读取 raw 数据中 anchor 的最新日期和收盘价"""
+    import pandas as pd
+
+    anchor_symbol = _read_anchor_symbol()
+    df = pd.read_parquet(RAW_PATH, columns=["ts_code", "trade_date", "close"])
+    anchor_df = df[df["ts_code"] == anchor_symbol].sort_values("trade_date")
+    if anchor_df.empty:
+        raise ValueError(f"raw 数据中找不到 anchor {anchor_symbol}")
+    latest_row = anchor_df.iloc[-1]
+    latest_date = latest_row["trade_date"]
+    if hasattr(latest_date, "strftime"):
+        latest_date_str = latest_date.strftime("%Y%m%d")
+    else:
+        latest_date_str = str(latest_date)[:8]
+    latest_close = float(latest_row["close"])
+    return latest_date_str, latest_close
+
+
+def _get_dashboard_latest_date() -> str | None:
+    """读取 dashboard_view.json 中的当前日期"""
+    if not DASHBOARD_VIEW_PATH.exists():
+        return None
+    try:
+        with open(DASHBOARD_VIEW_PATH) as f:
+            data = json.load(f)
+        today = data.get("today", {})
+        date_str = today.get("date")
+        if date_str:
+            return str(date_str).replace("-", "")[:8]
+    except Exception:
+        pass
+    return None
+
+
+def check_anchor_data_consistency() -> tuple[bool, str]:
+    """
+    检查 anchor 数据一致性。
+
+    Returns:
+        (is_consistent, error_message)
+    """
+    import pandas as pd
+
+    try:
+        norm_date, norm_close = _get_normalized_anchor_latest()
+        raw_date, raw_close = _get_raw_anchor_latest()
+        dash_date = _get_dashboard_latest_date()
+    except Exception as e:
+        return False, f"无法读取数据: {e}"
+
+    errors = []
+
+    # 检查 normalized 和 raw 日期一致性
+    if norm_date != raw_date:
+        errors.append(
+            f"normalized 最新日期 ({norm_date}) 与 raw 最新日期 ({raw_date}) 不一致"
+        )
+
+    # 检查 normalized 和 raw 收盘价一致性
+    if abs(norm_close - raw_close) > 0.01:
+        errors.append(
+            f"normalized anchor_close ({norm_close:.2f}) 与 raw anchor_close ({raw_close:.2f}) 不一致"
+        )
+
+    # 检查 dashboard 日期一致性
+    if dash_date and dash_date != norm_date:
+        errors.append(
+            f"dashboard 日期 ({dash_date}) 与 normalized 最新日期 ({norm_date}) 不一致"
+        )
+
+    if errors:
+        return False, "\n".join(errors)
+
+    return True, f"anchor 数据一致: 日期={norm_date}, close={norm_close:.2f}"
+
+
+def run_normalizer() -> bool:
+    """运行 normalizer 同步 normalized 数据"""
+    print("[INFO] 运行 normalizer 同步 normalized 数据...")
+    try:
+        from src.price.normalizer import normalize
+        normalize()
+        return True
+    except Exception as e:
+        print(f"[ERROR] normalizer 运行失败: {e}")
+        return False
 
 
 def _get_step_latest(step_idx: int, version: str) -> str | None:
@@ -129,13 +250,35 @@ def check_staleness(version: str, norm_latest: str) -> list[tuple[int, str, str 
     return results
 
 
-def run_b_chain(force: bool = False) -> bool:
+def run_b_chain(force: bool = False, force_normalize: bool = False) -> bool:
     """执行 B 链。返回 True 表示全部成功。"""
     version = _read_pool_config_version()
     norm_latest = _get_normalized_latest()
 
     print(f"[INFO] 行情最新日期: {norm_latest}")
     print(f"[INFO] pools.yaml 版本: {version}")
+
+    # 数据一致性校验
+    print("\n--- Anchor 数据一致性校验 ---")
+    is_consistent, msg = check_anchor_data_consistency()
+    print(f"  {msg}")
+
+    if not is_consistent:
+        if force_normalize:
+            print("\n[INFO] 检测到数据不一致，--force-normalize 模式，尝试同步...")
+            if not run_normalizer():
+                print("[ERROR] normalizer 同步失败，请手动检查数据")
+                return False
+            # 重新校验
+            is_consistent, msg = check_anchor_data_consistency()
+            print(f"  {msg}")
+            if not is_consistent:
+                print("[ERROR] 同步后数据仍不一致，请检查 raw 数据源")
+                return False
+        else:
+            print("\n[ERROR] anchor 数据不一致，B 链终止")
+            print("[提示] 使用 --force-normalize 参数尝试自动同步 normalized 数据")
+            return False
 
     # 检测滞后
     staleness = check_staleness(version, norm_latest)
@@ -203,10 +346,15 @@ def main():
     parser = argparse.ArgumentParser(description="标准超额研究链（B 链）编排器")
     parser.add_argument("--check-only", action="store_true", help="只检测是否滞后，不执行")
     parser.add_argument("--force", action="store_true", help="跳过检测，强制全量重跑")
+    parser.add_argument("--force-normalize", action="store_true", help="强制重跑 normalizer 后再执行")
     args = parser.parse_args()
 
     if args.check_only and args.force:
         print("[ERROR] --check-only 和 --force 不可同时使用")
+        return 1
+
+    if args.check_only and args.force_normalize:
+        print("[ERROR] --check-only 和 --force-normalize 不可同时使用")
         return 1
 
     try:
@@ -223,6 +371,14 @@ def main():
         print(f"行情最新日期: {norm_latest}")
         print(f"pools.yaml 版本: {version}")
         print()
+
+        # 数据一致性检查
+        is_consistent, msg = check_anchor_data_consistency()
+        print(f"数据一致性: {'✓' if is_consistent else '✗'}")
+        if not is_consistent:
+            print(f"  {msg}")
+        print()
+
         for idx, desc, step_latest, is_stale in staleness:
             status = "滞后" if is_stale else "最新"
             latest_str = step_latest or "不存在"
@@ -230,7 +386,7 @@ def main():
 
         return 1 if any_stale else 0
 
-    success = run_b_chain(force=args.force)
+    success = run_b_chain(force=args.force, force_normalize=args.force_normalize)
     return 0 if success else 1
 
 

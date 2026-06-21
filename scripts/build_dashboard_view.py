@@ -24,6 +24,7 @@ import yaml
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_OUTPUT_DIR = os.path.join(PROJECT_ROOT, "data", "output")
+DATA_PRICE_DIR = os.path.join(PROJECT_ROOT, "data", "price")
 CONFIG_PATH = os.path.join(PROJECT_ROOT, "config", "pools.yaml")
 OUTPUT_PATH = os.path.join(DATA_OUTPUT_DIR, "dashboard_view.json")
 
@@ -585,6 +586,104 @@ def load_anchor_close_prices(anchor_code: str) -> dict[str, float]:
         close_by_date[trade_date] = float(row["close"])
     print(f"[OK] 加载真实收盘价：{len(close_by_date)} 条，标的 {anchor_code}")
     return close_by_date
+
+
+def _parse_optional_float(value: Any) -> float | None:
+    if value is None or value == "" or value == "None":
+        return None
+    try:
+        return float(value)
+    except (ValueError, TypeError):
+        return None
+
+
+def load_index_excess_data() -> dict[str, dict[str, Any]]:
+    """加载 B 链 anchor_index_excess + legacy_vs_index_excess_comparison，按日期索引合并。
+
+    返回 dict[str, dict]，key 为 YYYYMMDD 日期字符串。
+    """
+    analytics_dir = os.path.join(DATA_PRICE_DIR, "analytics", "index_products")
+    if not os.path.isdir(analytics_dir):
+        print("[WARN] index_products 目录不存在，跳过类 ETF 超额数据")
+        return {}
+
+    # 自动发现最新 constant_universe_* 子目录
+    subdirs = sorted(
+        [d for d in os.listdir(analytics_dir) if d.startswith("constant_universe_")],
+    )
+    if not subdirs:
+        print("[WARN] 未找到 constant_universe_* 子目录，跳过类 ETF 超额数据")
+        return {}
+    latest_dir = os.path.join(analytics_dir, subdirs[-1])
+
+    # 读取 anchor_index_excess.csv（四池超额）
+    anchor_csv = os.path.join(latest_dir, "anchor_index_excess.csv")
+    anchor_by_date: dict[str, dict[str, Any]] = {}
+    if os.path.exists(anchor_csv):
+        with open(anchor_csv, "r", encoding="utf-8") as f:
+            for row in csv.DictReader(f):
+                date_str = str(row.get("date", "")).strip()
+                if not date_str:
+                    continue
+                anchor_by_date[date_str] = {
+                    "anchor_close": _parse_optional_float(row.get("anchor_close")),
+                    "excess_vs_industry_chain_1d": _parse_optional_float(row.get("excess_vs_industry_chain_index_1d")),
+                    "excess_vs_industry_chain_3d": _parse_optional_float(row.get("excess_vs_industry_chain_index_3d")),
+                    "excess_vs_industry_chain_5d": _parse_optional_float(row.get("excess_vs_industry_chain_index_5d")),
+                    "excess_vs_industry_chain_10d": _parse_optional_float(row.get("excess_vs_industry_chain_index_10d")),
+                    "excess_vs_direct_peers_1d": _parse_optional_float(row.get("excess_vs_direct_peers_index_1d")),
+                    "excess_vs_direct_peers_3d": _parse_optional_float(row.get("excess_vs_direct_peers_index_3d")),
+                    "excess_vs_direct_peers_5d": _parse_optional_float(row.get("excess_vs_direct_peers_index_5d")),
+                    "excess_vs_direct_peers_10d": _parse_optional_float(row.get("excess_vs_direct_peers_index_10d")),
+                    "excess_vs_theme_pool_1d": _parse_optional_float(row.get("excess_vs_theme_pool_index_1d")),
+                    "excess_vs_theme_pool_3d": _parse_optional_float(row.get("excess_vs_theme_pool_index_3d")),
+                    "excess_vs_theme_pool_5d": _parse_optional_float(row.get("excess_vs_theme_pool_index_5d")),
+                    "excess_vs_theme_pool_10d": _parse_optional_float(row.get("excess_vs_theme_pool_index_10d")),
+                    "excess_vs_trading_watchlist_1d": _parse_optional_float(row.get("excess_vs_trading_watchlist_index_1d")),
+                    "excess_vs_trading_watchlist_3d": _parse_optional_float(row.get("excess_vs_trading_watchlist_index_3d")),
+                    "excess_vs_trading_watchlist_5d": _parse_optional_float(row.get("excess_vs_trading_watchlist_index_5d")),
+                    "excess_vs_trading_watchlist_10d": _parse_optional_float(row.get("excess_vs_trading_watchlist_index_10d")),
+                }
+        print(f"[OK] 加载 anchor_index_excess：{len(anchor_by_date)} 条，目录 {subdirs[-1]}")
+    else:
+        print("[WARN] anchor_index_excess.csv 不存在，跳过四池超额")
+
+    # 读取 legacy_vs_index_excess_comparison.csv（传统 vs ETF 对比）
+    legacy_csv = os.path.join(latest_dir, "legacy_vs_index_excess_comparison.csv")
+    legacy_by_date: dict[str, dict[str, Any]] = {}
+    if os.path.exists(legacy_csv):
+        with open(legacy_csv, "r", encoding="utf-8") as f:
+            for row in csv.DictReader(f):
+                date_str = str(row.get("date", "")).strip()
+                if not date_str:
+                    continue
+                legacy_by_date[date_str] = {
+                    "median_displacement_1d": _parse_optional_float(row.get("median_displacement_1d")),
+                    "median_displacement_5d": _parse_optional_float(row.get("median_displacement_5d")),
+                    "median_displacement_10d": _parse_optional_float(row.get("median_displacement_10d")),
+                    "index_excess_1d": _parse_optional_float(row.get("index_excess_1d")),
+                    "index_excess_3d": _parse_optional_float(row.get("index_excess_3d")),
+                    "index_excess_5d": _parse_optional_float(row.get("index_excess_5d")),
+                    "index_excess_10d": _parse_optional_float(row.get("index_excess_10d")),
+                    "diff_1d": _parse_optional_float(row.get("diff_1d")),
+                    "diff_5d": _parse_optional_float(row.get("diff_5d")),
+                    "diff_10d": _parse_optional_float(row.get("diff_10d")),
+                }
+        print(f"[OK] 加载 legacy_vs_index_excess：{len(legacy_by_date)} 条")
+    else:
+        print("[WARN] legacy_vs_index_excess_comparison.csv 不存在，跳过传统 vs ETF 对比")
+
+    # 合并：以 anchor_by_date 为主体，merge legacy 字段
+    all_dates = set(anchor_by_date.keys()) | set(legacy_by_date.keys())
+    merged: dict[str, dict[str, Any]] = {}
+    for d in all_dates:
+        entry: dict[str, Any] = {}
+        if d in anchor_by_date:
+            entry.update(anchor_by_date[d])
+        if d in legacy_by_date:
+            entry.update(legacy_by_date[d])
+        merged[d] = entry
+    return merged
 
 
 def load_all_data() -> dict[str, Any]:
@@ -1374,13 +1473,14 @@ def build_trends(
     history_summary: list[dict[str, Any]],
     personality_profile: dict[str, Any],
     close_by_date: dict[str, float],
+    index_excess_by_date: dict[str, dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     print("正在构建 trends...")
     recent_rolling = rolling_metrics
     excess_return = []
     for row in recent_rolling:
         date_str = str(row.get("date") or "")
-        excess_return.append({
+        entry: dict[str, Any] = {
             "date": date_str,
             "price": close_by_date.get(date_str),
             "excess5d": row.get("excess_5d"),
@@ -1389,7 +1489,38 @@ def build_trends(
             "betaStreak": row.get("beta_streak"),
             "themeVsCoreStreak": row.get("theme_vs_core_streak"),
             "riskHighStreak": row.get("risk_high_streak"),
-        })
+        }
+        # 合并类 ETF 超额数据（B 链）
+        idx_data = (index_excess_by_date or {}).get(date_str, {})
+        if idx_data:
+            entry["legacyExcess1d"] = idx_data.get("median_displacement_1d")
+            entry["legacyExcess3d"] = None  # 传统中位数无 3d 字段
+            entry["legacyExcess5d"] = idx_data.get("median_displacement_5d")
+            entry["legacyExcess10d"] = idx_data.get("median_displacement_10d")
+            entry["indexExcess1d"] = idx_data.get("index_excess_1d")
+            entry["indexExcess3d"] = idx_data.get("index_excess_3d")
+            entry["indexExcess5d"] = idx_data.get("index_excess_5d")
+            entry["indexExcess10d"] = idx_data.get("index_excess_10d")
+            entry["excessDiff1d"] = idx_data.get("diff_1d")
+            entry["excessDiff5d"] = idx_data.get("diff_5d")
+            entry["excessDiff10d"] = idx_data.get("diff_10d")
+            entry["excessVsIndustryChain1d"] = idx_data.get("excess_vs_industry_chain_1d")
+            entry["excessVsIndustryChain3d"] = idx_data.get("excess_vs_industry_chain_3d")
+            entry["excessVsIndustryChain5d"] = idx_data.get("excess_vs_industry_chain_5d")
+            entry["excessVsIndustryChain10d"] = idx_data.get("excess_vs_industry_chain_10d")
+            entry["excessVsDirectPeers1d"] = idx_data.get("excess_vs_direct_peers_1d")
+            entry["excessVsDirectPeers3d"] = idx_data.get("excess_vs_direct_peers_3d")
+            entry["excessVsDirectPeers5d"] = idx_data.get("excess_vs_direct_peers_5d")
+            entry["excessVsDirectPeers10d"] = idx_data.get("excess_vs_direct_peers_10d")
+            entry["excessVsThemePool1d"] = idx_data.get("excess_vs_theme_pool_1d")
+            entry["excessVsThemePool3d"] = idx_data.get("excess_vs_theme_pool_3d")
+            entry["excessVsThemePool5d"] = idx_data.get("excess_vs_theme_pool_5d")
+            entry["excessVsThemePool10d"] = idx_data.get("excess_vs_theme_pool_10d")
+            entry["excessVsTradingWatchlist1d"] = idx_data.get("excess_vs_trading_watchlist_1d")
+            entry["excessVsTradingWatchlist3d"] = idx_data.get("excess_vs_trading_watchlist_3d")
+            entry["excessVsTradingWatchlist5d"] = idx_data.get("excess_vs_trading_watchlist_5d")
+            entry["excessVsTradingWatchlist10d"] = idx_data.get("excess_vs_trading_watchlist_10d")
+        excess_return.append(entry)
 
     recent_summary = history_summary
     follow_deviation = []
@@ -2758,7 +2889,8 @@ def main() -> None:
 
     # 「今日看板」专属数据预计算
     print("正在构建 today 数据...")
-    trends_payload = build_trends(data["rolling_metrics"], data["history_summary"], data["personality_profile"], close_by_date)
+    index_excess_by_date = load_index_excess_data()
+    trends_payload = build_trends(data["rolling_metrics"], data["history_summary"], data["personality_profile"], close_by_date, index_excess_by_date)
     quadrant_distributions = build_quadrant_distributions(data["history_summary"])
     today_alerts = build_today_alerts(trends_payload["excessReturn"], trends_payload["poolCorrelations"])
     transition_top5 = build_transition_top5(data["history_summary"], quadrant_distributions)

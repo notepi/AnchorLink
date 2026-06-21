@@ -186,7 +186,16 @@ def fetch_single_stock_daily(
 
             if df is not None and not df.empty:
                 return df
-            return None
+
+            # 空结果：可能是频次限制（pro_bar 不抛异常只返回空）
+            # 重试几次再放弃
+            if attempt < retries - 1:
+                wait_time = RETRY_BASE_DELAY * (2 ** attempt)
+                print(f"[WARN] {ts_code} pro_bar 返回空，等待 {wait_time:.1f}s 后重试 ({attempt + 1}/{retries})")
+                time.sleep(wait_time)
+            else:
+                print(f"[WARN] {ts_code} pro_bar 返回空，已重试 {retries} 次仍为空")
+                return None
 
         except Exception as e:
             error_msg = str(e).lower()
@@ -552,13 +561,15 @@ def fetch_for_registry(
     print(f"[INFO] 共需获取 {len(ts_codes)} 只股票数据")
     print(f"[INFO] 股票池: {ts_codes}")
 
-    # 3. 计算日期范围（增量：向前补新 + 向后扩展）
+    # 3. 计算日期范围（增量：向前补新 + 向后扩展 + 个股空洞回填）
     end_date = datetime.now().strftime("%Y%m%d")
     earliest_needed = (datetime.now() - timedelta(days=days)).strftime("%Y%m%d")
     market_parquet = Path(output_path)
+    per_stock_ranges: dict[str, tuple[str, str]] = {}  # 个股需要回填的日期范围
     if market_parquet.exists():
         try:
-            existing = pd.read_parquet(market_parquet, columns=["trade_date"])
+            # 读取完整数据以检测个股空洞
+            existing = pd.read_parquet(market_parquet, columns=["ts_code", "trade_date"])
             if not existing.empty:
                 min_date = existing["trade_date"].min()
                 max_date = existing["trade_date"].max()
@@ -570,6 +581,37 @@ def fetch_for_registry(
                     # 需要向后扩展历史
                     start_date = earliest_needed
                     print(f"[INFO] 扩展模式：已有数据最早 {min_date}，需扩展至 {earliest_needed}")
+
+                # 检测个股空洞：在全局交易日历中，如果某只股票缺少某天数据，
+                # 说明 pro_bar 漏拉，需要回填
+                try:
+                    existing_full = pd.read_parquet(market_parquet, columns=["ts_code", "trade_date"])
+                    recent = existing_full[existing_full["trade_date"] >= earliest_needed]
+                    if not recent.empty:
+                        # 全局交易日历 = 至少一半股票有数据的日期
+                        all_dates = recent["trade_date"].value_counts()
+                        n_stocks = len(recent["ts_code"].unique())
+                        trading_dates = set(all_dates[all_dates >= n_stocks * 0.5].index)
+                        if trading_dates:
+                            for ts_code in recent["ts_code"].unique():
+                                stock_dates = set(recent[recent["ts_code"] == ts_code]["trade_date"])
+                                missing_dates = trading_dates - stock_dates
+                                if missing_dates:
+                                    gap_start = min(missing_dates)
+                                    stock_before = existing_full[
+                                        (existing_full["ts_code"] == ts_code) &
+                                        (existing_full["trade_date"] < gap_start)
+                                    ].sort_values("trade_date")
+                                    if not stock_before.empty:
+                                        pull_start = stock_before["trade_date"].iloc[-1]
+                                    else:
+                                        pull_start = earliest_needed
+                                    per_stock_ranges[ts_code] = (pull_start, end_date)
+                        if per_stock_ranges:
+                            codes_str = ", ".join(per_stock_ranges.keys())
+                            print(f"[INFO] 检测到 {len(per_stock_ranges)} 只股票有日期空洞（pro_bar 漏拉）: {codes_str}")
+                except Exception:
+                    pass  # 空洞检测失败不影响主流程
             else:
                 start_date = earliest_needed
         except Exception:
@@ -578,12 +620,30 @@ def fetch_for_registry(
         start_date = earliest_needed
     print(f"[INFO] 日期范围: {start_date} ~ {end_date}")
 
-    # 4. 获取日线数据
+    # 4. 获取日线数据（批量 + 个股回填）
     df = fetch_daily_data(pro, ts_codes, start_date, end_date)
 
     if df is None or df.empty:
         print("[ERROR] 未获取到任何数据")
         return pd.DataFrame()
+
+    # 4b. 个股空洞回填
+    if per_stock_ranges:
+        print(f"[INFO] 开始回填 {len(per_stock_ranges)} 只股票的数据空洞...")
+        for ts_code, (s, e) in per_stock_ranges.items():
+            print(f"[INFO] 回填 {ts_code}: {s} ~ {e}")
+            stock_df = fetch_single_stock_daily(pro, ts_code, s, e)
+            if stock_df is not None and not stock_df.empty:
+                stock_df = stock_df[[c for c in stock_df.columns if c in
+                    ["ts_code", "trade_date", "open", "high", "low", "close", "vol", "amount"]]]
+                stock_df = stock_df.drop_duplicates(subset=["ts_code", "trade_date"], keep="last")
+                for col in ["open", "high", "low", "close", "vol", "amount"]:
+                    if col in stock_df.columns:
+                        stock_df[col] = pd.to_numeric(stock_df[col], errors="coerce")
+                df = pd.concat([df, stock_df], ignore_index=True)
+                print(f"[OK] {ts_code} 回填 {len(stock_df)} 条")
+            else:
+                print(f"[WARN] {ts_code} 回填失败，pro_bar 仍返回空")
 
     # 5. 验证每只股票是否都获取到数据
     fetched_codes = set(df["ts_code"].unique())

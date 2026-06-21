@@ -293,6 +293,60 @@ export interface RollingMetric {
   excess5dPercentile?: number | null;
   /** 「今日看板」10d 超额历史百分位 */
   excess10dPercentile?: number | null;
+  /** 传统中位数 1d 超额 */
+  legacyExcess1d?: number | null;
+  /** 传统中位数 3d 超额（传统口径无此字段，始终 null） */
+  legacyExcess3d?: number | null;
+  /** 传统中位数 5d 超额 */
+  legacyExcess5d?: number | null;
+  /** 传统中位数 10d 超额 */
+  legacyExcess10d?: number | null;
+  /** 类 ETF 标准超额 1d（industry_chain_index） */
+  indexExcess1d?: number | null;
+  /** 类 ETF 标准超额 3d */
+  indexExcess3d?: number | null;
+  /** 类 ETF 标准超额 5d */
+  indexExcess5d?: number | null;
+  /** 类 ETF 标准超额 10d */
+  indexExcess10d?: number | null;
+  /** 传统 vs ETF 超额差值 1d */
+  excessDiff1d?: number | null;
+  /** 传统 vs ETF 超额差值 5d */
+  excessDiff5d?: number | null;
+  /** 传统 vs ETF 超额差值 10d */
+  excessDiff10d?: number | null;
+  /** 四池超额：industry_chain 1d */
+  excessVsIndustryChain1d?: number | null;
+  /** 四池超额：industry_chain 3d */
+  excessVsIndustryChain3d?: number | null;
+  /** 四池超额：industry_chain 5d */
+  excessVsIndustryChain5d?: number | null;
+  /** 四池超额：industry_chain 10d */
+  excessVsIndustryChain10d?: number | null;
+  /** 四池超额：direct_peers 1d */
+  excessVsDirectPeers1d?: number | null;
+  /** 四池超额：direct_peers 3d */
+  excessVsDirectPeers3d?: number | null;
+  /** 四池超额：direct_peers 5d */
+  excessVsDirectPeers5d?: number | null;
+  /** 四池超额：direct_peers 10d */
+  excessVsDirectPeers10d?: number | null;
+  /** 四池超额：theme_pool 1d */
+  excessVsThemePool1d?: number | null;
+  /** 四池超额：theme_pool 3d */
+  excessVsThemePool3d?: number | null;
+  /** 四池超额：theme_pool 5d */
+  excessVsThemePool5d?: number | null;
+  /** 四池超额：theme_pool 10d */
+  excessVsThemePool10d?: number | null;
+  /** 四池超额：trading_watchlist 1d */
+  excessVsTradingWatchlist1d?: number | null;
+  /** 四池超额：trading_watchlist 3d */
+  excessVsTradingWatchlist3d?: number | null;
+  /** 四池超额：trading_watchlist 5d */
+  excessVsTradingWatchlist5d?: number | null;
+  /** 四池超额：trading_watchlist 10d */
+  excessVsTradingWatchlist10d?: number | null;
 }
 
 /** 状态转移 */

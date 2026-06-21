@@ -54,14 +54,81 @@ def load_input_data(input_dir: Path) -> tuple[pd.DataFrame, pd.DataFrame, dict]:
     return excess_df, nav_df, manifest
 
 
-def check_anchor_continuity(excess_df: pd.DataFrame) -> pd.Series:
-    """检查 Anchor 是否有缺失报价或停牌补值，返回 bool Series（True=停牌日）。"""
-    dates = excess_df["date"].values
-    closes = excess_df["anchor_close"].values
+def check_anchor_continuity(excess_df: pd.DataFrame, normalized_path: Path = None) -> pd.Series:
+    """检查 Anchor 是否有缺失报价或停牌补值，返回 bool Series（True=停牌日）。
+
+    判断逻辑：
+    1. 从 normalized 数据读取 anchor 的成交量
+    2. 如果当天有成交量（vol > 0），说明有真实交易，不是停牌
+    3. 如果当天无成交量且 close 等于前一天 close，才标记为停牌
+
+    这样可以避免"同价收盘日"被误判为停牌。
+    """
+    from pathlib import Path as _Path
+
+    # 默认 normalized 路径
+    if normalized_path is None:
+        normalized_path = _Path(__file__).parent.parent.parent / "data" / "price" / "normalized" / "market_data_normalized.parquet"
+
+    # 初始化为 False
     suspended = pd.Series(False, index=excess_df.index)
-    for i in range(1, len(closes)):
-        if pd.isna(closes[i]) or closes[i] == closes[i - 1]:
-            suspended.iloc[i] = True
+
+    # 尝试读取 normalized 数据获取成交量
+    anchor_symbol = excess_df["anchor_symbol"].iloc[0] if "anchor_symbol" in excess_df.columns else None
+    if anchor_symbol is None:
+        # 回退到旧逻辑
+        closes = excess_df["anchor_close"].values
+        for i in range(1, len(closes)):
+            if pd.isna(closes[i]) or closes[i] == closes[i - 1]:
+                suspended.iloc[i] = True
+        return suspended
+
+    try:
+        norm_df = pd.read_parquet(normalized_path, columns=["ts_code", "trade_date", "close", "vol"])
+        anchor_data = norm_df[norm_df["ts_code"] == anchor_symbol].copy()
+
+        # 转换日期格式
+        if anchor_data["trade_date"].dtype.kind == "M":
+            anchor_data["date_str"] = anchor_data["trade_date"].dt.strftime("%Y%m%d")
+        else:
+            anchor_data["date_str"] = anchor_data["trade_date"].astype(str).str[:8]
+
+        # 构建日期 → (close, vol) 映射
+        anchor_map = {}
+        for _, row in anchor_data.iterrows():
+            anchor_map[row["date_str"]] = (row["close"], row["vol"])
+
+        # 检查每一天
+        dates = excess_df["date"].astype(str).values
+        closes = excess_df["anchor_close"].values
+
+        for i in range(len(dates)):
+            date_str = dates[i]
+            if date_str not in anchor_map:
+                # normalized 中无此日期数据，可能是未来日期或数据缺失
+                if i > 0 and (pd.isna(closes[i]) or closes[i] == closes[i - 1]):
+                    suspended.iloc[i] = True
+                continue
+
+            norm_close, norm_vol = anchor_map[date_str]
+
+            # 判断逻辑：
+            # 1. 有成交量（vol > 0）→ 有真实交易，不是停牌
+            # 2. 无成交量且 close 等于前一天 close → 可能是停牌补值
+            if norm_vol is not None and norm_vol > 0:
+                # 有真实交易，不是停牌
+                suspended.iloc[i] = False
+            elif i > 0 and (pd.isna(closes[i]) or closes[i] == closes[i - 1]):
+                # 无成交量且价格未变，标记为停牌
+                suspended.iloc[i] = True
+    except Exception as e:
+        # 读取失败时回退到旧逻辑
+        print(f"[WARN] 无法读取 normalized 数据判断停牌状态，回退到旧逻辑: {e}")
+        closes = excess_df["anchor_close"].values
+        for i in range(1, len(closes)):
+            if pd.isna(closes[i]) or closes[i] == closes[i - 1]:
+                suspended.iloc[i] = True
+
     return suspended
 
 
